@@ -1,8 +1,6 @@
 ViATc
 =====
 
-Warning: This version 0.6 is unfinished and most likely never will be. Please use 0.5
-
 ViATc - Vim mode at Total Commander
 
 - efficient use of keyboard, lot's of quick shortcuts
@@ -12,12 +10,13 @@ ViATc - Vim mode at Total Commander
 - supports plugins (only when using the AHK source, not the compiled version) 
 
 
-
-Use:
+Usage:
 =====
 - Download and install Autohotkey, simple to learn but powerful. https://autohotkey.com/
-- Download ViATc https://github.com/magicstep/ViATc-0.6-English/archive/master.zip, extract and double-click viatc-0.6.1en.ahk
-- Look for a new icon in the tray.
+- Download ViATc https://github.com/magicstep/ViATc-English/archive/master.zip, extract, go into "ver 0.5 good" folder and double-click viatc-0.5.3en.ahk
+- Look for a new icon in the tray, right-click on it and choose Help.
+
+Version 0.6 is unfinished and most likely never will be. Please use 0.5
 
 Author
 ======
