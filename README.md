@@ -6,7 +6,7 @@ ViATc - Vim mode at Total Commander
 - efficient use of keyboard, lot's of quick shortcuts
 - efficient use of software, use more functionality
 - supports all that Autohotkey does, not just TotalCommander
-- in fact, in addition to Vim style, Emacs style can also be programmed in, eg.  `<ctrl>a   <alt>d`
+- in fact, in addition to Vim style, Emacs style can also be programmed-in, eg.  `<ctrl>a   <alt>d`
 
 
 Usage:
