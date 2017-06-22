@@ -1,4 +1,7 @@
-﻿Setkeydelay,-1 
+#SingleInstance
+Menu, Tray, Icon, viatc.ico
+
+Setkeydelay,-1 
 SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
@@ -10,7 +13,7 @@ Global TCINI := GetPath_TCINI()
 Vim_HotkeyList .= " <> "
 ReadConfigToRegHK()
 ;Msgbox % Substr(Vim_HotkeyList,RegExMatch(Vim_HotkeyList,"\s<>\s"))
-Traytip,,ViATc 载入完毕,,17
+Traytip,,ViATc-0.6.1en is running,,17
 Sleep,1800
 Traytip
 ;RegisterHotkey("zf","<TCFullScreen>","TTOTAL_CMD")
@@ -18,32 +21,32 @@ Traytip
 ;RegisterHotkey("zq","<QuitTC>","TTOTAL_CMD")
 ;RegisterHotkey("za","<ReloadTC>","TTOTAL_CMD")
 ; ==========================================
-;Esc必须要以下列形式映射热键
-;保证Esc的功能不被hotkeycontrol影响
-;如果不这样映射，则退回正常模式将会失效
+; Esc hotkey must be mapped in the following form
+; Ensure Esc functions are not affected hotkeycontrol
+; If you do not like this map, you will fail to return to normal mode
 ; ==========================================
 return
-;===================================================
-; 读取配置并注册热键
+; ===================================================
+; Read the configuration and register the hotkey
 ReadConfigToRegHK()
 {
 	Config_section := VIATC_IniRead()
 	Loop,Parse,Config_section,`n
 	{
-		; Global为全局域，注册全局热键
+		; Global is a global domain, registered global hotkey
 		If RegExMatch(A_LoopField,"i)^Global$")
 		{
-			; Global时，Class为空
+			; When Global, Class empty
 			CLASS :=
-			; 获取Global的热键列表
+			; Acquiring Global hotkey list
 			KeyList := VIATC_IniRead("Global")
 			Loop,Parse,KeyList,`n
 			{
-				;获取INI中的热键部分
+				; Hot key acquisition portion of INI
 				Key := RegExReplace(A_LoopField,"=[<\(\{\[].*[\]\}\)>]$")
-				;获取热键对应的Action
+				; Get hot key corresponding Action
 				Action := SubStr(A_LoopField,Strlen(Key)+2,Strlen(A_LoopField))
-				;注册热键
+				; Registered hotkey
 				If RegExMatch(Key,"^\$.*")
 				{
 					Key := SubStr(Key,2)
@@ -57,22 +60,22 @@ ReadConfigToRegHK()
 				RegisterHotkey(Key,Action,CLASS)
 			}
 		}
-		; 所有以AHKC开头的域，用来注册对应CLASS的热键
+		; AHKC beginning of all domains, corresponding to the hot key to register the CLASS
 		If RegExMatch(A_LoopField,"^AHKC_")
 		{
-			;获取类
-			AHKC := A_LoopField ;获取AHKC_XXXXX 类，此时的LoopField为外部循环
-			;从AHKC中获取CLASS类
+			; Get the class
+			AHKC := A_LoopField ; obtaining AHKC_XXXXX class, in this case for the outer loop LoopField
+			; Get CLASS class from the AHKC
 			CLASS := SubStr(AHKC,6,Strlen(AHKC))
-			;获取AHKC对应的热键列表
+			; Get a list of hot key corresponding to AHKC
 			KeyList := VIATC_IniRead(AHKC)
 			Loop,Parse,KeyList,`n
 			{
-				;获取INI中的热键部分
+				; Hot key acquisition portion of INI
 				Key := RegExReplace(A_LoopField,"=[\[<\(\{].*[\]\}\)>]$")
-				;获取热键对应的Action
+				; Get hot key corresponding Action
 				Action := SubStr(A_LoopField,Strlen(Key)+2,Strlen(A_LoopField))
-				;注册热键
+				; Registered hotkey
 				If RegExMatch(Key,"^\$.*")
 				{
 					Key := SubStr(Key,2)
@@ -89,7 +92,7 @@ ReadConfigToRegHK()
 	}
 }
 
-; 读取ini文件，如果读取的项是VIATC的选项，则在读取不到的时候创建
+; Read ini file, if the item is read VIATC option is created in less time reading
 VIATC_IniRead(section="",key="")
 {
 	IniRead,Value,%VIATC_INI%,%section%,%key%
@@ -105,19 +108,19 @@ VIATC_IniRead(section="",key="")
 	}
 	Return Value
 }
-; 添加INI
+; Add INI
 VIATC_IniWrite(section,key,value)
 {
 	IniWrite,%Value%,%VIATC_INI%,%section%,%key%
 	Return ErrorLevel
 }
-; 删除INI
+; Delete INI
 VIATC_IniDelete(section,key)
 {
 	IniDelete,%VIATC_INI%,%section%,%key%
 	Return ErrorLevel
 }
-; 返回选项及其默认值到数组中,非选项返回ERROR
+; Return options and their default values to the array, non-option returns ERROR
 Options(opt)
 {
 	If RegExMatch(opt,"^TrayIcon$")
@@ -137,39 +140,39 @@ Options(opt)
 	If RegExMatch(opt,"^TranspVar$")
 		Return 220
 	If RegExMatch(opt,"^SearchEng$")
-		Return "http://www.baidu.com/s?wd={%1}"
+		Return "http://www.google.com/?#q={%1}"
 	Return "ERROR"
 }
-; 获取VIATC的配置文件路径
+; Obtaining VIATC profile path
 GetPath_VIATC_INI()
 {
 	NeedRegWrite := False
-	Loop ;这里的Loop无用，只是用来当某个条件成立时，停止查找用的
+	Loop ; Loop here is useless, just used when a certain condition is satisfied, stop using the Find
 	{
-	;在当前目录查找
+	; Looks in the current directory
 		gPath := A_ScriptDir "\viatc.ini"
 		If FileExist(gPath)
 			Break
-	;在VIATC注册表里查找
+	; Look in the registry VIATC
 		RegRead,gPath,HKEY_CURRENT_USER,Software\ViATc,ViATcIni
 			If FileExist(gPath) 
 				Break
 			Else
 				NeedRegWrite := True
-	;在TC目录里查找
+	; Look for the TC directory
 		TCEXE := GetPath_TCEXE()
 		Splitpath,TCEXE,,TCDir
 		gPath := TCDir "\viatc.ini"
 		If FileExist(gPath)
 			break
-	;使用GUI查找
-		FileSelectFile,gPath,3,,查找TC配置文件(wincmd.ini),*.ini
+	; Use GUI look
+		FileSelectFile,gPath,3,,Find the TC configuration file(wincmd.ini),*.ini
 		If ErrorLevel
 		{
 			Msgbox 查找ViATc.ini文件失败
 			return
 		}
-	;保存到VIATC注册表里
+	; To save the registry VIATC
 		break
 	}
 	If FileExist(gPath)
@@ -179,19 +182,19 @@ GetPath_VIATC_INI()
 		return gPath
 	}
 }
-; 获取wincmd.ini配置文件路径
+; Obtaining wincmd.ini profile path
 GetPath_TCINI()
 {
 	NeedRegWrite := False
-	Loop ;这里的Loop无用，只是用来当某个条件成立时，停止查找用的
+	Loop ;Loop here is useless, just used when a certain condition is satisfied, stop using the Find
 	{
-	;查找VIATC的注册表值
+	; Find VIATC registry value
 		RegRead,gPath,HKEY_CURRENT_USER,Software\ViATc,IniFileName
 		If FileExist(gPath) 
 			Break
 		Else
 			NeedRegWrite := True
-	;在当前目录查找
+	; Looks in the current directory
 		gPath := A_ScriptDir "\wincmd.ini"
 		If FileExist(gPath)
 			Break
@@ -200,16 +203,16 @@ GetPath_TCINI()
 		gPath := TCDir "\wincmd.ini"
 		If FileExist(gPath)
 			break
-	;使用GUI查找
-		FileSelectFile,gPath,3,,查找TC配置文件(wincmd.ini),*.ini
+	; Use GUI look
+		FileSelectFile,gPath,3,,Find the TC configuration file(wincmd.ini),*.ini
 		If ErrorLevel
 		{
-			Msgbox 查找TC配置文件失败
+			Msgbox Failed to find TC configuration file: wincmd.ini
 			return
 		}
 		break
 	}
-	;保存到VIATC注册表值里
+	; Save value in the registry to VIATC
 	If FileExist(gPath)
 	{
 		If NeedRegWrite
@@ -217,36 +220,36 @@ GetPath_TCINI()
 		return gPath
 	}
 }
-; 获取Totalcmd.exe文件路径
+; Get Totalcmd.exe file path
 GetPath_TCEXE()
 {
-	NeedRegWrite := False ;是否需要写注册表
-	Loop ;这里的Loop无用，只是用来当某个条件成立时，停止查找用的
+	NeedRegWrite := False ; the need to write registry
+	Loop ; Loop here is useless, just used when a certain condition is satisfied, stop using the Find
 	{
-		;查找VIATC的注册表值
+		; Find VIATC registry value
 		RegRead,gPath,HKEY_CURRENT_USER,Software\ViATc,InstallDir
 		If FileExist(gPath) 
 			Break
 		Else
 			NeedRegWrite := True
-		;使用进程进行查找
+		; Use the process to find
 		Process,Exist,TOTALCMD.exe
 		PID := ErrorLevel
 		WinGet,gPath,ProcessPath,AHK_PID %PID%
 		If gPath
 			Break
-		;在当前目录查找
+		; Looks in the current directory
 		gPath := A_ScriptDir "\totalcmd.exe"
 		If FileExist(gPath)
 			Break
 		gPath := A_ScriptDir "\totalcmd64.exe"
 		If FileExist(gPath)
 			Break
-		;使用GUI查找
-		FileSelectFile,gPath,3,,查找TOTALCMD.exe或者TOTALCMD64.exe,*.exe
+		; Use GUI look
+		FileSelectFile,gPath,3,,Find TOTALCMD.exe or TOTALCMD64.exe,*.exe
 		If ErrorLevel
 		{
-			Msgbox 查找Totalcmd.exe失败
+			Msgbox Find Totalcmd.exe failed
 			return
 		}
 		Break
@@ -257,15 +260,15 @@ GetPath_TCEXE()
 			Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,InstallDir,%gPath%
 		Return gPath
 	}
-	;保存到VIATC注册表值里
+	; Save value in the registry to VIATC
 }
 EmptyMem()
 {
 	return
 }
-;===================================================
+; ===================================================
 #include vimcore.0.2.1.ahk
-;#include Actions\Debug.ahk
+; #include Actions\Debug.ahk
 #include Actions\General.ahk
 #include Actions\TCCOMMAND.ahk
 #include Actions\TConly.ahk

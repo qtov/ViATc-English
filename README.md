@@ -4,53 +4,53 @@ ViATc
 
 Vim Mode At Total Commander
 
-“也许应该改名为 Vim Mode At Total Class”
+"Maybe it should be renamed Vim Mode At Total Class"
 
-使用[Autohotkey_L](l.autohotkey.com)脚本编写，感谢伟大的Autohotkey
+Use [Autohotkey_L] (l.autohotkey.com) script, thanks to the great Autohotkey
 
 --------------------------------------------
 
-谁会喜欢？
+Who would like it?
 =========
 
-> 键盘控，喜欢用键盘操作，希望键盘可以完成大部分功能的人。
+> Keyboard control, like to use the keyboard to operate, I hope the keyboard can complete most of the features of the people.
 
-> 追求更高效的软件使用方法，沉迷于快捷键。
+> The pursuit of more efficient use of software, addicted to shortcuts.
 
-> 对Vim情有独钟，一直希望Vim的操作方式能够应用其它软件上的人。
+> Vim has a soft spot, has been hoping Vim's mode of operation can be applied to other people on the software.
 
-> 有大量的小工具、小脚本，希望能够用热键管理起来的人。
+> There are a lot of gadgets, small scripts, people who want to manage them with hotkeys.
 
-特性：
+characteristic:
 =====
 
-- 1、一个在其它程序上使用Vim热键体系的小工具。
+- 1, a small tool that uses the Vim hotkey system on other programs.
 
-- 2、支持所有Autohotkey能够识别[Class](http://ahkcn.sourceforge.jp/docs/LastFoundWindow.htm#class)(窗口类)的程序（不仅仅是TotalCommander）。
+- 2, support all Autohotkey can recognize [Class] (http://ahkcn.sourceforge.jp/docs/LastFoundWindow.htm#class) (window class) procedures (not only the TotalCommander).
 
-- 3、事实上，除了类似Vim上的热键体系之外，Emacs的热键体系也可以移植过来。现在支持\<ctrl\>a\<ctrl\>c\<alt\>d这种组合热键
+- 3, in fact, in addition to Vem similar to the hotkey system, Emacs hotkey system can also be transplanted over. Now support \ <ctrl \> a \ <ctrl \> c \ <alt \> d this combination hotkey
 
-- 4、支持插件，仅当使用的是AHK源文件的时候可用，使用编译程序无法享用。建议安装Autohotkey，简单学习之，对工作效率将会带来很大改善
+- 4, support plug-in, only when using the AHK source file is available, the use of compiler can not enjoy. It is recommended to install Autohotkey, a simple learning, the efficiency will bring a lot of improvement
 
-- 5、简单宏，ViATc中带有一些内置动作，结合ViATc的“运行”功能和“发送”功能，可以实现简单宏。随着插件的增加，动作（Action）越来越多，宏的功能也会慢慢增强的
+- 5, simple macro, ViATc with some built-in action, combined with ViATc "run" function and "send" function, you can achieve a simple macro. With the increase in the plug-in, action (Action) more and more, the macro function will gradually increase
 
-- 6、这只是Autohotkey强大的热键定义功能的一个小应用，不过我希望可以将ViATc成为一个平台，所以的脚本功能都可以通过热键进行执行。
+- 6, this is only Autohotkey powerful hotkey definition function of a small application, but I hope that ViATc can be a platform, so the script function can be carried out through the hotkey.
 
-- ViATc还有很长一段路要走。。。
+- ViATc still has a long way to go.
 
-使用：
+use:
 =====
-**1、安装方式**
+** 1, installation method **
 
-> 下载并安装[Autohotkey_L](http://l.autohotkey.net/) ，也可以看看AHK_L的[在线帮助](http://ahkcn.sourceforge.jp/docs/AutoHotkey.htm)
+> Download and install [Autohotkey_L] (http://l.autohotkey.net/), you can also see AHK_L [online help] (http://ahkcn.sourceforge.jp/docs/AutoHotkey.htm)
 
-> 下载[ViATc.7z]()，直接解压缩，并双击运行解压目录中的viatc.ahk
+> Download [ViATc.7z] (), extract directly and double-click the run in the boot directory of viatc.ahk
 
-> 右键任务栏中的绿色“H”图标，选择帮助，开始ViATc之旅……
+> Right-click the green "H" icon in the taskbar, choose help, start the ViATc tour ...
 
-谁来回答你的问题？
+Who will answer your question?
 ================
 
-加入官方QQ群: [271105729](http://wp.qq.com/wpa/qunwpa?idkey=7aa346ef3d4d7700bc2dd398afe8168251d57f9ea7602479f28edc07f59ceb90) （键盘控ViATc)
+Join the official QQ group: [271105729] (http://wp.qq.com/wpa/qunwpa?idkey=7aa346ef3d4d7700bc2dd398afe8168251d57f9ea7602479f28edc07f59ceb90) (keyboard control ViATc)
 
-发送邮件到 [linxinhong.sky@gmail.com](mailto:linxinhong.sky@gmial.com)
+Send an email to [linxinhong.sky@gmail.com] (mailto: linxinhong.sky@gmial.com)

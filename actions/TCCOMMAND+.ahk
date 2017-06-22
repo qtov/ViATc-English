@@ -1,22 +1,22 @@
-﻿<TCCOMMAND+>:
-	CustomActions("<OpenDriveThis>","打开驱动器列表:本侧")
-	CustomActions("<OpenDriveThat>","打开驱动器列表:另侧")
-	CustomActions("<MoveDirectoryHotlist>","移动到常用文件夹")
-	CustomActions("<CopyDirectoryHotlist>","复制到常用文件夹")
-	CustomActions("<GotoPreviousDirOther>","后退另一侧")
-	CustomActions("<GotoNextDirOther>","前进另一侧")
+<TCCOMMAND+>:
+	CustomActions("<OpenDriveThis>"," Open the drive list : Side of the side ")
+	CustomActions("<OpenDriveThat>"," Open the drive list : The other side ")
+	CustomActions("<MoveDirectoryHotlist>"," Move to a regular folder ")
+	CustomActions("<CopyDirectoryHotlist>"," Copy to a favorite folder ")
+	CustomActions("<GotoPreviousDirOther>"," Back to the other side ")
+	CustomActions("<GotoNextDirOther>"," Move on to the other side ")
 	;RegisterHotkey("H","o","<OpenDriveThis>")
 	;RegisterHotkey("H","O","<OpenDriveThat>")
 	RegisterHotkey("fd","<MoveDirectoryHotlist>","TTOTAL_CMD")
 	RegisterHotkey("fb","<CopyDirectoryHotlist>","TTOTAL_CMD")
-	;复制/移动到右侧 f取file的意思 filecopy
+	; copy / Move to the right  f take file the meaning of  filecopy
 	RegisterHotkey("fc","<cm_CopyOtherpanel>","TTOTAL_CMD")
 	RegisterHotkey("fx","<cm_MoveOnly>","TTOTAL_CMD")
-	;ff复制到剪切板 fz剪切到剪切板 fv粘贴
+	;ff copy    fz Cut    fv Paste 
 	RegisterHotkey("ff","<cm_CopyToClipboard>","TTOTAL_CMD")
 	RegisterHotkey("fz","<cm_CutToClipboard>","TTOTAL_CMD")
 	RegisterHotkey("fv","<cm_PasteFromClipboard>","TTOTAL_CMD")
-	;fb复制到收藏夹某个目录，fd移动到收藏夹的某个目录
+	;fb copy  To a list of favorites ，fd Move to a list of favorites 
 	RegisterHotkey("fb","<CopyDirectoryHotlist>","TTOTAL_CMD")
 	RegisterHotkey("fd","<MoveDirectoryHotlist>","TTOTAL_CMD")
 	RegisterHotkey("ft","<cm_SyncChangeDir>","TTOTAL_CMD")
@@ -25,7 +25,7 @@
 	RegisterHotkey("<shift>vh","<cm_SwitchIgnoreList>","TTOTAL_CMD")
 return
 
-;<OpenDriveThat>: >>打开驱动器列表:另侧{{{2
+;<OpenDriveThat>: >> Open the drive list : The other side {{{2
 <OpenDriveThis>:
 	ControlGetFocus,CurrentFocus,AHK_CLASS TTOTAL_CMD
 	if CurrentFocus not in TMyListBox2,TMyListBox1
@@ -36,7 +36,7 @@ return
 		SendPos(231)
 Return
 
-;<OpenDriveThis>: >>打开驱动器列表:本侧{{{2
+;<OpenDriveThis>: >> Open the drive list : Side of the side {{{2
 <OpenDriveThat>:
 	ControlGetFocus,CurrentFocus,AHK_CLASS TTOTAL_CMD
 	if CurrentFocus not in TMyListBox2,TMyListBox1
@@ -47,7 +47,7 @@ Return
 		SendPos(131)
 Return
 
-;<DirectoryHotlistother>: >>常用文件夹:另一侧{{{2
+;<DirectoryHotlistother>: >> Common folders : The other side {{{2
 <DirectoryHotlistother>:
 	ControlGetFocus,CurrentFocus,AHK_CLASS TTOTAL_CMD
 	if CurrentFocus not in TMyListBox2,TMyListBox1
@@ -80,7 +80,7 @@ goonhot:
 ControlFocus, %CurrentFocus% ,ahk_class TTOTAL_CMD
 Return
 
-;<CopyDirectoryHotlist>: >>复制到常用文件夹{{{2
+;<CopyDirectoryHotlist>: >> Copy to a favorite folder {{{2
 <CopyDirectoryHotlist>:
 	ControlGetFocus,CurrentFocus,AHK_CLASS TTOTAL_CMD
 	if CurrentFocus not in TMyListBox2,TMyListBox1
@@ -114,7 +114,7 @@ gooncopy:
 	SendPos(3101)
 return
 
-;<MoveDirectoryHotlist>: >>移动到常用文件夹{{{2
+;<MoveDirectoryHotlist>: >> Move to a regular folder {{{2
 <MoveDirectoryHotlist>:
 	If SendPos(0)
 		ControlGetFocus,CurrentFocus,AHK_CLASS TTOTAL_CMD
@@ -149,14 +149,14 @@ GoonMove:
 	SendPos(1005)
 return
 
-;<GotoPreviousDirOther>: >>后退另一侧{{{2
+;<GotoPreviousDirOther>: >> Back to the other side {{{2
 <GotoPreviousDirOther>:
 	Send {Tab}
 	SendPos(570)
 	Send {Tab}
 Return
 
-;<GotoNextDirOther>: >>前进另一侧{{{2
+;<GotoNextDirOther>: >> Move on to the other side {{{2
 <GotoNextDirOther>:
 	Send {Tab}
 	SendPos(571)

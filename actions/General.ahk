@@ -1,24 +1,24 @@
-﻿; 所有程序通用
+﻿; All programs are generic
 <General>:
-	CustomActions("<1>","计数前缀1")
-	CustomActions("<2>","计数前缀2")
-	CustomActions("<3>","计数前缀3")
-	CustomActions("<4>","计数前缀4")
-	CustomActions("<5>","计数前缀5")
-	CustomActions("<6>","计数前缀6")
-	CustomActions("<7>","计数前缀7")
-	CustomActions("<8>","计数前缀8")
-	CustomActions("<9>","计数前缀9")
-	CustomActions("<0>","计数前缀0")
-	CustomActions("<left>","向左移动[Count]次")
-	CustomActions("<Right>","向右移动[Count]次")
-	CustomActions("<Down>","向下移动[Count]次")
-	CustomActions("<Up>","向上移动[Count]次")
-	CustomActions("<AlwayOnTop>","设置窗口顶置")
-	CustomActions("<TransParent>","设置窗口透明")
-	CustomActions("<Repeat>","重复上一次动作")
-	CustomActions("<SaveClipBoard>","保存剪切板的数据")
-	CustomActions("<ReturnClipBoard>","返回保存的数据到剪切板")
+    CustomActions ("<1>","Count prefix 1")
+    CustomActions ("<2>","Count prefix 2")
+    CustomActions ("<3>","Count prefix 3")
+    CustomActions ("<4>","Count prefix 4")
+    CustomActions ("<5>","Count prefix 5")
+    CustomActions ("<6>","Count prefix 6")
+    CustomActions ("<7>","Count prefix 7")
+    CustomActions ("<8>","Count prefix 8")
+    CustomActions ("<9>","Count prefix 9")
+    CustomActions ("<0>","Count prefix 0")
+    CustomActions ("<left>","Move [Count] times to the left")
+    CustomActions ("<Right>","Move [Count] times to the right")
+    CustomActions ("<Down>","Move down [Count] times")
+    CustomActions ("<Up>","Move up [Count] times")
+    CustomActions ("<AlwayOnTop>","Set Window Overrides")
+    CustomActions ("<TransParent>","Set Window Transparency")
+    CustomActions ("<Repeat>","repeat the last action")
+    CustomActions ("<SaveClipBoard>","Save Clipboard Data")
+    CustomActions ("<ReturnClipBoard>","Return saved data to clipboard")
 return
 <1>:
 return
@@ -86,7 +86,7 @@ TransParent()
 {
 	win :=  WinExist(A)
 	WinGet,TranspVar,Transparent,ahk_id %win%
-	If Not TranspVar ;第一次一般会获取到空值
+	If Not TranspVar ;the first general will get a null value
 	{
 		WinSet,Transparent,220,ahk_id %win%
 		return

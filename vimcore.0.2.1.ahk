@@ -1,4 +1,4 @@
-﻿; VimCore 0.0.2
+; VimCore 0.0.2
 ; 2013-04-10
 ; By Array ( linxinhong.sky@gmail.com )
 #UseHook on
@@ -24,7 +24,7 @@ RegisterHotkey(Key,Action,Class="")
 {
 	If Not CLASS AND RegExMatch(Key,">[^<]{2}")
 	{
-		Msgbox % "不推荐在全局热键“" Key "”中含单键,请重新设置"
+		Msgbox % " Not recommended in global hotkeys “" Key "” With a single key , Please re-set "
 		Return
 	}
 	If Not IsVimLabel(Action)
@@ -32,7 +32,7 @@ RegisterHotkey(Key,Action,Class="")
 		Msgbox % "1Key " Key " map to Action " Action " Error !"
 		Return
 	}
-	switch := False ;用来判定保存热键是否成功
+	switch := False ; Used to determine whether the saved hotkey was successful 
 	for,i,k in ResolveHotkey(Key)
 	{
 		If SetHotkey(K,"<HotkeyLabel>",Class)
@@ -40,7 +40,7 @@ RegisterHotkey(Key,Action,Class="")
 		Else
 			Msgbox % "2Key " Key " map to Action " Action " Error !"
 	}
-	If switch ;如果热键保存成功后，将热键体保存到内存中
+	If switch ; If the hotkey is saved successfully ， Save the hotkey body into memory 
 	{
 		If RegExMatch(HK_Match(Key,Class),"[^\n]*")
 			HK_Delete(Key,Class)
@@ -48,22 +48,22 @@ RegisterHotkey(Key,Action,Class="")
 	}
 	If RegExMatch(Action,"^\(.*\)$")
 	{
-		Info := "运行 " . Action
+		Info := " run  " . Action
 		CustomActions(Action,Info)
 	}
 	If RegExMatch(Action,"^\{.*\}$")
 	{
-		Info := "发送 " . Action
+		Info := " send  " . Action
 		CustomActions(Action,Info)
 	}
 	If RegExMatch(Action,"^\[.*\]$")
 	{
-		Info := "宏 " . Action
+		Info := " Macro  " . Action
 		CustomActions(Action,Info)
 	}
 }
 ; SetHotkey(key,Action,Class="") {{{2
-; 设置热键，返回设置结果
+;  Set hotkey ， Returns the result of the setup 
 SetHotkey(key,Action,Class="")
 {
 	If IsHotkey(Key,Class)
@@ -86,7 +86,7 @@ SetHotkey(key,Action,Class="")
 			Msgbox % "Key " Key " map to " Action " Error !"
 			Return False
 		}
-		; 如果Action为HotkeyLabel,则为RegisterHotkey()调用的。
+		;  in case Action for HotkeyLabel, Then RegisterHotkey() Called 。
 		If RegExMatch(Action,"<HotkeyLabel>")
 			Vim_HotkeyExist .= A_Tab . Strlen(Class) . "|" . Class . Strlen(Key) . "|" Key . A_Tab
 		Return True
@@ -111,9 +111,9 @@ HotkeyLabel()
 	If Not Vim_HotkeyTemp[Class]
 		Null := True
 	Vim_HotkeyTemp[Class] .= ThisHotkey
-	; 判断当前模式，是VIM，还是文字输入模式
-	; 由自定义的ThisClass_CheckMode()函数决定
-	; 如 TConly.ahk 里的TTOTAL_CMD_CheckMode()
+	;  Determine whether the current mode is VIM or the text input mode
+	;  By custom ThisClass_CheckMode() Function decides 
+	;  Such as  TConly.ahk  inner TTOTAL_CMD_CheckMode()
 	Action := HK_Match(Vim_HotkeyTemp[Class],Class)
 	CheckMode := Class "_CheckMode"
 	If ( IsFunc(CheckMode) AND (%CheckMode%()) ) OR (Not Action And Null)
@@ -209,7 +209,7 @@ ExecSub(Action,Count=0,Class="")
 		Run,%File%,,UseErrorLevel,ExecID
 		If ErrorLevel = ERROR
 		{
-			Msgbox 运行%File%失败
+			Msgbox  run %File% failure 
 			Return
 		}
 		WinWait,AHK_PID %ExecID%,,3
@@ -236,7 +236,7 @@ Repeat()
 	ExecSub(Action,Vim_HotkeyCount,Class)
 }
 ; Micro(action,class) {{{2
-; 简单宏定义
+;  Simple macro definition 
 Micro(action,class)
 {
 	If FileExist(VIATC_INI)
@@ -259,7 +259,7 @@ Micro(action,class)
 	}
 }
 ; LoadPlugin() {{{2
-; 加载脚本，并修改VIATC
+;  Load the script ， And modify VIATC
 LoadPlugin()
 {
 	NeedReload := False
@@ -280,13 +280,13 @@ LoadPlugin()
 			}
 		}	
 		If NeedReload
-			msgbox,4,Plugin,新动作添加完毕，请重启！
+			msgbox,4,Plugin, New action added ， Please reboot ！
 		IfMsgbox yes
 			Reload
 	}
 }
 ; CustomActions(Action,Info="") {{{2
-; 添加自定义Actions的帮助信息
+;  Add custom Actions Help information 
 CustomActions(Action,Info="")
 {
 	aMatch := "\s" . ToMatch(Action) . "\s"
@@ -299,7 +299,7 @@ CustomActions(Action,Info="")
 	}
 }
 ; HotkeyControl(Control) {{{2
-; 启用或者禁用热键 
+;  Enable or disable hotkeys  
 HotkeyControl(Control="")
 {
 	IfWinActive,AHK_GROUP Vim_Group_Class
@@ -327,15 +327,15 @@ HotkeyControl(Control="")
 */
 }
 ; ToMatch(Key) {{{2
-; 正则表达式转义
+;  Regular expression escapes 
 ToMatch(Key)
 {
 	Key := RegExReplace(Key,"\+|\?|\.|\*|\{|\}|\(|\)|\||\^|\$|\[|\]|\\","\$0")
 	Return RegExReplace(Key,"\s","\s")
 }
 ; IsVimHotkey(Key,Class) {{{2
-; 返回是否为热键的描述
-; 已经存在，返回True，热键不存在，返回False
+;  Returns whether or not a description is a hotkey 
+;  already exists ， return True， Hotkey does not exist ， return False
 IsHotkey(Key,Class)
 {
 	t := Strlen(Class) "|" . Class . Strlen(key) . "|" . Key
@@ -346,7 +346,7 @@ IsHotkey(Key,Class)
 		return False
 }
 ; IsVimLabel(Label) {{{2
-; 返回是否为可用的Label
+;  Returns whether it is available Label
 IsVimLabel(Label)
 {
 	If RegExMatch(Label,"^<.*>$")
@@ -354,7 +354,7 @@ IsVimLabel(Label)
 	return RegExMatch(Label,"^[\(\{\[].*[\}\)\]]$")
 }
 ; GetThisHotkey() {{{2
-; 获得当前热键，区分大小写
+;  Get the current hotkey ， Case sensitive 
 GetThisHotkey()
 {
 	If RegExMatch(A_ThisHotkey,"^[a-z]$")
@@ -365,6 +365,7 @@ GetThisHotkey()
 			If RegExMatch(A_ThisHotkey,"i)^(l|r)?shift\s&\s[a-z]$") 
 				ThisHotkey := Substr(A_ThisHotkey,0)
 			ThisHotkey := "shift & " . A_ThisHotkey
+            ;;send capslock  ;added by magicstep
 		}
 		Else
 			ThisHotkey := A_ThisHotkey
@@ -388,7 +389,7 @@ GetThisHotkey()
 	Return ThisHotKey
 }
 ; TransSendKey(hotkey) {{{2
-; 在SendKey时，将hotkey转换为Send能支持的格式
+;  in SendKey Time ， will hotkey Convert to Send Can support the format 
 TransSendKey(hotkey)
 {
 	Loop
@@ -503,19 +504,19 @@ ResolveHotkey(KeyList)
 	Return NewKeyList
 }
 ; HK_Match(key,class) {{{2
-; 按类和热键匹配
-; 如果完全匹配，则返回action
-; 如果模糊匹配，返回匹配的所有元素
-; 如果无匹配，返回False
+;  Match by class and hotkey 
+;  If exactly match ， It is returned action
+;  If fuzzy match ， Returns all the matching elements 
+;  If there is no match ， return False
 HK_Match(Key="",Class="",ALL=True)
 {
-	; Key有传参时，为查询Class下，Key是否有对应Action
-	; Key无传参时，为查询Class下所有的热键体
-	; ALL默认为真时，进行模糊匹配
-	; ALL为假时，进行完全匹配
+	; Key When there is a pass ， For inquiries Class under ，Key Whether there is a correspondence Action
+	; Key When there is no pass ， For inquiries Class Under all the hot key body 
+	; ALL The default is true ， Perform a fuzzy match 
+	; ALL For leave ， Make an exact match 
 	If Strlen(Key) > 0
 	{
-		; 防止出现大写字符
+		;  Prevents uppercase characters from appearing 
 		Loop,Parse,Key
 		{
 			If Asc(A_LoopField) >= 65 And Asc(A_LoopField) <= 90
@@ -524,7 +525,7 @@ HK_Match(Key="",Class="",ALL=True)
 				m .= A_LoopField
 		}
 		Key := m
-		; 模糊匹配,返回所有可能
+		;  Fuzzy match , Return all possible 
 		s := Vim_HotkeyList
 		m := 
 		idx := 0
@@ -545,7 +546,7 @@ HK_Match(Key="",Class="",ALL=True)
 			Return m
 		Else
 		{	
-			; 完整匹配
+			;  Complete match 
 			Match := "i)\t" . Strlen(Class) . "\|" . ToMatch(Class) . Strlen(key) . "\|" . ToMatch(Key) . "[^\s]*\d+\|[<\(\{\[][^\t]*[>\)\}\]]\t" 
 			Pos := RegExMatch(Vim_HotkeyList,Match)
 			If Pos
@@ -577,14 +578,14 @@ HK_Match(Key="",Class="",ALL=True)
 	}
 }
 ; HK_write(Key,Action,Class="") {{{2
-; 添加新的热键体
+;  Add a new hotkey body 
 HK_write(Key,Action,Class="")
 {
-	; 数据结构 : " 10|TTOTAL_CMD7|<lwin>e6|<test> "
-	; 左右各带一个空格
-	; 第一个数字加|, 10| 描述CLASS有10位长，即TTOTAL_CMD
-	; 第二个数字加|, 7| 描述Key有7位长，即<lwin>e
-	; 第三个数字加|, 6| 描述Action有6位长，即<test>
+	;  data structure  : " 10|TTOTAL_CMD7|<lwin>e6|<test> "
+	;  Left and right with a space 
+	;  The first number is added |, 10|  description CLASS Have 10 Bit long ， which is TTOTAL_CMD
+	;  The second number is added |, 7|  description Key Have 7 Bit long ， which is <lwin>e
+	;  The third number is added |, 6|  description Action Have 6 Bit long ， which is <test>
 	If RegExMatch(Key,"\s|\t")
 		return
 	Else
@@ -603,8 +604,8 @@ HK_write(Key,Action,Class="")
 	Vim_HotkeyList .= A_Tab . Strlen(Class) . "|" Class . Strlen(Key) . "|" . Key . Strlen(Action) . "|" . Action . A_Tab
 }
 ; HK_Read(string) {{{2
-; 解析热键体数据为对应的类、热键、动作等信息
-; 返回一个Object,举例: obj := HK_Read("10|TTOTAL_CMD7|<lwin>e6|<test>")
+;  Resolve hotkey data for the corresponding class 、 Hotkey 、 Action and other information 
+;  Return one Object, For example : obj := HK_Read("10|TTOTAL_CMD7|<lwin>e6|<test>")
 ; msgbox % obj.class => TTOTAL_CMD
 ; msgbox % obj.key => <lwin>e
 ; msgbox % obj.action => <test>
@@ -637,7 +638,7 @@ HK_Read(string)
 	return T
 }
 ; HK_Delete(Key,Class) {{{2
-; 删除key和class对应的热键
+;  delete key with class The corresponding hotkey 
 HK_Delete(Key,Class)
 {
 	Action := HK_Match(Key,Class)

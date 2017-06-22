@@ -1,64 +1,64 @@
-﻿; 可调用API在本文件的最后
-; 这里必须带有一个跟插件文件名一致的标签，Vimcore加载插件时，会运行之
+﻿; Can call API at the end of this file
+; Here must be with a plug-in file name consistent with the label, Vimcore load plug-in, it will run
 <Temp>:
-	; 一般用来定义全局变量
-	Global Test
-	; 添加插件对应的描述，用于帮助里的动作说明
-	CustomActions("<TempAction1>","例子1")
-	; 也可以添加其它预运行的功能，例如TConly里，就是预加载文件模板功能的菜单
-	; 可以参考TConly.ahk
-return
+; Generally used to define global variables
+Global Test
+; Add a description of the corresponding plug-in for help in the action description
+CustomActions ("<TempAction1>", "Example 1")
+; You can also add other pre-run functions, such as TConly Lane, is the pre-loaded file template function menu
+; Can refer to TConly.ahk
+Return
 
-; %Class%_CheckMode()
-; Vimcore运行模式区分，即什么时候是普通模式，什么时候是编辑模式
-; 可以通过自定义CheckMode()函数来实现
-; Vimcore在解析每个热键时，都会用WinGetClass来获取当前窗口的类Class
-; 然后调用%Class%_CheckMode(),如在TC中会调用TTOTAL_CMD_CheckMode()
-; 如果函数返回真，则相当于编辑模式，如果函数返回False，则普通模式
+; %Class% _CheckMode ()
+; Vimcore operating mode distinction, that is, when is the normal mode, when is the editing mode
+; Can be achieved by customizing the CheckMode () function
+; Vimcore in the analysis of each hotkey, will use WinGetClass to get the current window class Class
+; Then call% Class% _CheckMode (), as in TC will call TTOTAL_CMD_CheckMode ()
+; If the function returns true, it is equivalent to edit mode. If the function returns False, the normal mode
 
-; 以下以控制notepad.exe为例子
+    ; The following to control notepad.exe as an example
 Notepad_CheckMode()
 {
-	ControlGetFocus,ctrl,AHK_CLASS NotePad
-	If RegExMatch(ctrl,"Edit")
-		Return True
-	return False
+    ControlGetFocus, ctrl, AHK_CLASS NotePad
+        If RegExMatch (ctrl, "Edit")
+           Return True
+        Return False
 }
 
-; 每个插件里可以带至少一个动作，动作以标签形式进行描述
-; 下面的<TempAction1>标签就是Temp.ahk里的一个动作
+; Each plug-in can take at least one action, the action in the form of labels to describe
+; The following <TempAction1> tag is an action in Temp.ahk
 <TempAction1>:
-	TempAction1()
-return
-; 建议通过标签调用函数，这样可以减少不同人员开发的插件之间全局变量的影响
+TempAction1()
+    Return
+    ; It is recommended to call the function through the tag, which can reduce the impact of global variables between plugins developed by different people
 TempAction1()
 {
-	Msgbox % "Hello World"
+    Msgbox % "Hello World"
 }
-; VimCore的API
-; =======================================================
+;VimCore API
+; ================================================= ======
 
-; RegisterHotkey(Scope,Key,Action,ViClass)
-; 注册热键功能，定义的热键将会有模式的控制
-; -------------------------------------------------------
+; RegisterHotkey (Scope, Key, Action, ViClass)
+; Registered hotkey function, the definition of the hotkey will have a mode of control
+; ------------------------------------------------- ------
 
-; Scope  作用域 用S代表全局可用，用H代表只在ViClass类的窗口中可用
-; Key    热键，可以是单键，组合键,区分大小写
-;        单键  a    b    c    1    ,  <ctrl>a <alt>b 等...
-;        组合键  ga  oK    JK  J<ctrl>j<lwin>k 等...
-; Action 动作，热键对应的动作，一般是这样形式的："<TempAcion1>"
-; ViClass  窗口类，可以通过AHK的Windows Spy查看对应的窗口类，如果Scope指定为H的时候，注册的热键将只在ViClass变量对应的窗口类中生效
+; Scope is represented by S globally, and H is represented only in the window of the ViClass class
+; Key hotkey, can be a single key, key combination, case-sensitive
+; Single key a b c 1, <ctrl> a <alt> b etc ...
+; Key combination ga oK JK J <ctrl> j <lwin> k etc ...
+; Action, hotkey corresponding to the action, generally in this form: "<TempAcion1>"
+; ViClass window class, you can view the corresponding window class through AHK Windows Spy, if the scope specified when the H, the registered hotkey will only ViClass variable in the corresponding window class
 
-; =======================================================
+; ================================================= ======
 
-; SetHotKey(sKey,sAction,Class)
-; 设置热键，与RegisterHotkey()区分开来,通过此函数定义的热键不受模式影响
-; 一般用于设置Esc，如SetHotkey("Escape","<Esc_TC>","TTOTAL_CMD")
+; SetHotKey (sKey, sAction, Class)
+; Set the hotkey, and RegisterHotkey () to distinguish, through the function of the hotkey is not affected by the model
+; Generally used to set Esc, such as SetHotkey ("Escape", "<Esc_TC>", "TTOTAL_CMD")
 
-; -------------------------------------------------------
-; sKey   热键,只能是单键，而且不支持<ctrl><alt><shift><win>
-;        只能是AHK支持的热键变体
-; sAction 动作，热键对应动作。
-; Class  定义SetHotkey()函数的热键对应生效的窗口类
+; ------------------------------------------------- ------
+; SKey hotkey, can only be a single key, and does not support <ctrl> <alt> <shift> <win>
+; Can only be supported by AHK hotkey variants
+; SAction action, hotkey corresponding action.
+; Class defines the window class in which the hotkey of the SetHotkey () function takes effect
 
-; =======================================================
+; ================================================= ======

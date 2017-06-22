@@ -1,7 +1,7 @@
-﻿<TConly>:
+<TConly>:
 ;=======================================================
 	Global TCPath
-	TCPath := "e:\Program Files\totalcmd\TOTALCMD.EXE"
+	TCPath := "c:\Program Files (x86)\totalcmd\TOTALCMD64.EXE"
 	If RegExMatch(TcPath,"i)totalcmd64\.exe$")
 	{
 		Global TCListBox := "LCLListBox"
@@ -20,26 +20,26 @@
 	}
 	Global Mark := []
 	Global NewFiles := []
-	CustomActions("<Normal_Mode_TC>","返回正常模式")
-	CustomActions("<Insert_Mode_TC>","进入插入模式")
-	CustomActions("<ToggleTC>","打开/激活TC")
-	CustomActions("<azHistory>","a-z历史导航")
-	CustomActions("<DownSelect>","向下选择")
-	CustomActions("<UpSelect>","向上选择")
-	CustomActions("<Mark>","标记功能")
-	CustomActions("<ForceDelete>","强制删除")
-	CustomActions("<ListMark>","显示标记")
-	CustomActions("<WinMaxLeft>","最大化左侧窗口")
-	CustomActions("<WinMaxRight>","最大化右侧窗口")
-	CustomActions("<GoLastTab>","切换到最后一个标签")
-	CustomActions("<CopyNameOnly>","只复制文件名，不含扩展名")
-	CustomActions("<GotoLine>","移动到[count]行，默认第一行")
-	CustomActions("<LastLine>","移动到[count]行，默认最后一行")
-	CustomActions("<Half>","移动到窗口中间行")
-	CustomActions("<CreateNewFile>","文件模板")
-	CustomActions("<GoToParentEx>","返回到上层文件夹，可返回到我的电脑")
+    CustomActions ("<Normal_Mode_TC>", "return to normal mode")
+    CustomActions ("<Insert_Mode_TC>", "Enter Insert Mode")
+    CustomActions ("<ToggleTC>", "Open / Activate TC")
+    CustomActions ("<azHistory>", "a-z history navigation")
+    CustomActions ("<DownSelect>", "Down Select")
+    CustomActions ("<UpSelect>", "Up Select")
+    CustomActions ("<Mark>", "Mark")
+    CustomActions ("<ForceDelete>", "Force Delete, like shift+delete ignores recycle bin")
+    CustomActions ("<ListMark>", "Show Marks")
+    CustomActions ("<WinMaxLeft>", "Maximize left window")
+    CustomActions ("<WinMaxRight>", "Maximize right window")
+    CustomActions ("<GoLastTab>", "Switch to the last tab")
+    CustomActions ("<CopyNameOnly>", "Copy only file names, without extensions")
+    CustomActions ("<GotoLine>", "Move to the [count] line, default is first line")
+    CustomActions ("<LastLine>", "Move to [count] line, default is last line")
+    CustomActions ("<Half>", "Move to window middle line")
+    CustomActions ("<CreateNewFile>", "CreateNewFile, File Templates")
+    CustomActions ("<GoToParentEx>", "Return to the upper folder, can go up to My Computer")
 	RegisterHotkey("J","<Down>","TQUICKSEARCH")
-	;;默认按键(VIM)
+	;;Default button(VIM)
 	RegisterHotkey("K","<Up>","TQUICKSEARCH")
 	RegisterHotkey("0","<0>","TTOTAL_CMD")
 	RegisterHotkey("1","<1>","TTOTAL_CMD")
@@ -154,9 +154,10 @@
 	RegisterHotkey("zv","<cm_VerticalPanels>","TTOTAL_CMD")
 	RegisterHotkey("zs","<TransParent>","TTOTAL_CMD")
 	RegisterHotkey(".","<Repeat>","TTOTAL_CMD")
-	RegisterHotkey("<lwin>e","<ToggleTC>")
+	RegisterHotkey("<lwin>f","<ToggleTC>")  ;was <lwin>e 
 	SetHotkey("esc","<Normal_Mode_TC>","TTOTAL_CMD")
-	;; 默认按键完
+	SetHotkey("CapsLock","<Normal_Mode_TC>","TTOTAL_CMD") ; PS added, doesn't work
+	;; The default button is finished
 	ReadNewFile()
 return
 ; TTOTAL_CMD_CheckMode()
@@ -287,16 +288,29 @@ WinMaxLR(lr)
 {
 	If lr
 	{
-		ControlGetPos,x,y,w,h,%TCPanel2%,ahk_class TTOTAL_CMD
-		ControlGetPos,tm1x,tm1y,tm1W,tm1H,%TCPanel1%,ahk_class TTOTAL_CMD
-		If (tm1w < tm1h) ; 判断纵向还是横向 Ture为竖 false为横
-		{
-			ControlMove,%TCPanel1%,x+w,,,,ahk_class TTOTAL_CMD
-		}
-		else
-			ControlMove,%TCPanel1%,0,y+h,,,ahk_class TTOTAL_CMD
-		ControlClick, %TCPanel1%,ahk_class TTOTAL_CMD 
-		WinActivate ahk_class TTOTAL_CMD
+        ControlGetPos,x,y,w,h,%TCPanel2%,ahk_class TTOTAL_CMD
+        ControlGetPos,tm1x,tm1y,tm1W,tm1H,%TCPanel1%,ahk_class TTOTAL_CMD
+        If (tm1w < tm1h) ; Is it vertical or horizontal  True for vertical  False for horizontal
+        {
+            ; vertical  (so Left and Right)
+            ;MsgBox P1 tm1x,tm1y=%tm1x%,%tm1y%    tm1W,tm1H=%tm1W%,%tm1H%    `nP2 x,y=%x%,%y%   w,h=%w%,%h%
+            ; it seems that numbers for Panel2 are incorrect
+            ; original line below, perhaps it should be tm1x+w but is doesn't work either
+            ;ControlMove,%TCPanel1%,x+w,,,,ahk_class TTOTAL_CMD   
+            ; 2000 is just a big numer to make Panel1 wide, pushing panel2 out of screen
+            ControlMove,%TCPanel1%,2000,,,,ahk_class TTOTAL_CMD   
+            ; another way to fix it would be set both panels to 50% and then double the first panel
+            ;SendPos(909) ;<cm_50Percent>
+        }
+        else    ;horizontal (so Upper and Lower)
+            ; original line below but doesn't work as numbers for Panel2 are incorrect
+            ;ControlMove,%TCPanel1%,0,y+h,,,ahk_class TTOTAL_CMD   
+            ; 2000 is just a big numer to make Panel1 tall, pushing panel2 out of screen 
+            ControlMove,%TCPanel1%,0,2000,,,ahk_class TTOTAL_CMD
+            ; another way to fix it would be set both panels to 50% and then double the first panel
+
+        ControlClick, %TCPanel1%,ahk_class TTOTAL_CMD
+        WinActivate ahk_class TTOTAL_CMD
 	}
 	Else
 	{
@@ -323,12 +337,12 @@ CopyNameOnly()
 		clipboard := RegExReplace(RegExReplace(clipboard,"\\$"),"\.[^\.]*$")
 }
 ; <ForceDelete>  {{{1
-; 强制删除
+;  Forced to delete 
 <ForceDelete>:
 	Send +{Delete}
 return
 ; <GotoLine> {{{1
-; 转到[count]行,缺省第一行
+;  Go to [count] Row , Default first  Row 
 <GotoLine>:
 	If Vim_HotKeyCount
 		GotoLine(Vim_HotKeyCount)
@@ -336,7 +350,7 @@ return
 		GotoLine(1)
 return
 ; <LastLine> {{{1
-; 转到[count]行, 最后一行
+;  Go to [count] Row ,  last one  Row 
 <LastLine>:
 	If Vim_HotKeyCount
 		GotoLine(Vim_HotKeyCount)
@@ -366,7 +380,7 @@ GotoLine(Index)
 	}
 }
 ; <Half>  {{{1
-; 移动到窗口中间
+;  Move to the middle of the window 
 <Half>:
 		Half()
 Return
@@ -385,7 +399,7 @@ Half()
 	PostMessage, 0x19E, %HalfLine%, 1, , AHK_id %cid%
 }
 ; <Mark> {{{1
-; 标记功能
+;  Marking function 
 <Mark>:
 	Mark()
 Return
@@ -455,17 +469,17 @@ Return
 AddMark()
 {
 	ThisMenuItem := SubStr(A_ThisMenuItem,5,StrLen(A_ThisMenuItem))
-	If RegExMatch(ThisMenuItem,"i)\\\\桌面$")
+	If RegExMatch(ThisMenuItem,"i)\\\\desktop $")
 	{
 		Postmessage 1075, 2121, 0, , ahk_class TTOTAL_CMD
 		Return
 	}
-	If RegExMatch(ThisMenuItem,"i)\\\\计算机$")
+	If RegExMatch(ThisMenuItem,"i)\\\\computer $")
 	{
 		Postmessage 1075, 2122, 0, , ahk_class TTOTAL_CMD
 		Return
 	}
-	If RegExMatch(ThisMenuItem,"i)\\\\所有控制面板项$")
+	If RegExMatch(ThisMenuItem,"i)\\\\control panel$")
 	{
 		Postmessage 1075, 2123, 0, , ahk_class TTOTAL_CMD
 		Return
@@ -475,17 +489,17 @@ AddMark()
 		Postmessage 1075, 2124, 0, , ahk_class TTOTAL_CMD
 		Return
 	}
-	If RegExMatch(ThisMenuItem,"i)\\\\网络$")
+	If RegExMatch(ThisMenuItem,"i)\\\\Network$")
 	{
 		Postmessage 1075, 2125, 0, , ahk_class TTOTAL_CMD
 		Return
 	}
-	If RegExMatch(ThisMenuItem,"i)\\\\打印机$")
+	If RegExMatch(ThisMenuItem,"i)\\\\printer$")
 	{
 		Postmessage 1075, 2126, 0, , ahk_class TTOTAL_CMD
 		Return
 	}
-	If RegExMatch(ThisMenuItem,"i)\\\\回收站$")
+	If RegExMatch(ThisMenuItem,"i)\\\\Recycle bin$")
 	{
 		Postmessage 1075, 2127, 0, , ahk_class TTOTAL_CMD
 		Return
@@ -495,7 +509,7 @@ AddMark()
 	Return
 }
 ; <ListMark> {{{1
-; 显示标记
+;  Display mark 
 <ListMark>:
 	ListMark()
 Return
@@ -508,7 +522,7 @@ ListMark()
 	Menu,MarkMenu,Show,%xn%,%yn%
 }
 ; <CreateNewFile> {{{1
-; 新建文件
+;  create a new file 
 <CreateNewFile>:
 	CreateNewFile()
 return
@@ -518,18 +532,18 @@ CreateNewFile()
 	ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
 	Menu,FileTemp,Add
 	Menu,FileTemp,DeleteAll
-	Menu,FileTemp,Add ,0 新建文件,:CreateNewFile
-	Menu,FileTemp,Icon,0 新建文件,%A_WinDir%\system32\Shell32.dll,-152
-	Menu,FileTemp,Add ,1 文件夹,<cm_Mkdir>
-	Menu,FileTemp,Icon,1 文件夹,%A_WinDir%\system32\Shell32.dll,4
-	Menu,FileTemp,Add ,2 快捷方式,<cm_CreateShortcut>
-	Menu,FileTemp,Icon,2 快捷方式,%A_WinDir%\system32\Shell32.dll,264
-	Menu,FileTemp,Add ,3 添加到新模板,<AddToTempFiles>
-	Menu,FileTemp,Icon,3 添加到新模板,%A_WinDir%\system32\Shell32.dll,-155
+	Menu,FileTemp,Add ,0  create a new file ,:CreateNewFile
+	Menu,FileTemp,Icon,0  create a new file ,%A_WinDir%\system32\Shell32.dll,-152
+	Menu,FileTemp,Add ,1  folder ,<cm_Mkdir>
+	Menu,FileTemp,Icon,1  folder ,%A_WinDir%\system32\Shell32.dll,4
+	Menu,FileTemp,Add ,2  A shortcut ,<cm_CreateShortcut>
+	Menu,FileTemp,Icon,2  A shortcut ,%A_WinDir%\system32\Shell32.dll,264
+	Menu,FileTemp,Add ,3  Add to new template ,<AddToTempFiles>
+	Menu,FileTemp,Icon,3  Add to new template ,%A_WinDir%\system32\Shell32.dll,-155
 	FileTempMenuCheck()
 	Menu,FileTemp,Show,%xn%,%yn%
 }
-; 检查文件模板功能
+;  Check the file template function 
 FileTempMenuCheck()
 {
 	Global TCPath
@@ -551,7 +565,7 @@ FileTempMenuCheck()
 			Menu,FileTemp,Icon,%ft%,%IconFilePath%,%IconFileIndex%
 	}
 }
-; 添加到文件模板中
+;  Added to the file template 
 <AddToTempFiles>:
 	AddToTempFiles()
 return
@@ -572,13 +586,13 @@ AddToTempFiles()
 		Return
 	Gui, Destroy
 	Gui, Add, Text, Hidden, %AddPath%
-	Gui, Add, Text, x12 y20 w50 h20 +Center, 模板源
+	Gui, Add, Text, x12 y20 w50 h20 +Center,  Template source 
 	Gui, Add, Edit, x72 y20 w300 h20 Disabled, %FileName%
-	Gui, Add, Text, x12 y50 w50 h20 +Center, 模板名
+	Gui, Add, Text, x12 y50 w50 h20 +Center,  Template name 
 	Gui, Add, Edit, x72 y50 w300 h20 , %FileName%
-	Gui, Add, Button, x162 y80 w90 h30 gAddTempOK default, 确认(&S)
-	Gui, Add, Button, x282 y80 w90 h30 gNewFileClose , 取消(&C)
-	Gui, Show, w400 h120, 添加模板
+	Gui, Add, Button, x162 y80 w90 h30 gAddTempOK default,  confirm (&S)
+	Gui, Add, Button, x282 y80 w90 h30 gNewFileClose ,  cancel (&C)
+	Gui, Show, w400 h120,  Add a template 
 	If Fileext
 	{
 		Controlget,nf,hwnd,,edit2,A
@@ -601,11 +615,11 @@ AddTempOK()
 	FileCopy,%SrcPath%,%NewFile%,1
 	Gui,Destroy
 }
-; 新建文件模板
+;  create a new file  template 
 FileTempNew:
 	NewFile(RegExReplace(A_ThisMenuItem,".\s>>\s",RegExReplace(TCPath,"\\[^\\]*$","\shellnew\")))
 return
-; 新建文件
+;  create a new file 
 NewFile:
 	NewFile()
 return
@@ -631,13 +645,13 @@ NewFile(File="")
 	Else
 		Splitpath,file,filename,,fileext,filenamenoext
 	Gui, Destroy
-	Gui, Add, Text, x12 y20 w50 h20 +Center, 模板源
+	Gui, Add, Text, x12 y20 w50 h20 +Center,  Template source 
 	Gui, Add, Edit, x72 y20 w300 h20 Disabled, %file%
-	Gui, Add, Text, x12 y50 w50 h20 +Center, 新建文件
+	Gui, Add, Text, x12 y50 w50 h20 +Center,  create a new file 
 	Gui, Add, Edit, x72 y50 w300 h20 , %filename%
-	Gui, Add, Button, x162 y80 w90 h30 gNewFileOk default, 确认(&S)
-	Gui, Add, Button, x282 y80 w90 h30 gNewFileClose , 取消(&C)
-	Gui, Show, w400 h120, 新建文件
+	Gui, Add, Button, x162 y80 w90 h30 gNewFileOk default,  confirm (&S)
+	Gui, Add, Button, x282 y80 w90 h30 gNewFileClose ,  cancel (&C)
+	Gui, Show, w400 h120,  create a new file 
 	If Fileext
 	{
 		Controlget,nf,hwnd,,edit2,A
@@ -645,12 +659,12 @@ NewFile(File="")
 	}
 	return
 }
-; 关闭新建文件窗口
+;  shut down  create a new file  window 
 NewFileClose:
 	Gui,Destroy
 return
 
-; 确认新建文件
+;  confirm  create a new file 
 NewFileOK:
 	NewFileOK()
 return
@@ -667,24 +681,24 @@ NewFileOK()
 	Else
 		Return
 	clipboard := ClipSaved
-		If RegExMatch(DstPath,"^\\\\计算机$")
+		If RegExMatch(DstPath,"^\\\\Computer$")
 		Return
-	If RegExMatch(DstPath,"i)\\\\所有控制面板项$")
+	If RegExMatch(DstPath,"i)\\\\Control panel$")
 		Return
 	If RegExMatch(DstPath,"i)\\\\Fonts$")
 		Return
-	If RegExMatch(DstPath,"i)\\\\网络$")
+	If RegExMatch(DstPath,"i)\\\\Network$")
 		Return
-	If RegExMatch(DstPath,"i)\\\\打印机$")
+	If RegExMatch(DstPath,"i)\\\\Printer$")
 		Return
-	If RegExMatch(DstPath,"i)\\\\回收站$")	
+	If RegExMatch(DstPath,"i)\\\\Recycle bin$")	
 		Return
-	If RegExmatch(DstPath,"^\\\\桌面$")
+	If RegExmatch(DstPath,"^\\\\Desktop$")
 		DstPath := A_Desktop
 	NewFile := DstPath . "\" . NewFileName
 	If FileExist(NewFile)
 	{
-		MsgBox, 4, 新建文件, 新建文件已存在，是否覆盖？
+		MsgBox, 4, New File, File already exists, overwrite?
 		IfMsgBox No
 			Return
 	}
@@ -709,7 +723,7 @@ NewFileOK()
 }
 ;============================================================================
 ; ReadNewFile()
-; 新建文件菜单
+; New File menu
 ReadNewFile()
 {
 	NewFiles[0] := 0
@@ -770,8 +784,8 @@ ReadNewFile()
 		Menu,CreateNewFile,Icon,%MenuFile%,%IconFilePath%,%IconFileIndex%
 	}
 }
-; 获取新建文件的源
-; reg 为后缀
+;  Obtain  create a new file  The source 
+; reg  Suffix 
 RegGetNewFilePath(reg)
 {
 	RegRead,GetRegPath,HKEY_CLASSES_ROOT,%Reg%,FileName
@@ -782,16 +796,16 @@ RegGetNewFilePath(reg)
 		Return "NullFile"
 }
 ; RegGetNewFileType(reg) 
-; 获取新建文件类型名
-; reg 为后缀
+;  Obtain  create a new file type name
+; reg  Suffix 
 RegGetNewFileType(reg)
 {
 	RegRead,FileType,HKEY_CLASSES_ROOT,%Reg%
 	If Not ErrorLevel
 		Return FileType
 }
-; 获取文件描述
-; reg 为后缀
+;  Obtain File Description
+; reg  Suffix 
 RegGetNewFileDescribe(reg)
 {
 	FileType := RegGetNewFileType(reg)
@@ -799,8 +813,8 @@ RegGetNewFileDescribe(reg)
 	If Not ErrorLevel
 		Return FileDesc
 }
-; 获取文件对应的图标
-; reg 为后缀
+;  Obtain File corresponding to the icon
+; reg  Suffix 
 RegGetNewFileIcon(reg)
 {
 	IconPath := RegGetNewFileType(reg) . "\DefaultIcon"
@@ -809,7 +823,7 @@ RegGetNewFileIcon(reg)
 		Return FileIcon
 }
 ; <GoToParentEx> {{{1
-; 返回到上层文件夹，可返回到我的电脑
+; Return to the top folder, can return to My Computer
 <GoToParentEx>:
 	IsRootDir()
 	GoSub,<cm_GoToParent>

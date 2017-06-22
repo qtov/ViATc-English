@@ -1,7 +1,7 @@
 ﻿<QDir>:
 ;=======================================================
 	;RegisterHotkey("J","<Down>","TQUICKSEARCH")
-	;;默认按键(VIM)
+	;;Default button(VIM)
 	RegisterHotkey("0","<0>","ATL:00475EE0")
 	RegisterHotkey("1","<1>","ATL:00475EE0")
 	RegisterHotkey("2","<2>","ATL:00475EE0")
@@ -23,4 +23,6 @@
 	RegisterHotkey("u","{{bs}}","ATL:00475EE0")
 	RegisterHotkey("i","<Insert_Mode>","ATL:00475EE0")
 	SetHotkey("esc","<Normal_Mode>","ATL:00475EE0")
+	SetHotkey("Capslock","<Normal_Mode>","ATL:00475EE0")
+	;SetHotkey("capslock","<Normal_Mode>","ATL:00475EE0")
 return

@@ -1,9 +1,9 @@
-﻿; 所有程序通用
+﻿; All programs are generic
 <MSWord>:
-	CustomActions("<Wordleft>","向左移动[Count]次")
-	CustomActions("<WordRight>","向右移动[Count]次")
-	CustomActions("<WordUp>","向上移动[Count]次")
-	CustomActions("<WordDown>","向下移动[Count]次")
+    CustomActions ("<Wordleft>","Move [Count] times to the left")
+    CustomActions ("<WordRight>","Move [Count] times to the right")
+    CustomActions ("<WordUp>","Move up [Count] times")
+    CustomActions ("<WordDown>","Move down [Count] times")
 return
 <WordAdd>:
 	oWord := ComObjCreate("Word.Application")

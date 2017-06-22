@@ -1,12 +1,12 @@
 ﻿<Tools>:
-	CustomActions("<ShowIPAddr>","显示IP地址")
-	CustomActions("<RunGVIM>","运行GVIM")
+	CustomActions("<ShowIPAddr>","Show IP Address")
+	CustomActions("<RunGVIM>","Run GVIM")
 return
 <ShowIPAddr>:
 	Msgbox % A_IPAddress1 "`n" A_IPAddress2 "`n" A_IPAddress3 "`n" A_IPAddress4
 return
 <RunGVIM>:
-	ExecSub("(e:\Program Files\Vim\vim73\gvim.exe)")
+	ExecSub("(c:\Program Files (x86)\Vim\vim80\gvim.exe)")
 return
 ; <ListHotkey>: {{{2
 <ListHotkey>:
@@ -16,32 +16,32 @@ return
 {
 	Gui,Destroy
 	Gui,Font, s10
-	Gui,Add,ListBox,w90 h400 x10 y10 t2 gGui_ChangeTab, 全局配置|热键|宏|插件|帮助
-	Gui,Add,Button,x10 y420 w90 h25 center,配置文件(&E)
-	Gui,Add,Button,x340 y420 w70 h25 center,应用(&A)
-	Gui,Add,Button,x420 y420 w70 h25 center,确定(&O)
-	Gui,Add,Button,x500 y420 w70 h25 center,取消(&C)
-	Gui,Add,Tab2,  x110 y-25  w480 h460 buttons AltSubmit ,全局配置|热键|宏|插件|帮助
-	Gui,Tab,1
-	Gui,Add,CheckBox
-	Gui,Tab,2
-	Gui,Add,ListView,Grid r20 x110 y10 w480 h320 vListview_HKL,作用域|热键|动作|描述
-	Gui,Add,Text,x110 y345 w60,作用域&V:
-	Gui,Add,Edit,x170 y343 w120 h20
-	Gui,Add,Button,x300 y343 w30 h20 g<GetClassByMouse>,&+
-	Gui,Add,Text,x110 y375 w60,热键&H:
-	Gui,Add,Edit,x170 y373 w160 h20 g<chkHK>
-	Gui,Tab,3
-	Gui,Add,edit
-	Gui,Tab,4
-	Gui,Add,DropDownList,choose1 gGui_ChangeList x110 y10 vDD_PLS ,
-	Gui_DropDown()
-	Gui,Add,ListView,Grid r20 x110 y40 w480 h364 vListview_PLS,动作|描述
-	Gui,Tab,5
-	Gui,Add,listview
-	Gui_HKList()
-	Gui_PLSList()
-	Gui,Show,w600 h460,ViATc设置
+    Gui,Add,ListBox,w90 h400 x10 y10 t2 gGui_ChangeTab, global_configuration|hotkey|macro|plugin|help
+    Gui,Add,Button,x10 y420 w90 h25 center,Profile(&E) ; translated as Configuration_file or profile
+    Gui,Add,Button,x340 y420 w70 h25 center,Apply (&A)
+    Gui,Add,Button,x420 y420 w70 h25 center,OK (&O)
+    Gui,Add,Button,x500 y420 w70 h25 center,Cancel (&C)
+    Gui,Add,Tab2,x110 y-25 w480 h460 buttons AltSubmit,Global_Configuration|Hotkeys|Macro|Plugins|Help
+    Gui,Tab,1
+    Gui,Add,CheckBox
+    Gui,Tab,2
+    Gui,Add,ListView,Grid r20 x110 y10 w480 h320 vListview_HKL, scope|hotkey|action|description
+    Gui,Add,Text,x110 y345 w60,scope &V:
+    Gui,Add,Edit,x170 y343 w120 h20
+    Gui,Add,Button,x300 y343 w30 h20 g<GetClassByMouse>, &+
+    Gui,Add,Text,x110 y375 w60,Hotkey &H:
+    Gui,Add,Edit,x170 y373 w160 h20 g<chkHK>
+    Gui,Tab,3
+    Gui,Add,edit
+    Gui,Tab,4
+    Gui,Add,DropDownList,choose1 gGui_ChangeList x110 y10 vDD_PLS ,
+    Gui_DropDown()
+    Gui,Add,ListView,Grid r20 x110 y40 w480 h364 vListview_PLS,action|description
+    Gui,Tab,5
+    Gui,Add,listview
+    Gui_HKList()
+    Gui_PLSList()
+    Gui,Show,w600 h460,ViATc settings
 	OnMessage(0x03,"t")
 	Settimer,Gui_Edit_HK,50
 }
@@ -201,7 +201,7 @@ chkHK()
 	n := 1
 	For,i,k in ResolveHotkey(hk)
 	{
-		m .= "第" i "个热键>>"  k "`n"
+		m .= "First" i "hotkey>>"  k "`n"
 		n++
 	}
     PosX := px + 3
@@ -223,7 +223,7 @@ return
 	Gui,Font,s9
 	GUi,+Theme
 	Gui,Add,DropDownList,choose1 gchangelist,%m%
-	Gui,Add,ListView,Grid r20 w700 h400,动作|描述
+	Gui,Add,ListView,Grid r20 w700 h400,action|description
 	Lv_ModifyCol(1,200)
 	idx := 1
 	all := Vim_Actions["All"]
