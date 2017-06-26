@@ -6,7 +6,7 @@ Setkeydelay,-1
 SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
-Version := "0.52"
+Version := "0.5.3en"
 KeyTemp :=
 Repeat :=
 VimAction :=
@@ -70,7 +70,7 @@ Menu,Tray,Add, Settings (&S),<Setting>
 Menu,Tray,Add, Help (&H),<Help>
 Menu,Tray,Add
 Menu,Tray,Add, Exit (&X),<QuitVIATC>
-Menu,Tray,Tip,Vim Mode At TotalCommander
+Menu,Tray,Tip,ViATc %Version%  - Vim mode at TotalCommander
 Menu,Tray,Default, Run TC (&T)
 If TrayIcon
 	Menu,Tray,Icon
@@ -2180,7 +2180,7 @@ FindPath(File)
 		FileSF_FileName:=
 		FileSF_Prompt := "TOTALCMD.EXE"
 		FileSF_Filter := "*.EXE"
-		FileSF_Error := " turn on TOTALCMD.EXE failure "
+		FileSF_Error := "Could not find TOTALCMD.EXE"
 	}
 	If RegExMatch(File,"ini")
 	{
@@ -2190,7 +2190,7 @@ FindPath(File)
 		FileSF_FileName:=
 		FileSF_Prompt := " Select the profile "
 		FileSF_Filter := "*.INI"
-		FileSF_Error := " turn on TC The configuration file failed "
+		FileSF_Error := "Could not find wincmd.ini"
 	}
 	RegRead,GetPath,HKEY_CURRENT_USER,Software\VIATC,%Reg%
 	If FileExist(GetPath)
@@ -3714,8 +3714,8 @@ Help()
 		HelpInfo_arr["F5"] :="F5 >> No mapping `n Copy file"
 		HelpInfo_arr["F6"] :="F6 >> No mapping `n Rename or move file"
 		HelpInfo_arr["F7"] :="F7 >> No mapping `n New folder"
-		HelpInfo_arr["F8"] :="F8 >> No mapping `n Delete Files (Move to Recycle Bin or delete it directly － Determined by configuration)"
-		HelpInfo_arr["F9"] :="F9 >> No mapping `n Activate the menu for the source window  ( Left or right )"
+		HelpInfo_arr["F8"] :="F8 >> No mapping `n Delete Files (Move to Recycle Bin or delete it directly - Determined by configuration)"
+		HelpInfo_arr["F9"] :="F9 >> No mapping `n Activate the menu for the source window  (Left or right)"
 		HelpInfo_arr["F10"] :="F10 >> No mapping `n Activate the left menu or exit the menu "
 		HelpInfo_arr["F11"] :="F11 >> No mapping "
 		HelpInfo_arr["F12"] :="F12 >> No mapping "
@@ -3735,7 +3735,7 @@ Help()
 		HelpInfo_arr["Backspace"] :="Backspace >> No mapping `n Go up a folder or delete the text in edit mode "
 		HelpInfo_arr["Tab"] :="Tab >> No mapping `n Switch the window "
 		HelpInfo_arr["Q"] :="q >> Quick view function `nQ >> Use the default browser to search for the current file name / Folder name "
-		HelpInfo_arr["W"] :="w >> Edit file notes `nW >> No mapping "
+		HelpInfo_arr["W"] :="w >> Edit file comments `nW >> No mapping "
 		HelpInfo_arr["E"] :="e >> The right-click shortcut menu is displayed `nE >> Run in the current directory CMD.EXE"
 		HelpInfo_arr["R"] :="r >> Rename the file `nR >> Batch rename file "
 		HelpInfo_arr["T"] :="t >> New tab `nT >> Create a new tab in the background "
@@ -3752,7 +3752,7 @@ Help()
 		HelpInfo_arr["S"] :="s >> Sort by... (key combination, requires another key) `nS >> No mapping `nsn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nst >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9 >>"
 		HelpInfo_arr["D"] :="d >> Favourite folders hotlist`nD >> Open the desktop folder "
 		HelpInfo_arr["F"] :="f >> Page down, Equivalent to PageDown`nF >> Switch to TC Default fast search mode "
-		HelpInfo_arr["G"] :="g >> Tab operation (key combination, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngn >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab)`nga >> Close all tabs `ngc >> Close the current tab `ngt >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows and their tabs `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab "
+		HelpInfo_arr["G"] :="g >> Tab operation (key combination, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngn >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab)`nga >> Close all tabs `ngc >> Close the current tab `ngt >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows and their tabs `ngi >> Enter `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab "
 		HelpInfo_arr["H"] :="h >> Move Left num times `nH >> Go Backward in dir history"
 		HelpInfo_arr["J"] :="j >> Move Downward num times `nJ >> Select down Num File ( folder )"
 		HelpInfo_arr["K"] :="k >> Move Up num times `nK >> Choose from the top Num File ( folder )"
@@ -3771,14 +3771,14 @@ Help()
 		HelpInfo_arr[",<"] :=", >> Display command history ( band a-z navigation )`n< >> No mapping "
 		HelpInfo_arr[".>"] :=". >> Repeat the last action `n> >> No mapping `n Repeat the last action, For example when you enter 10j move downward 10 rows, and want to move down again 10 rows, no need to press again 10j Just press the dot . It also works if you press gn switching to the next tab, Move again? Only need to press ."
 		HelpInfo_arr["/?"] :="/ >> Use quick search `n? >> Use the file search function ( advanced )"
-		HelpInfo_arr["RShift"] :="Rshift >> right shift key, Can also be made by Shift instead "
-		HelpInfo_arr["LCtrl"] :="Lctrl >> left ctrl key, Can also be made by control or ctrl instead "
-		HelpInfo_arr["LWin"] :="LWin >>Win key. Due to ahk limits the lwin key must be used instead"
+		HelpInfo_arr["RShift"] :="Rshift >> right shift key, can also be Shift instead "
+		HelpInfo_arr["LCtrl"] :="Lctrl >> left ctrl key, can also be control or ctrl instead "
+		HelpInfo_arr["LWin"] :="LWin >>Win key. Due to ahk limits the lwin must be used instead of just win"
 		HelpInfo_arr["LAlt"] :="LAlt >> left Alt key, Can also be alt instead "
 		HelpInfo_arr["Space"] :="Space >> Space, No mapping "
-		HelpInfo_arr["RAlt"] :="RAlt >> right Alt key, Can also be made by alt instead "
+		HelpInfo_arr["RAlt"] :="RAlt >> right Alt key, can also be alt instead "
 		HelpInfo_arr["Apps"] :="Apps >> Open the context menu ( Right-click menu )"
-		HelpInfo_arr["RCtrl"] :="Rctrl >> right ctrl key, Can also be made by control or ctrl instead "
+		HelpInfo_arr["RCtrl"] :="Rctrl >> right ctrl key, can also be control or ctrl instead "
     HelpInfo_arr["Intro"] :="Combination of Vim shortcut system with TC will speed up TC operation. Up to two buttons can complete most of the tasks that need to be done with the mouse. `nIf you have ever used Vim and are used to TC then you will love ViATc.`nIf you are using TC, but feel that mouse clicking is not quick enough, then you will want to use ViATc.`nUse two hands on the keyboard to knock out is the original intention of ViATc.`nViATc does :`nOperate TC With Vim style h,j,k,l moves and more; Press : (semicolon) for command line mode.`nWhen you do not need it use Alt+~ (can be modifed) to disable all ViATc functionality, or simply quit ViATc, TC won't be affected at all. `nNone of the shortcut keys are in conflict with TC.`nResides in the tray icon, Double-click the tray icon, or Win+F (modifable) to toggle show/hide TC window`nKey combinations (chords) for TC customization like transparent, always on top, there are more... `n`n Waiting for your suggestions, let's make ViATc easier to use."
 		HelpInfo_arr["Funck"] :="Single press to operate `nFunction keys are divided by type, Can be numbers Num0-Num9, character a-z, other characters and so on. By default entering numbers does not cause task operations, only the value of the number is recorded, and then an operation can be repeated by pressing a key that allows multiple operations. For example press 10j and the result is move down 10 rows. Press 10K and it is selecting 10 rows upward. By moving in the list (hjkl/JK) you can make multiple operations.`nImportant!   In VIATC the expression function keys (Single press) can be: control,alt,win,shift. Four modifiers and characters, but each character can only be associated with one modifier `n<LWin>f (must be LWin Not Win)    -this works as intended`n<ctrl><F12>    -not as intended, this time characters of the second modifier will be interpreted as separate ordinary characters < F 1 2 >`n<ctrl><shift>a -invalid, more than a single modifier`nWant to know what can be done with each key? Please click on the keyboard above to get details of each button."
 		HelpInfo_arr["GroupK"] :="Key combination (chords). Press twice or more to achieve the operation `nLike in VIM, the key combination can be very flexible to map, at the same time not limited to the 26 keyboard letters. Unlike function keys the key combination can consist of multiple characters. But there is one thing to note, the first key of a key combination can only have up to one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n E.g :`n<ctrl>ab (means press ctrl+a and release, then press b to work)`n<ctrl>a<ctrl>b    -invalid, The first key can have up to one modifier, but the second key cannot`nVIATC comes by default with five groups of keys. Click the keyboard above for details z,c,v,g,s"
@@ -3791,7 +3791,7 @@ Help()
 		Global GroupInfo_arr
 		GroupInfo_arr["s"] :="sn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nsd >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9"
 		GroupInfo_arr["z"] :="zz >> Set the window divider at 50%`nzx >> Set the window divider at 100% (TC 8.0+)`nzi >> Maximize the left panel `nzo >> Maximize the right panel `nzt >>TC window always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzr >> Return to normal size `nzv >> Vertical / Horizontal arrangement `nzs >>TC transparent `nzf >> Full screen TC`nzl >> The simplest TC`nzq >> Exit TC`nza >> Reload TC"
-		GroupInfo_arr["g"] :="gn >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab)`nga >> Close all tabs `ngc >> Close the current tab `ngt >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows and their tabs `ngg >> Go to the first line in the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab "
+		GroupInfo_arr["g"] :="g`n ------------------------------ `ngn >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab)`nga >> Close all tabs `ngc >> Close the current tab `ngt >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows and their tabs `ngi >> Enter `ngg >> Go to the first line in the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab "
 		GroupInfo_arr["Shift & v"] :="<Shift>vb >> display / hide :  Toolbar `n<Shift>vd >> display / hide :  Drive button `n<Shift>vo >> display / hide :  Two drive button bars `n<Shift>vr >> display / hide :  Drive list `n<Shift>vc >> display / hide :  Current folder `n<Shift>vt >> display / hide :  Sort tab `n<Shift>vs >> display / hide :  Status Bar `n<Shift>vn >> display / hide :  Command Line `n<Shift>vf >> display / hide :  Function buttons `n<Shift>vw >> display / hide :  Folder tab `n<Shift>ve >> Browse internal commands "
 		GroupInfo_arr["c"] :="cl >> Delete the history of the left folder `ncr >> Delete the history of the right folder `ncc >> Delete command line history "
 	}
@@ -3838,7 +3838,7 @@ Help()
 		ActionInfo_Arr["<Right>"] :=" Right"
 		ActionInfo_Arr["<DownSelect>"] :=" Select Down "
 		ActionInfo_Arr["<UpSelect>"] :=" Select Up"
-		ActionInfo_Arr["<Home>"] :=" Go to the first line, Equivalent to Home key "
+		ActionInfo_Arr["<Home>"] :=" Go to the first line, Equivalent to Home key"
 		ActionInfo_Arr["<Half>"] :=" Go to the middle of the list "
 		ActionInfo_Arr["<End>"] :=" Go to last line, Equivalent to End key "
 		ActionInfo_Arr["<PageUp>"] :=" Page Up "
@@ -3905,7 +3905,7 @@ Help()
 		ActionInfo_Arr["<LeftDirBranchSel>"] :=" Left window :  Only the selected folder is expanded "
 		ActionInfo_Arr["<LeftThumbs>"] :=" window :  Thumbnails "
 		ActionInfo_Arr["<LeftCustomViewMenu>"] :=" window :  Customize the view menu "
-		ActionInfo_Arr["<RightComments>"] :=" Right window :  Show file notes "
+		ActionInfo_Arr["<RightComments>"] :=" Right window :  Show file comments "
 		ActionInfo_Arr["<RightShort>"] :=" Right window :  List "
 		ActionInfo_Arr["<RightLong>"] :=" details "
 		ActionInfo_Arr["<RightTre>"] :=" Right window :  Folder Tree "
@@ -4000,7 +4000,7 @@ Help()
 		ActionInfo_Arr["<ContextMenuInternalCursor>"] :=" Displays the internal context menu for the file at the cursor "
 		ActionInfo_Arr["<ShowRemoteMenu>"] :=" Media Center Remote Control Play / Pause key shortcut menu "
 		ActionInfo_Arr["<SyncChangeDir>"] :=" Both sides of the window are synchronized to change the folder "
-		ActionInfo_Arr["<EditComment>"] :=" Edit file notes "
+		ActionInfo_Arr["<EditComment>"] :=" Edit file comments "
 		ActionInfo_Arr["<FocusLeft>"] :=" Focus on the left window "
 		ActionInfo_Arr["<FocusRight>"] :=" Focus on the right window "
 		ActionInfo_Arr["<FocusCmdLine>"] :=" Focus on the command line "
