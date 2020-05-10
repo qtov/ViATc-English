@@ -11,14 +11,8 @@ ViATc - Vim mode at Total Commander
 
 Usage:
 =====
-1. Easy way using executable:  
-- Download ViATc https://github.com/magicstep/ViATc-English/archive/master.zip, extract, go into "viatc-0.5.3" folder, extract executable.zip and run the exe file that is there
-- Notice: I promise that this exe is clean, but compiled AHK scripts trigger antiviruses so you might have to add an exception.
-- Look for a new icon in the tray, right-click on it and choose Help.
-
-2. AHK script way:  
-- Download and install Autohotkey, it is easy to learn but powerful. https://autohotkey.com/
-- Download ViATc https://github.com/magicstep/ViATc-English/archive/master.zip, extract, go into "viatc-0.5.3" folder and double-click viatc-0.5.3en.ahk
+- Download and install Autohotkey, it is easy to learn and powerful. https://autohotkey.com/
+- Download ViATc https://github.com/magicstep/ViATc-English/archive/master.zip, extract, go into "viatc-0.5.4" folder and double-click viatc-0.5.4en.ahk
 - Look for a new icon in the tray, right-click on it and choose Help.
 
 Version 0.6 is not finished and most likely never will be. Please use 0.5
