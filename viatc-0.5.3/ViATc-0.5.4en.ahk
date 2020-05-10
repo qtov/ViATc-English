@@ -243,7 +243,7 @@ Else
 		TcExe := FindPath("exe")
 	Loop,6
 	{
-		WinWait,AHK_CLASS TTOTAL_CMD,,0
+		WinWait,AHK_CLASS TTOTAL_CMD,,3
 		If ErrorLevel
 			Run,%TcExe%,,UseErrorLevel
 		Else
@@ -1591,7 +1591,7 @@ SetDefaultKey()
 	HotKey,u,<GotoParentEx>,on,UseErrorLevel
 	HotKey,+u,<GotoRoot>,on,UseErrorLevel
 	Hotkey,i,<CreateNewFile>,on,UseErrorLevel
-	Hotkey,x,<Delete>,On,UseErrorLevel
+	;Hotkey,x,<Delete>,On,UseErrorLevel
 	Hotkey,+x,<ForceDel>,On,UseErrorLevel
 	;HotKey,o,<LeftOpenDrives>,on,UseErrorLevel
 	HotKey,o,<SrcOpenDrives>,on,UseErrorLevel
@@ -1623,7 +1623,7 @@ SetDefaultKey()
 	Hotkey,=,<MatchSrc>,On,UseErrorLevel
 	Hotkey,-,<SwitchSeparateTree>,On,UseErrorLevelHotkey,\,<ExchangeSelection>,On,UseErrorLevel
 	Hotkey,v,<ContextMenu>,On,UseErrorLevel
-	HotKey,a,<SetAttrib>,on,UseErrorLevel
+	;HotKey,a,<SetAttrib>,on,UseErrorLevel
 	Hotkey,m,<Mark>,On,UseErrorLevel
 	Hotkey,+m,<Half>,On,UseErrorLevel
 	Hotkey,',<ListMark>,On,UseErrorLevel
@@ -1703,7 +1703,7 @@ SetDefaultKey()
 	;GroupKeyAdd("cl","<DeleteLHistory>")
 	;GroupKeyAdd("cr","<DeleteRHistory>")
 	;GroupKeyAdd("cc","<DelCmdHistory>")
-	Hotkey,IfWinActive,ViATc  Rename
+	Hotkey,IfWinActive,ViATc Rename
 	Hotkey,j,VimRN_Down,on,UseErrorLevel
 	Hotkey,k,VimRN_Up,on,UseErrorLevel
 	Hotkey,h,VimRN_Left,on,UseErrorLevel
@@ -3789,7 +3789,7 @@ Help()
 		HelpInfo_arr["RAlt"] :="RAlt >> right Alt key, can also be alt instead "
 		HelpInfo_arr["Apps"] :="Apps >> Open the context menu ( Right-click menu )"
 		HelpInfo_arr["RCtrl"] :="Rctrl >> right ctrl key, can also be control or ctrl instead "
-    HelpInfo_arr["Intro"] := "ViATc - Vim mode at Total Commander`nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts (they do not conflict with TC). Press alt+`` (alt+backtick) (this shortcut can be modifed) to disable all ViATc functionality, or simply quit ViATc, TC won't be affected at all.`nDouble-click the tray icon, or Win+F (modifiable) to show/hide TC window`n"
+    HelpInfo_arr["Intro"] := "ViATc - Vim mode at Total Commander `nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts (they do not conflict with TC). Press alt+`` (alt+backtick) (this shortcut can be modifed) to disable all ViATc functionality, or simply quit ViATc, TC won't be affected at all.`nDouble-click the tray icon, or Win+F (modifiable) to show/hide TC window`n"
 		HelpInfo_arr["Funct"] :="Single key to operate `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: ctrl, alt, shift or LWin (must be LWin not Win).`n`nExamples:`n<LWin>g           - this works as intended`n<ctrl><shift>a  - invalid, more than one modifier`n<ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >`n`nPlease click on the keyboard above to get details of each key.`n"
 		HelpInfo_arr["GroupK"] :="Multiple keys to operate `nGroup Keys can be composed from any characters`nAdditionally the first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`n<ctrl>ab (means press ctrl+a and release, then press b to work)`n<ctrl>a<ctrl>b    -invalid, The first key can have up to one modifier, but the second key cannot`n`nVIATC comes by default with five groups of keys. Click the keyboard above for details z,c,V,g,s"
 		HelpInfo_arr["cmdl"] :="WARNNING: Doesn't work in this version`nThe command line in VIATC supports abbreviations :h :s :r :m :sm :e, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys `n If you type :map in the command line then all custom hotkeys will be displayed.`n If the input is :map key action, where key represents the hotkey to map (it can be a Group Key or a Hotkey) action represents the action to be carried out. This feature is suitable for the scenario where there is a temporary need for a function mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file which is located in the TC directory.`n:smap and :map are the same except map is a global hotkey and does not support mapping Group Keys `n:edit  Directly edit ViATc.ini file "
@@ -3824,11 +3824,11 @@ Help()
 		ActionInfo_Arr["<CreateNewFile>"] := " File template function, Create a new file or a new directory "
 		ActionInfo_Arr["<TCLite>"] := " The simplest TC"
 		ActionInfo_Arr["<ExReName>"] := " Rename, Do not select an extension "
-		ActionInfo_Arr["<Help>"] := "VIATC Help "
+		ActionInfo_Arr["<Help>"] :=  "ViATc Help"
 		ActionInfo_Arr["<Setting>"] := "VIATC Settings"
 		ActionInfo_Arr["<ToggleTC>"] :=" Show / Hide TC"
 		ActionInfo_Arr["<EnableVIM>"] :=" Enable / Disable Vim mode "
-		ActionInfo_Arr["<Enter>"] :=" Enter "
+		ActionInfo_Arr["<Enter>"] :="Enter"
 		ActionInfo_Arr["<SingleRepeat>"] :=" Repeat the last action "
 		ActionInfo_Arr["<Esc>"] :=" Reset and send ESC"
 		ActionInfo_Arr["<EditViATCIni>"] :=" Directly edit ViATc.ini file "
@@ -4117,7 +4117,13 @@ Help()
 		ActionInfo_Arr["<GotoDriveC>"] :=" Go to the drive  C"
 		ActionInfo_Arr["<GotoDriveD>"] :=" Go to the drive  D"
 		ActionInfo_Arr["<GotoDriveE>"] :=" Go to the drive  E"
-		ActionInfo_Arr["<GotoDriveF>"] :=" You can customize other drives "
+		ActionInfo_Arr["<GotoDriveF>"] :=" Go to the drive  F"
+		ActionInfo_Arr["<GotoDriveG>"] :=" Go to the drive  G"
+		ActionInfo_Arr["<GotoDriveH>"] :=" Go to the drive  H"
+		ActionInfo_Arr["<GotoDriveI>"] :=" Go to the drive  I"
+		ActionInfo_Arr["<GotoDriveJ>"] :=" Go to the drive  J"
+		ActionInfo_Arr["<GotoDriveK>"] :=" You can customize other drives "
+        ActionInfo_Arr["<GotoDriveU>"] :=" Go to the drive  U"
 		ActionInfo_Arr["<GotoDriveZ>"] :=" GotoDriveZ, max 26"
 		ActionInfo_Arr["<HelpIndex>"] :=" Help index "
 		ActionInfo_Arr["<Keyboard>"] :=" Shortcut list "
@@ -5080,6 +5086,27 @@ SendPos(2065)
 Return
 <GotoDriveF>:
 SendPos(2066)
+Return
+<GotoDriveG>:
+SendPos(2067)
+Return
+<GotoDriveH>:
+SendPos(2068)
+Return
+<GotoDriveI>:
+SendPos(2069)
+Return
+<GotoDriveJ>:
+SendPos(2070)
+Return
+<GotoDriveK>:
+SendPos(2071)
+Return
+<GotoDriveL>:
+SendPos(2072)
+Return
+<GotoDriveU>:
+SendPos(2081)
 Return
 <GotoDriveZ>:
 SendPos(2086)
