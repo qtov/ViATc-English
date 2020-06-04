@@ -7,6 +7,7 @@ SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
 Version := "0.5.4en"
+VimPath := "C:\Program Files (x86)\Vim\vim80\gvim.exe"
 KeyTemp :=
 Repeat :=
 VimAction :=
@@ -65,6 +66,8 @@ Menu,Tray,NoStandard
 Menu,Tray,Add, Run TC (&T),<ToggleTC>
 Menu,Tray,Add, Disable (&D),<EnableVIM>
 Menu,Tray,Add, Reload (&R),<ReLoadVIATC>
+Menu,Tray,Add, Edit (&E),<EditScript>
+Menu,Tray,Add, Edit with Vim (&V),<EditScriptWithVim>
 Menu,Tray,Add
 Menu,Tray,Add, Settings (&S),<Setting>
 Menu,Tray,Add, Help (&H),<Help>
@@ -299,6 +302,16 @@ ReloadVIATC()
 		HideControl()
 	Reload
 }
+
+<EditScript>:
+    run, edit %a_scriptFullPath%    ; open in the default editor
+Return
+
+<EditScriptWithVim>:
+    run, %VimPath% --remote-tab-silent %a_scriptFullPath%    ; open in existing vim in a new tab
+    ;run, %VimPath% %a_scriptFullPath%    ; open in vim (new instance if vim already opened)
+Return
+
 <Enter>:
 Enter()
 Return
@@ -1669,7 +1682,7 @@ SetDefaultKey()
 	GroupKeyAdd("s9","<SrcSortByCol9>")
 	GroupKeyAdd("gt","<SwitchToNextTab>")
 	GroupKeyAdd("gp","<SwitchToPreviousTab>")
-	GroupKeyAdd("gy","<SwitchToPreviousTab>")
+	GroupKeyAdd("gr","<SwitchToPreviousTab>")
 	GroupKeyAdd("ga","<CloseAllTabs>")
 	GroupKeyAdd("gc","<CloseCurrentTab>")
 	GroupKeyAdd("gn","<OpenDirInNewTab>")
@@ -3762,7 +3775,7 @@ Help()
 		HelpInfo_arr["S"] :="s >> Sort by... (Group Key, requires another key) `nS >> (Group Key, requires another key) show all, executables, etc. `nsn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nst >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9 >>"
 		HelpInfo_arr["D"] :="d >> Favourite folders hotlist`nD >> Open the desktop folder "
 		HelpInfo_arr["F"] :="f >> Page down, Equivalent to PageDown`nF >> Switch to TC Default fast search mode "
-		HelpInfo_arr["G"] :="g >> Tab operation (Group Key, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngt >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab) also gy, I don't know how to bind gT`nga >> Close All tabs `ngc >> Close the Current tab `ngn >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab "
+		HelpInfo_arr["G"] :="g >> Tab operation (Group Key, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngt >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab) also gr, I don't know how to bind gT`nga >> Close All tabs `ngc >> Close the Current tab `ngn >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab "
 		HelpInfo_arr["H"] :="h >> Go Left num times `nH >> Go Backward in dir history"
 		HelpInfo_arr["J"] :="j >> Go Down num times `nJ >> Select down Num File (folder), In QuickSearch(ctrl+s) go down"
 		HelpInfo_arr["K"] :="k >> Go Up num times `nK >> Select up Num File (folder), In QuickSearch(ctrl+s) go up"

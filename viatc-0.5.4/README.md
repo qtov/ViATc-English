@@ -15,7 +15,7 @@ Usage:
 - Download ViATc https://github.com/magicstep/ViATc-English/archive/master.zip, extract, go into "viatc-0.5.4" folder and double-click viatc-0.5.4en.ahk
 - Look for a new icon in the tray, right-click on it and choose Help.
 
-Version 0.6 is not finished and most likely never will be. Please use 0.5
+Version 0.6 is not finished and most likely never will be.
 
 Author
 ======
