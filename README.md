@@ -1,6 +1,6 @@
 ViATc
 =====
-ViATc - Vim mode at Total Commander
+ViATc - Vim mode at Total Commander.  
 This software works on Windows and only as an addidion to "Total Commander" - the greatest file manager (keyboard friendly, two panels, advanced search, comparator, multirename, FTP, plugins) get it from www.ghisler.com 
 ViATc tries to resemble the workflow of Vim and web browser plugins like Vimium or better yet SurfingKeys.
 
