@@ -13,8 +13,10 @@ What ViATc does to Total Commander (called later TC):
 
 Usage:
 =====
-- Download and install Autohotkey, it is powerful for many purposes. https://autohotkey.com
-- Download ViATc https://github.com/magicstep/ViATc-English/archive/master.zip, extract, go into "viatc-0.5.4" folder and double-click viatc-0.5.4en.ahk
+- The project website is https://magicstep.github.io/viatc/  
+  You can download compiled executable from there. Compiled executable might be older than the current script version. 
+- You can run the script if you have Autohotkey installed. Download and install Autohotkey, it is powerful for many purposes. https://autohotkey.com
+  Download ViATc script from https://github.com/magicstep/ViATc-English/archive/master.zip, extract, go into "viatc-0.5.4" folder and double-click viatc-0.5.4en.ahk
 - Look for a new icon in the tray, right-click on it and choose Help.
 
 
