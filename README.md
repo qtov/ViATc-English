@@ -32,20 +32,22 @@ Usage
 =====
 A small subset of commands:
 
-j  = down  
-k  = up  
-t  = open tab, same as ctrl+t  
-x  = close tab, same as ctrl+w  
-r  = rename, same as shift+F6  
-d  = directory hotlist, same as ctrl+d  
-o  = open drive drop-box, same as alt+F1  
-u  = go up in directory, same as backspace  
-cc = delete  
-lk = go up in directory  
-lj = enter  
-aj = enter  
+j  = Down  
+k  = Up  
+f  = Page Down  
+b  = Page Up  
+t  = open tab, same as Ctrl+t  
+x  = close tab, same as Ctrl+w  
+r  = rename, same as Shift+F6  
+d  = directory hotlist, same as Ctrl+d  
+o  = open drive drop-box, same as Alt+F1  
+u  = go up in directory, same as Backspace  
+lk = go up in directory, same as Backspace  
+lj = Enter  
+aj = Enter  
+cc = Delete  
+Ctrl+[   = Esc  
 Capslock = Esc  
-ctrl+[   = Esc  
 
 
 Author
