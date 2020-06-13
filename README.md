@@ -11,8 +11,8 @@ What ViATc does to Total Commander (called later TC):
 
 
 
-Usage:
-=====
+Installation
+============
 - You can download a compiled executable from https://magicstep.github.io/viatc/  
   A compiled executable most likely will be older than the current script version. 
 - You can run the script if you have Autohotkey installed. Download and install Autohotkey, it is powerful for many purposes. https://autohotkey.com  
@@ -26,6 +26,21 @@ Reload ViATc after any changes made in the ini file to take effect.
 You can add and remove shortcuts directly in the ini file or via ViATc Settings window. After changes you must click Save before clicking OK.
 In the ini file lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
 If you have mapped CapsLock as Escape in other AHK script you need to map it again in viatc.ini like this <CapsLock>=<Esc>
+
+
+Usage
+=====
+A small subset of commands:
+
+j  = down
+k  = up
+t  = open tab, same as ctrl+t
+x  = close tab, same as ctrl+w
+d  = directory hotlist, same as ctrl+d
+u  = go up in directory, same as backspace
+lk = go up in directory
+lj = enter
+aj = enter
 
 
 Author
