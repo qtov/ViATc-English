@@ -25,7 +25,7 @@ Put the ini file into your Total Commander directory "c:\Program Files\totalcmd"
 Reload ViATc after any changes made in the ini file to take effect.
 You can add and remove shortcuts directly in the ini file or via ViATc Settings window. After changes you must click Save before clicking OK.
 In the ini file lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
-If you have mapped CapsLock as Escape in other AHK script you need to map it again in viatc.ini like this <CapsLock>=<Esc>
+If you have mapped CapsLock as Escape in other AHK script you need to map it again in viatc.ini like this `<CapsLock>=<Esc>`
 
 
 Usage
