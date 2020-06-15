@@ -1,7 +1,7 @@
 ViATc
 =====
 ViATc - Vim mode at Total Commander.  
-This software works on Windows and only as an addidion to "Total Commander" - the greatest file manager (keyboard friendly, two panels, advanced search, comparator, multirename, FTP, plugins) get it from www.ghisler.com  
+This software works on Windows and only as an addidion to "Total Commander" - the greatest file manager (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
 ViATc tries to resemble the workflow of Vim and web browser plugins like Vimium or better yet SurfingKeys.
 
 What ViATc does to Total Commander (called later TC):
@@ -21,12 +21,10 @@ Installation
 
 Settings
 ========
-Put the ini file into your Total Commander directory "c:\Program Files\totalcmd" or "c:\Program Files (x86)\totalcmd" 
-Reload ViATc after any changes made in the ini file to take effect.
-You can add and remove shortcuts directly in the ini file or via ViATc Settings window. After changes you must click Save before clicking OK.
-In the ini file lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
+You can add and remove shortcuts directly in the ini file or via ViATc Settings window. After changes you must click Save before clicking OK. This will reaload ViaTC automatically
+Reload ViATc manually after any changes made directly in the ini file to take effect.
+In the ini file all lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
 If you have mapped CapsLock as Escape in other AHK script you need to map it again in viatc.ini like this `<CapsLock>=<Esc>`
-
 
 Usage
 =====
@@ -45,7 +43,9 @@ u  = go up in directory, same as Backspace
 lk = go up in directory, same as Backspace  
 lj = Enter  
 aj = Enter  
-cc = Delete  
+cc = Delete
+gg = go top
+G  = go bottom
 Ctrl+[   = Esc  
 Capslock = Esc  
 
