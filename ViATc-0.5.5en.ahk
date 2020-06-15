@@ -6,8 +6,8 @@ Setkeydelay,-1
 SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
-Version := "0.5.4en"
-VimPath := "C:\Program Files (x86)\Vim\vim80\gvim.exe"
+Global Version := "0.5.5en"
+Global VimPath := 
 KeyTemp :=
 Repeat :=
 VimAction :=
@@ -56,7 +56,16 @@ Else
 }
 RegRead,ViATcIni,HKEY_CURRENT_USER,Software\VIATC,ViATcINI
 If Not FileExist(ViATcINI)
-	ViatcIni := TcDir . "\viatc.ini"
+	ViatcIni :=  A_ScriptDir . "\viatc.ini"
+    ;ViatcIni := TcDir . "\viatc.ini"
+;MsgBox , %ViatcIni%
+
+RegRead,VimPath,HKEY_LOCAL_MACHINE,Software\vim\gvim,path
+If Not FileExist(VimPath)   ;fallback to the user setting
+    RegRead,VimPath,HKEY_CURRENT_USER,Software\VIATC,VimPathReg
+    ;MsgBox, "No vim path in registry"
+If Not FileExist(VimPath) ;fallback to the last resort
+    VimPath := "notepad.exe"  
 GoSub,<ConfigVar>
 Menu,VimRN_Set,Add, default Vim mode `tAlt+V,VimRN_SelMode
 Menu,VimRN_Set,Add, The default suffix is selected `tAlt+F,VimRN_SelExt
@@ -66,8 +75,11 @@ Menu,Tray,NoStandard
 Menu,Tray,Add, Run TC (&T),<ToggleTC>
 Menu,Tray,Add, Disable (&D),<EnableVIM>
 Menu,Tray,Add, Reload (&R),<ReLoadVIATC>
-Menu,Tray,Add, Edit (&E),<EditScript>
-Menu,Tray,Add, Edit with Vim (&V),<EditScriptWithVim>
+If Not A_IsCompiled
+{
+    Menu,Tray,Add, Edit Script (&E),<EditScript>
+    Menu,Tray,Add, Edit with Vim (&V),<EditScriptWithVim>
+}
 Menu,Tray,Add
 Menu,Tray,Add, Settings (&S),<Setting>
 Menu,Tray,Add, Help (&H),<Help>
@@ -78,7 +90,7 @@ Menu,Tray,Default, Run TC (&T)
 If TrayIcon
 	Menu,Tray,Icon
 Menu,Tray,NoStandard
-Menu,Tray,Icon,%A_WorkingDir%\viatc.ico
+Menu,Tray,Icon,%A_ScriptDir%\viatc.ico
 SetHelpInfo()
 SetVimAction()
 SetActionInfo()
@@ -267,7 +279,7 @@ If Not IsSuspended
 	If A_IsCompiled
 		Menu,Tray,icon,%A_ScriptFullPath%,5,1
 	Else
-		Menu,Tray,Icon,%A_WorkingDir%\viatcdis.ico
+		Menu,Tray,Icon,%A_ScriptDir%\viatcdis.ico
 ;Menu,Tray,icon,%A_AHKPath%,5,1
 	Settimer,<GetKey>,100
 	IsSuspended := 1
@@ -279,7 +291,7 @@ Else
 	If A_IsCompiled
 		Menu,Tray,icon,%A_ScriptFullPath%,1,1
 	Else
-		Menu,Tray,Icon,%A_WorkingDir%\viatc.ico
+		Menu,Tray,Icon,%A_ScriptDir%\viatc.ico
 ;Menu,Tray,icon,%A_AHKPath%,1,1
 	Settimer,<GetKey>,off
 	IsSuspended := 0
@@ -526,7 +538,8 @@ ListMark()
 {
 	Global Mark_Arr,VIATCINI
 	If Not Mark_Arr["ms"]
-		Return
+        MsgBox, "No mark to show"
+	Return
 	ControlGetFocus,TLB,ahk_class TTOTAL_CMD
 	ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
 	Menu,MarkMenu,Show,%xn%,%yn%
@@ -915,16 +928,22 @@ If SendPos(0)
 Return
 Half()
 {
+    ; this function didn't work, always returned 0, now dirty fixed, but not fully 
 	winget,tid,id,ahk_class TTOTAL_CMD
 	controlgetfocus,ctrl,ahk_id %tid%
 	controlget,cid,hwnd,,%ctrl%,ahk_id %tid%
-	controlgetpos,x1,y1,w1,h1,THeaderClick2,ahk_id %tid%
-	controlgetpos,x,y,w,h,%ctrl%,ahk_id %tid%
+	controlgetpos,x1,y1,w1,h1,THeaderClick2,ahk_id %tid%  ;not setting any variables
+	controlgetpos,x,y,w,h,%ctrl%,ahk_id %tid%   ;seems good
 	SendMessage,0x01A1,1,0,,ahk_id %cid%
-	Hight := ErrorLevel
+	Height := ErrorLevel
 	SendMessage,0x018E,0,0,,ahk_id %cid%
 	Top := ErrorLevel
-	HalfLine := Ceil( ((h-h1)/Hight)/2 ) + Top
+    h1 := 0 ;this line was needed as h1 was not set
+    HalfLine := Ceil( ((h-h1)/Height)/2 ) + Top
+    ;Recalculate again, a bit innacurate, it's a quick dirty fix
+    ;HalfLine := Ceil( Height/2 ) + Top - 1   
+    ;debug info in the line below
+    MsgBox, h=%h% h1=%h1% Top=%Top% HalfLine=%HalfLine%   Height=%Height%  x1=%x1% y1=%y1% w1=%w1% x=%x% y=%y% w=%w%
 	PostMessage, 0x19E, %HalfLine%, 1,, AHK_id %cid%
 }
 <azTab>:
@@ -2193,24 +2212,36 @@ TransSendKey(hotkey)
 }
 FindPath(File)
 {
+    FileSF_FileName:= "C:\"
 	If RegExMatch(File,"exe")
 	{
-		GetPath := A_WorkingDir . "\totalcmd.exe"
-		GetPath64 := A_WorkingDir . "\totalcmd64.exe"
+		;GetPath := A_ScriptDir . "\totalcmd.exe"
+        ;GetPath64 := A_ScriptDir . "\totalcmd64.exe"
+		GetPath := "C:\Program Files (x86)\totalcmd\totalcmd.exe"
+		GetPath64 := "C:\Program Files\totalcmd\totalcmd64.exe"
 		Reg := "InstallDir"
 		FileSF_Option := 3
-		FileSF_FileName:=
+		FileSF_FileName:= "C:\Program Files\totalcmd\"
 		FileSF_Prompt := "TOTALCMD.EXE"
 		FileSF_Filter := "*.EXE"
 		FileSF_Error := "Could not find TOTALCMD.EXE"
 	}
 	If RegExMatch(File,"ini")
 	{
-		GetPath := A_workingDir . "\wincmd.ini"
-		Reg := "IniFileName"
+        Reg := "IniFileName"
+		;GetPath := A_workingDir . "\wincmd.ini"
+		GetPath := "C:\Users\" . A_UserName . "\AppData\Roaming\GHISLER\wincmd.ini"
+        If FileExist(GetPath)
+        {
+            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            ;MsgBox, "Found the wincmd.ini file"
+            ;Return GetPath
+        }
+        else
+            MsgBox, "Could not find the wincmd.ini file from the registry"            
 		FileSF_Option := 3
-		FileSF_FileName:=
-		FileSF_Prompt := " Select the profile "
+		FileSF_FileName:= "C:\Users\" . A_UserName . "\AppData\Roaming\GHISLER\"
+		FileSF_Prompt := " Select the wincmd.ini file "
 		FileSF_Filter := "*.INI"
 		FileSF_Error := "Could not find wincmd.ini"
 	}
@@ -2954,13 +2985,12 @@ Return
 Editviatcini()
 {
 	Global viatcini
-	RegRead,path,HKEY_LOCAL_MACHINE,Software\vim\gvim,path
+	;RegRead,path,HKEY_LOCAL_MACHINE,Software\vim\gvim,path
 	match = `"$0
 	INI := Regexreplace(viatcini,".*",match)
-	path := path . " "
-	If Fileexist(path)
-		;editini := path . a_space . ini                 ;open in a new Vim instance
-		editini := path . " --remote-tab-silent " . ini  ;open in a new Vim tab
+	If Fileexist(VimPath)
+		;editini := VimPath . a_space . ini                 ;open in a new Vim instance
+		editini := VimPath . " --remote-tab-silent " . ini  ;open in a new Vim tab
 	Else
 		editini := "notepad.exe" . a_space . ini
 	Run,%editini%,,UseErrorLevel
@@ -2996,7 +3026,7 @@ Setting()
 	Gui,Add,Button,x10 y335 w180 g<EditViATCIni>, Edit viatc.ini file (&E)
 	Gui,Add,Button,x240 y335 w80 center Default g<GuiEnter>, OK (&O)
 	Gui,Add,Button,x330 y335 w80 center g<GuiCancel>, Cancel (&C)
-	Gui,Add,Tab2,x10 y6 +theme h320 w405 center choose2, Genereal (&U) | Hotkey (&P) | Path setting (&M)
+	Gui,Add,Tab2,x10 y6 +theme h320 w405 center choose2, General (&G) | Hotkeys (&H) | Paths (&P)
 	Gui,Add,GroupBox,x16 y32 H170 w390, Global Settings
 	Gui,Add,CheckBox,x25 y50 h20 checked%startup% vStartup, Startup VIATC(&R)
 	Gui,Add,CheckBox,x180 y50 h20 checked%Service% vService, Background process (&B)
@@ -3038,9 +3068,9 @@ Setting()
 	Gui,Add,ComboBox,x25 y246 h20 w226 choose%DefaultSE% AltSubmit vDefaultSE R5 hwndaa g<SetDefaultSE>,%SE_Arr%
 	Gui,Add,Button,x256 y246 h20 w22 g<AddSearchEng>,+
 	Gui,Add,Button,x280 y246 h20 w22 g<DelSearchEng>,-
-	Gui,Add,CheckBox,x25 y270 h20 checked%GroupWarn% vGroupWarn, Group Key tooltips (for: s g z c V) (&K)
+	Gui,Add,CheckBox,x25 y270 h20 checked%GroupWarn% vGroupWarn, Show tooltips after a first key of Group Key aka Combo Hotkey (&K)
 	Gui,Add,CheckBox,x25 y295 h20 checked%transpHelp% vTranspHelp, Transparent help interface  (&I)
-	Gui,Add,Button,x270 y280 h30 w120 Center g<Help>, Open VIATC Help (&H)
+	Gui,Add,Button,x270 y290 h30 w120 Center g<Help>, Open VIATC Help (&?)
 	Gui,Tab,2
 	Gui,Add,ListView,x16 y32 h170 w390 count20 sortdesc  -Multi vListView g<ListViewDK>,*| hotkey | action | Description
 	Lv_modifycol(2,100)
@@ -3075,32 +3105,35 @@ Setting()
 	Gui,Add,GroupBox,x16 y210 h110 w390
 	Gui,Add,Text,x22 y223 h20, hotkey (&K)
 	Gui,Add,Edit,x78 y220 h20 w100 g<CheckGorH>
-	Gui,Add,CheckBox,x183 y221 h20, Global (&G)
-	Gui,Add,Button,x260 y220 w50 g<TestTH>, analysis
+	Gui,Add,CheckBox,x183 y221 h20, Global (&L)
+	Gui,Add,Button,x250 y220 w70 g<TestTH>, Analysis (&A)
 	Gui,Add,text,x325 y220 h50, * column legend:`n  S - Global`n  H - Hotkey`n  G - GroupKey
 	Gui,Add,text,x28 y249 h20, action (&W)
 	Gui,Add,Edit,x78 y246 h20 w240
 	Gui,Add,Button,x21 y270 h20 w100 g<VimCMD> ,ViATc command (&V)
 	Gui,Add,Button,x140 y270 h20 w100 g<TCCMD> ,TC command (&T)
-	Gui,Add,Button,x21 y294 h20 w100 g<RunFile>, run (&R)
-	Gui,Add,Button,x140 y294 h20 w100 g<SendString>, String (&S)
-	Gui,Add,Button,x260 y274 h40 w60 g<CheckKey>, Save (&L)
-	Gui,Add,Button,x325 y274 h40 w65 g<DeleItem>, Delete (&A)
+	Gui,Add,Button,x21 y294 h20 w100 g<RunFile>, Run (&R)
+	Gui,Add,Button,x140 y294 h20 w100 g<SendString>, Send text (&N)
+	Gui,Add,Button,x260 y274 h40 w60 g<CheckKey>, Save (&S)`n before clicking OK
+	Gui,Add,Button,x325 y274 h40 w65 g<DeleItem>, Delete (&D)
 	Gui,Tab,3
-	Gui,Add,Text,x18 y35 h16 center,TC Executable program location :
+	Gui,Add,Text,x18 y35 h16 center,TC executable "TOTALCMD64.EXE" or "TOTALCMD.EXE" location :
 	Gui,Add,Edit,x18 y55 h20 +ReadOnly w350,%TCEXE%
-	Gui,Add,Button,x375 y53 w30 g<GuiTCEXE>,...
-	Gui,Add,Text,x18 y80 h16 center,TC Profile (ini file) location :
-	Gui,Add,Edit,x18 y100 h20 +ReadOnly w350,%TCINI%
-	Gui,Add,Button,x375 y98 w30 g<GuiTCINI> ,...
-	Gui,Add,Text,x18 y125 h16 center,ViATc Profile location :
-	Gui,Add,Edit,x18 y145 h20 +ReadOnly w350,%ViATcIni%
-	Gui,Add,Button,x375 y143 w30 g<GuiViATcINI> ,...
+	Gui,Add,Button,x375 y53 w30 g<GuiTCEXE>,...(&1)
+	Gui,Add,Text,x18 y100 h16 center,TC "wincmd.ini" file location (this is never used, no need to set):
+	Gui,Add,Edit,x18 y120 h20 +ReadOnly w350,%TCINI%
+	Gui,Add,Button,x375 y120 w30 g<GuiTCINI> ,...(&2)
+	Gui,Add,Text,x18 y165 h16 center,ViATc "viatc.ini" location (changing will move the current file):
+	Gui,Add,Edit,x18 y185 h20 +ReadOnly w350,%ViATcIni%
+	Gui,Add,Button,x375 y185 w30 g<GuiViATcINI> ,...(&3)
+	Gui,Add,Text,x18 y230 h16 center,Vim "gvim.exe" location (or any other editor):
+	Gui,Add,Edit,x18 y250 h20 +ReadOnly w350,%VimPath%
+	Gui,Add,Button,x375 y250 w30 g<GuiVimPath> ,...(&4)
 	Gui,Tab
-	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&U
+	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&G
+	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&H
 	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&P
-	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&M
-	GUi,Show,h370 w420,VIATC Settings
+	GUi,Show,h370 w420,Settings   VIATC %Version% 
 }
 GuiContextMenu:
 If A_GuiControl <> ListView
@@ -3112,14 +3145,17 @@ Menu,RightClick,Add,Edit (&E),<EditItem>
 Menu,RightClick,Add,Delete (&D),<DeleItem>
 Menu,RightClick,Show
 Return
-GuiEscape:
-Tooltip
-Gui,Destroy
-If NeedReload
-	GoSub,<ReloadVIATC>
-Else
-	EmptyMem()
-Return
+
+;exit Settings on ESC if uncommented all 8 lines below
+;GuiEscape:
+;Tooltip
+;Gui,Destroy
+;If NeedReload
+	;GoSub,<ReloadVIATC>
+;Else
+	;EmptyMem()
+;Return
+
 <AddSearchEng>:
 AddSearchEng()
 Return
@@ -3349,7 +3385,7 @@ GetSendString()
 	Gui,Add,Edit,w500 h20
 	Gui,Add,Button,x390 y30 h20 g<GetSendStringEnter> Default, OK (&O)
 	Gui,Add,Button,x457 y30 h20 g<GetSendStringCancel>, Cancel (&C)
-	Gui,Show,,VIATC String
+	Gui,Show,,VIATC. Enter some text to be sent as an input into a command line.
 }
 <GetSendStringEnter>:
 GuiControlGet,txt4,,Edit1
@@ -3370,7 +3406,7 @@ return
 GuiTCExe()
 {
 	Global TCEXE,VIATCSetting
-	Fileselectfile,TCEXE,3,TOTALCMD.EXE, select TOTALCMD.EXE,*.exe
+	Fileselectfile,TCEXE,3,C:\Program Files\totalcmd\, Select "TOTALCMD64.EXE" or "TOTALCMD.EXE",*.exe
 	If ErrorLevel
 		Return
 	Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,InstallDir,%TCEXE%
@@ -3382,7 +3418,7 @@ return
 GuiTCIni()
 {
 	Global TCINI,VIATCSetting
-	Fileselectfile,TCINI,3,, Select the ini file, The default is WINCMD.INI,*.ini
+	Fileselectfile,TCINI,3,C:\Users\%A_UserName%\AppData\Roaming\GHISLER\, Select the "wincmd.ini" file,*.ini
 	If ErrorLevel
 		Return
 	Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,IniFileName,%TCINI%
@@ -3406,6 +3442,20 @@ GuiViATcIni()
 	GuiControl,text,Edit8,%ViATcINI%
 	GoSub,<ReloadVIATC>
 }
+
+<GuiVimPath>:
+GuiVimPath()
+return
+GuiVimPath()
+{
+	Global VimPath,VIATCSetting
+	Fileselectfile,VimPath,3,C:\Program Files (x86)\Vim\vim82\, Select the gvim.exe file or any other editor,*.exe
+	If ErrorLevel
+		Return
+	Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,VimPathReg,%VimPath%
+	GuiControl,text,Edit9,%VimPath%
+}
+
 <CheckGorH>:
 CheckGorH()
 Tooltip
@@ -3539,11 +3589,11 @@ ChangeTab()
 Return
 ChangeTab()
 {
-	If RegExMatch(A_GuiControl,"U")
+	If RegExMatch(A_GuiControl,"G")
 		GuiControl,choose,SysTabControl321,1
-	If RegExMatch(A_GuiControl,"P")
+	If RegExMatch(A_GuiControl,"H")
 		GuiControl,choose,SysTabControl321,2
-	If RegExMatch(A_GuiControl,"M")
+	If RegExMatch(A_GuiControl,"P")
 		GuiControl,choose,SysTabControl321,3
 }
 <TestTH>:
@@ -3688,7 +3738,7 @@ Help()
     Intro := HelpInfo_Arr["Intro"]
     Gui,Font,s11,Arial  ;font for the bottom textarea box in help window
     Gui,Add,Edit,x12 y180 w574 h310 +ReadOnly,%Intro%
-    Gui,Show,w600 h500,VIATC  help
+    Gui,Show,w600 h500,Help   VIATC %Version% 
     If TranspHelp
         WinSet,Transparent,220,ahk_id %VIATCHELP%
     Return
@@ -3802,7 +3852,7 @@ Help()
 		HelpInfo_arr["RAlt"] :="RAlt >> right Alt key, can also be alt instead "
 		HelpInfo_arr["Apps"] :="Apps >> Open the context menu ( Right-click menu )"
 		HelpInfo_arr["RCtrl"] :="Rctrl >> right ctrl key, can also be control or ctrl instead "
-    HelpInfo_arr["Intro"] := "ViATc - Vim mode at Total Commander `nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts (they do not conflict with TC). Press alt+`` (alt+backtick) (this shortcut can be modifed) to disable all ViATc functionality, or simply quit ViATc, TC won't be affected at all.`nDouble-click the tray icon, or Win+F (modifiable) to show/hide TC window`n"
+    HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts. Press alt+`` (alt+backtick) (this shortcut can be modifed) to disable all ViATc functionality, or simply quit ViATc, TC won't be affected at all.`nDouble-click the tray icon, or Win+F (modifiable) to show/hide TC window`n")
 		HelpInfo_arr["Funct"] :="Single key to operate `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: ctrl, alt, shift or LWin (must be LWin not Win).`n`nExamples:`n<LWin>g           - this works as intended`n<ctrl><shift>a  - invalid, more than one modifier`n<ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >`n`nPlease click on the keyboard above to get details of each key.`n"
 		HelpInfo_arr["GroupK"] :="Multiple keys to operate `nGroup Keys can be composed from any characters`nAdditionally the first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`n<ctrl>ab (means press ctrl+a and release, then press b to work)`n<ctrl>a<ctrl>b    -invalid, The first key can have up to one modifier, but the second key cannot`n`nVIATC comes by default with five groups of keys. Click the keyboard above for details z,c,V,g,s"
 		HelpInfo_arr["cmdl"] :="WARNNING: Doesn't work in this version`nThe command line in VIATC supports abbreviations :h :s :r :m :sm :e, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys `n If you type :map in the command line then all custom hotkeys will be displayed.`n If the input is :map key action, where key represents the hotkey to map (it can be a Group Key or a Hotkey) action represents the action to be carried out. This feature is suitable for the scenario where there is a temporary need for a function mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file which is located in the TC directory.`n:smap and :map are the same except map is a global hotkey and does not support mapping Group Keys `n:edit  Directly edit ViATc.ini file "
@@ -3837,7 +3887,7 @@ Help()
 		ActionInfo_Arr["<CreateNewFile>"] := " File template function, Create a new file or a new directory "
 		ActionInfo_Arr["<TCLite>"] := " The simplest TC"
 		ActionInfo_Arr["<ExReName>"] := " Rename, Do not select an extension "
-		ActionInfo_Arr["<Help>"] :=  "ViATc Help"
+		ActionInfo_Arr["<Help>"] :=  "ViATc Help" . Version
 		ActionInfo_Arr["<Setting>"] := "VIATC Settings"
 		ActionInfo_Arr["<ToggleTC>"] :=" Show / Hide TC"
 		ActionInfo_Arr["<EnableVIM>"] :=" Enable / Disable Vim mode "
@@ -3862,12 +3912,12 @@ Help()
 		ActionInfo_Arr["<DownSelect>"] :=" Select Down "
 		ActionInfo_Arr["<UpSelect>"] :=" Select Up"
 		ActionInfo_Arr["<Home>"] :=" Go to the first line, Equivalent to Home key"
-		ActionInfo_Arr["<Half>"] :=" Go to the middle of the list "
+        ActionInfo_Arr["<Half>"] :=" Go to the middle of the list (this doesn't work properly)"
 		ActionInfo_Arr["<End>"] :=" Go to last line, Equivalent to End key "
 		ActionInfo_Arr["<PageUp>"] :=" Page Up "
 		ActionInfo_Arr["<PageDown>"] :=" Page Down "
 		ActionInfo_Arr["<ForceDel>"] :=" Forced Delete, like shift+delete ignores recycle bin"
-		ActionInfo_Arr["<Mark>"] :=" Marks don't work at all yet. Marking function, Mark the current folder, use ' to go to the corresponding mark "
+		ActionInfo_Arr["<Mark>"] :=" (Marks don't work at all yet.) Marking function, Mark the current folder, use ' to go to the corresponding mark "
 		ActionInfo_Arr["<ListMark>"] :=" Show all marks ( Mark by m like in Vim) "
 		ActionInfo_Arr["<Internetsearch>"] :=" Use the default internet browser to search for the current file "
 		ActionInfo_Arr["<azHistory>"] :=" Prefix the history of the folder, Easy to use a-z navigation "
