@@ -3034,7 +3034,7 @@ Setting()
 	Gui,Add,CheckBox,x180 y70 h20 checked%Vim% vVim, default Vim mode (&V)
 	Gui,Add,Text,x25 y100 h20, Activate/Minimize TC (&F)
 	Gui,Add,Edit,x24 y120 h20 w140 vToggle ,%Toggle%
-	Gui,Add,CheckBox,x180 y120 h20 checked%GlobalTogg% vGlobalTogg, Global (&G)
+	Gui,Add,CheckBox,x180 y120 h20 checked%GlobalTogg% vGlobalTogg, Global (&G) "Sublime text 3" so it will work outside TC too
 	Gui,Add,Text,x25 y150 h20, Enable/Disable Vim Hotkey (&A)
 	Gui,Add,Edit,x25 y170 h20 w140 vSusp ,%Susp%
 	Gui,Add,CheckBox,x180 y170 h20 checked%GlobalSusp% vGlobalSusp, Global (&L)
@@ -3835,8 +3835,9 @@ Help()
 		HelpInfo_arr["Enter"] :="Enter >> Enter "
 		HelpInfo_arr["LShift"] :="Lshift >> Left shift key, can also be made by Shift instead "
 		HelpInfo_arr["Z"] :="z >> Tool (Group Key, requires another key) `nZ >> No mapping `nzz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzi >> Maximize the left panel `nzo >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzr >> Return to normal size, Restore `nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent `nzf >> The simplest TC`nzq >> Exit TC`nza >> Reload TC"
-		HelpInfo_arr["X"] :="x >> Delete Files\folders`nX >> Force Delete, like shift+delete ignores recycle bin"
-		HelpInfo_arr["C"] :="c >> Close tab`nC (Group Key, requires another key)>> decode/encode `n"
+		;HelpInfo_arr["X"] :="x >> Delete Files\folders`nX >> Force Delete, like shift+delete ignores recycle bin"
+		HelpInfo_arr["X"] :="x >> Close tab`nX >> Enter or Run file under cursor"
+		HelpInfo_arr["C"] :="c >> (Group Key, requires another key) `ncc >> Delete `ncf >> Force Delete, like shift+delete ignores recycle bin`nC (Group Key, requires another key)>> decode/encode `n"
 		HelpInfo_arr["V"] :="v >> Context menu (was View menu)`nV >> View... (Group Key, requires another key)`n<Shift>vb >> display / hide :  toolbar `n<Shift>vd >> display / hide :  Drive button `n<Shift>vo >> display / hide :  Two drive button bars `n<Shift>vr >> display / hide :  Drive list `n<Shift>vc >> display / hide :  Current folder `n<Shift>vt >> display / hide :  Sort tab `n<Shift>vs >> display / hide :  Status Bar `n<Shift>vn >> display / hide :  Command Line `n<Shift>vf >> display / hide :  Function button `n<Shift>vw >> display / hide :  Folder tab `n<Shift>ve >> Browse internal commands "
 		HelpInfo_arr["B"] :="b >> Move up a page, Equivalent to PageUp`nB >> Open the tabbed browsing window "
 		HelpInfo_arr["N"] :="n >> Show the folder history ( band a-z navigation )`nN >> No mapping "

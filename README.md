@@ -1,8 +1,8 @@
 ViATc
 =====
 ViATc - Vim mode at Total Commander.  
-This software works on Windows and only as an addidion to "Total Commander" - the greatest file manager (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
-ViATc tries to resemble the workflow of Vim and web browser plugins like Vimium or better yet SurfingKeys.
+This software works on Windows and only as an addition to "Total Commander" - the greatest file manager (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
+ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium or better yet SurfingKeys.
 
 What ViATc does to Total Commander (called later TC):
 - it's only a separate addition, easily disabled, it doesn't modify TC
@@ -16,12 +16,12 @@ Installation
 - You can download a compiled executable from https://magicstep.github.io/viatc/  
   A compiled executable most likely will be older than the current script version. 
 - You can run the script if you have Autohotkey installed. Download and install Autohotkey, it is powerful for many purposes. https://autohotkey.com  
-  To get the script download zip file from https://github.com/magicstep/ViATc-English/archive/master.zip, extract and you wil see the ahk script. To run it double-click viatc-0.5.4en.ahk
-- Look for a new icon in the tray, right-click on it and choose Help.
+  To get the script download zip file from https://github.com/magicstep/ViATc-English/archive/master.zip, extract and you will see the ahk script. To run it double-click viatc-0.5.4en.ahk
+- Look for a new icon in the tray, right-click on it and choose Help or Settings to get accustomed to the shortcuts.
 
 Settings
 ========
-You can add and remove shortcuts directly in the ini file or via ViATc Settings window. After changes you must click Save before clicking OK. This will reaload ViaTC automatically
+You can add and remove shortcuts directly in the ini file or via ViATc Settings window. After changes you must click Save before clicking OK. This will reload ViaTC automatically
 Reload ViATc manually after any changes made directly in the ini file to take effect.
 In the ini file all lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
 If you have mapped CapsLock as Escape in other AHK script you need to map it again in viatc.ini like this `<CapsLock>=<Esc>`
