@@ -1,3 +1,4 @@
+;tripple exclamations !!! are markers for debugging
 #SingleInstance Force
 #Persistent
 #NoEnv
@@ -7,7 +8,9 @@ SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
 Global Version := "0.5.5en"
-Global VimPath := 
+Global VimPath := "gvim.exe"
+Global IconPath := A_ScriptDir . "\viatc.ico"
+Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
 KeyTemp :=
 Repeat :=
 VimAction :=
@@ -58,7 +61,7 @@ RegRead,ViATcIni,HKEY_CURRENT_USER,Software\VIATC,ViATcINI
 If Not FileExist(ViATcINI)
 	ViatcIni :=  A_ScriptDir . "\viatc.ini"
     ;ViatcIni := TcDir . "\viatc.ini"
-;MsgBox , %ViatcIni%
+;MsgBox , %ViatcIni% ;!!!
 
 RegRead,VimPath,HKEY_LOCAL_MACHINE,Software\vim\gvim,path
 If Not FileExist(VimPath)   ;fallback to the user setting
@@ -90,7 +93,9 @@ Menu,Tray,Default, Run TC (&T)
 If TrayIcon
 	Menu,Tray,Icon
 Menu,Tray,NoStandard
-Menu,Tray,Icon,%A_ScriptDir%\viatc.ico
+;If Not A_IsCompiled
+If FileExist(IconPath)
+    Menu,Tray,Icon,%IconPath%
 SetHelpInfo()
 SetVimAction()
 SetActionInfo()
@@ -276,11 +281,19 @@ If Not IsSuspended
 {
 	Menu,Tray,Rename, Disable (&D), Enable (&E)
 	TrayTip,, Disabled ViATc,10,17
-	If A_IsCompiled
-		Menu,Tray,icon,%A_ScriptFullPath%,5,1
-	Else
-		Menu,Tray,Icon,%A_ScriptDir%\viatcdis.ico
-;Menu,Tray,icon,%A_AHKPath%,5,1
+    If FileExist(IconDisabledPath)
+    {
+        If A_IsCompiled
+        {
+            ;MsgBox , %IconDisabledPath% ;!!!
+            ;Menu,Tray,icon,%IconDisabledPath%,1,1
+            ;Menu,Tray,icon,%IconDisabledPath%,5,1
+            Menu,Tray,Icon,viatcdis.ico
+        }
+        Else
+            Menu,Tray,Icon,%IconDisabledPath%
+    }
+    ;!!! 
 	Settimer,<GetKey>,100
 	IsSuspended := 1
 }
@@ -288,11 +301,14 @@ Else
 {
 	Menu,Tray,Rename, Enable (&E), Disable (&D)
 	TrayTip,, Enabled ViATc,10,17
-	If A_IsCompiled
-		Menu,Tray,icon,%A_ScriptFullPath%,1,1
-	Else
-		Menu,Tray,Icon,%A_ScriptDir%\viatc.ico
-;Menu,Tray,icon,%A_AHKPath%,1,1
+    If FileExist(IconPath)
+    {
+        If A_IsCompiled
+            Menu,Tray,icon,%IconPath%,1,1
+        Else
+            Menu,Tray,Icon,%IconPath%
+    }
+    ;!!!
 	Settimer,<GetKey>,off
 	IsSuspended := 0
 	Suspend,off
@@ -942,7 +958,7 @@ Half()
     HalfLine := Ceil( ((h-h1)/Height)/2 ) + Top
     ;Recalculate again, a bit innacurate, it's a quick dirty fix
     ;HalfLine := Ceil( Height/2 ) + Top - 1   
-    ;debug info in the line below
+    ;debug info in the line below !!!
     MsgBox, h=%h% h1=%h1% Top=%Top% HalfLine=%HalfLine%   Height=%Height%  x1=%x1% y1=%y1% w1=%w1% x=%x% y=%y% w=%w%
 	PostMessage, 0x19E, %HalfLine%, 1,, AHK_id %cid%
 }
@@ -3034,7 +3050,7 @@ Setting()
 	Gui,Add,CheckBox,x180 y70 h20 checked%Vim% vVim, default Vim mode (&V)
 	Gui,Add,Text,x25 y100 h20, Activate/Minimize TC (&F)
 	Gui,Add,Edit,x24 y120 h20 w140 vToggle ,%Toggle%
-	Gui,Add,CheckBox,x180 y120 h20 checked%GlobalTogg% vGlobalTogg, Global (&G) "Sublime text 3" so it will work outside TC too
+	Gui,Add,CheckBox,x180 y120 h20 checked%GlobalTogg% vGlobalTogg, Global (&G) So it will work outside TC too
 	Gui,Add,Text,x25 y150 h20, Enable/Disable Vim Hotkey (&A)
 	Gui,Add,Edit,x25 y170 h20 w140 vSusp ,%Susp%
 	Gui,Add,CheckBox,x180 y170 h20 checked%GlobalSusp% vGlobalSusp, Global (&L)
@@ -3808,7 +3824,7 @@ Help()
 		HelpInfo_arr["Backspace"] :="Backspace >> No mapping `n Go up a folder or delete the text in edit mode "
 		HelpInfo_arr["Tab"] :="Tab >> No mapping `nSwitch the window "
 		HelpInfo_arr["Q"] :="q >> Quick view function `nQ >> Use the default browser to search for the current file name / Folder name "
-		HelpInfo_arr["W"] :="w >> The right-click shortcut menu (before was: Edit file comments) `nW >> No mapping "
+		HelpInfo_arr["W"] :="w >> Small menu `nW >> No mapping "
 		HelpInfo_arr["E"] :="e >> e... Group Key (before was: The right-click shortcut menu) `nE >> Run in the current directory CMD.EXE `nee >> Enter"
 		HelpInfo_arr["R"] :="r >> Rename the file `nR >> Batch rename file "
 		HelpInfo_arr["T"] :="t >> New tab `nT >> Create a new tab in the background "
@@ -3855,9 +3871,9 @@ Help()
 		HelpInfo_arr["RCtrl"] :="Rctrl >> right ctrl key, can also be control or ctrl instead "
     HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts. Press alt+`` (alt+backtick) (this shortcut can be modifed) to disable all ViATc functionality, or simply quit ViATc, TC won't be affected at all.`nDouble-click the tray icon, or Win+F (modifiable) to show/hide TC window`n")
 		HelpInfo_arr["Funct"] :="Single key to operate `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: ctrl, alt, shift or LWin (must be LWin not Win).`n`nExamples:`n<LWin>g           - this works as intended`n<ctrl><shift>a  - invalid, more than one modifier`n<ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >`n`nPlease click on the keyboard above to get details of each key.`n"
-		HelpInfo_arr["GroupK"] :="Multiple keys to operate `nGroup Keys can be composed from any characters`nAdditionally the first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`n<ctrl>ab (means press ctrl+a and release, then press b to work)`n<ctrl>a<ctrl>b    -invalid, The first key can have up to one modifier, but the second key cannot`n`nVIATC comes by default with five groups of keys. Click the keyboard above for details z,c,V,g,s"
+		HelpInfo_arr["GroupK"] :="Also known as Combo Hotkeys. They take multiple keys to operate `nGroup Keys can be composed from any characters`nAdditionally the first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`n<ctrl>ab (means press ctrl+a and release, then press b to work)`n<ctrl>a<ctrl>b    -invalid, The first key can have up to one modifier, but the second key cannot`n`nVIATC comes by default with five groups of keys. Click the keyboard above for details z,c,V,g,s"
 		HelpInfo_arr["cmdl"] :="WARNNING: Doesn't work in this version`nThe command line in VIATC supports abbreviations :h :s :r :m :sm :e, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys `n If you type :map in the command line then all custom hotkeys will be displayed.`n If the input is :map key action, where key represents the hotkey to map (it can be a Group Key or a Hotkey) action represents the action to be carried out. This feature is suitable for the scenario where there is a temporary need for a function mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file which is located in the TC directory.`n:smap and :map are the same except map is a global hotkey and does not support mapping Group Keys `n:edit  Directly edit ViATc.ini file "
-		HelpInfo_arr["action"] :="In VIATC all operations can be understood as actions. All actions can be found in the hotkey mapping tab of the Settings interface. Actions are divided into four categories :`n1.VIATC takes action, VIATC provides some TC enhancements to make more convenient to operate TC.`n2.TC Internal action, that is TC internal commands beginning with the cm_ such as cm_SrcComments.`n3. Run a program or open a file. Of course TC has similar functions built-in but ViATc way is often more convenient than using TC to run a program or edit a file.`n4. Send a string. If you want TC to always enter a text, you can use the Group Key to map the action of sending a string, Convenient ah !!`n The above four actions, 1 and 2 must be surrounded by <  > , 3 needs to be surrounded with (  ) , 4 with {  }.`nFor example `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Group Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Group Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be Interpreted by VIATC as pressing the Enter key."
+		HelpInfo_arr["action"] :="For geeks only: `n`nIn VIATC all operations can be understood as actions. All actions can be found in the Hotkey tab of the Settings window. Actions are divided into 4 categories :`n`n1.VIATC takes action, VIATC provides some TC enhancements to make more convenient to operate TC.`n2.TC Internal action, that is TC internal commands beginning with the cm_ such as cm_SrcComments.`n`n3. Run a program or open a file. Of course TC has similar functions built-in but ViATc way is often more convenient than using TC to run a program or edit a file.`n`n4. Send a string. If you want TC to input a text, you can use the Group Key to map the action of sending a string.`n`n The above four actions, 1 and 2 must be surrounded by <  > , 3 needs to be surrounded with (  ) , 4 with {  }.`nFor example `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Group Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Group Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be Interpreted by VIATC as pressing the Enter key."
 		HelpInfo_arr["About"] :="Author of the original Chinese version is linxinhong https://github.com/linxinhong  (linxinhong.sky@gmail.com) He knows basic English but is AHK guru.`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname @gmail.com    I know nothing about Chinese, I've used Google translate initially and then rephrased and modified this software. I'm just a junior in AHK.`n`nThis version is not perfected yet, any help appreciated."
 	}
 	SetGroupInfo()
