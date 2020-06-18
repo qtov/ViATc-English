@@ -1,4 +1,4 @@
-;tripple exclamations !!! are markers for debugging
+;tripple underscores ___  and exclamations !!! are markers for debugging
 #SingleInstance Force
 #Persistent
 #NoEnv
@@ -7,7 +7,7 @@ Setkeydelay,-1
 SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
-Global Version := "0.5.5en"
+Global Version := "0.5.5en beta 1"
 Global VimPath := "gvim.exe"
 Global IconPath := A_ScriptDir . "\viatc.ico"
 Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
@@ -17,7 +17,7 @@ VimAction :=
 KeyCount := 0
 Global Vim := true
 Global InsertMode := False
-Global VimRN
+Global VimRN := True
 Global VimRN_Count
 Global VimRN_ID
 Global VimRN_History := Object()
@@ -26,6 +26,7 @@ Global VimRN_Vis := False
 Global VimRN_IsReplace := False
 Global VimRN_IsMultiReplace := False
 Global VimRN_IsFind := False
+Global ViatcIni
 GroupKey_Arr := object()
 MapKey_Arr := object()
 ExecFile_Arr := object()
@@ -57,6 +58,7 @@ Else
 	Global TCPanel1 := "TPanel1"
 	Global TCPanel2 := "TMyPanel8"
 }
+Global TCEditMarks := "Edit1"
 RegRead,ViATcIni,HKEY_CURRENT_USER,Software\VIATC,ViATcINI
 If Not FileExist(ViATcINI)
 	ViatcIni :=  A_ScriptDir . "\viatc.ini"
@@ -70,13 +72,13 @@ If Not FileExist(VimPath)   ;fallback to the user setting
 If Not FileExist(VimPath) ;fallback to the last resort
     VimPath := "notepad.exe"  
 GoSub,<ConfigVar>
-Menu,VimRN_Set,Add, default Vim mode `tAlt+V,VimRN_SelMode
-Menu,VimRN_Set,Add, The default suffix is selected `tAlt+F,VimRN_SelExt
+Menu,VimRN_Set,Add, Vim mode at start `tAlt+V,VimRN_SelMode
+Menu,VimRN_Set,Add, Unselect extension at start `tAlt+E,VimRN_SelExt
 Menu,VimRN_MENU,Add, Settings (&S),:VimRN_Set
 Menu,VimRN_MENU,Add, Help (&H),VimRN_Help
 Menu,Tray,NoStandard
 Menu,Tray,Add, Run TC (&T),<ToggleTC>
-Menu,Tray,Add, Disable (&D),<EnableVIM>
+Menu,Tray,Add, Disable (&D),<EnableViATc>
 Menu,Tray,Add, Reload (&R),<ReLoadVIATC>
 If Not A_IsCompiled
 {
@@ -102,7 +104,28 @@ SetActionInfo()
 SetDefaultKey()
 ReadKeyFromIni()
 EmptyMem()
+Winactivate,AHK_CLASS TTOTAL_CMD
+<Esc>
+;Sleep 500
+;Send {Esc}
+    ;-----------!!!!
+	;Suspend,off
+    ;Send {Esc}
+    ;Sleep 700
+    ;Send {Esc}
+    ;Sleep 200
+    ;Send j
+
+    ;Send {Esc}
+    ;ToolTip Reloaded
+    ;WinWait,AHK_CLASS TTOTAL_CMD,3
+	;Winactivate,AHK_CLASS TTOTAL_CMD
+	;Settimer,<CheckTCExist>,100
+    ;Gui,Cancel
+    ;EmptyMem()
+
 return
+
 <ConfigVar>:
 Vim := GetConfig("Configuration","Vim")
 Toggle := TransHotkey(GetConfig("Configuration","Toggle"),"ALL")
@@ -244,6 +267,8 @@ EmptyMem()
 WinClose,ViATc_TabList
 Gui,Destroy
 Return
+
+
 <ToggleTC>:
 Ifwinexist,AHK_CLASS TTOTAL_CMD
 {
@@ -275,7 +300,7 @@ Else
 }
 EmptyMem()
 Return
-<EnableVIM>:
+<EnableViATc>:
 Suspend
 If Not IsSuspended
 {
@@ -293,7 +318,6 @@ If Not IsSuspended
         Else
             Menu,Tray,Icon,%IconDisabledPath%
     }
-    ;!!! 
 	Settimer,<GetKey>,100
 	IsSuspended := 1
 }
@@ -308,7 +332,6 @@ Else
         Else
             Menu,Tray,Icon,%IconPath%
     }
-    ;!!!
 	Settimer,<GetKey>,off
 	IsSuspended := 0
 	Suspend,off
@@ -325,6 +348,7 @@ ReloadVIATC()
 Return
 ReloadVIATC()
 {
+    ToolTip
 	ToggleMenu(1)
 	If HideControl_arr["Toggle"]
 		HideControl()
@@ -342,6 +366,9 @@ Return
 
 <Enter>:
 Enter()
+Return
+<iEnter>:
+iEnter()
 Return
 <Hint>:
 If SendPos(0)
@@ -441,8 +468,8 @@ G()
 If SendPos(4003)
 {
 	ControlGet,EditId,Hwnd,,AHK_CLASS TTOTAL_CMD
-	ControlSetText,%TCEdit%,m,AHK_CLASS TTOTAL_CMD
-	Postmessage,0xB1,2,2,%TCEdit%,AHK_CLASS TTOTAL_CMD
+	ControlSetText,%TCEditMarks%,m,AHK_CLASS TTOTAL_CMD
+	Postmessage,0xB1,2,2,%TCEditMarks%,AHK_CLASS TTOTAL_CMD
 	SetTimer,<MarkTimer>,100
 }
 Return
@@ -453,9 +480,9 @@ MarkTimer()
 {
 	Global Mark_Arr,VIATCINI
 	ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-	ControlGetText,OutVar,%TCEdit%,AHK_CLASS TTOTAL_CMD
-	Match_TCEdit := "i)^" . TCEdit . "$"
-	If Not RegExMatch(ThisControl,Match_TCEdit) OR Not RegExMatch(Outvar,"i)^m.?")
+	ControlGetText,OutVar,%TCEditMarks%,AHK_CLASS TTOTAL_CMD
+	Match_TCEditMarks := "i)^" . TCEditMarks . "$"
+	If Not RegExMatch(ThisControl,Match_TCEditMarks) OR Not RegExMatch(Outvar,"i)^m.?")
 	{
 		Settimer,<MarkTimer>,Off
 		Return
@@ -463,8 +490,8 @@ MarkTimer()
 	If RegExMatch(OutVar,"i)^m.$")
 	{
 		SetTimer,<MarkTimer>,off
-		ControlSetText,%TCEdit%,,AHK_CLASS TTOTAL_CMD
-		ControlSend,%TCEdit%,{Esc},AHK_CLASS TTOTAL_CMD
+		ControlSetText,%TCEditMarks%,,AHK_CLASS TTOTAL_CMD
+		ControlSend,%TCEditMarks%,{Esc},AHK_CLASS TTOTAL_CMD
 		ClipSaved := ClipboardAll
 		Clipboard :=
 		Postmessage 1075, 2029, 0,, ahk_class TTOTAL_CMD
@@ -542,8 +569,8 @@ AddMark()
 		Postmessage 1075, 2127, 0,, ahk_class TTOTAL_CMD
 		Return
 	}
-	ControlSetText, %TCEdit%, cd %ThisMenuItem%, ahk_class TTOTAL_CMD
-	ControlSend, %TCEdit%, {Enter}, ahk_class TTOTAL_CMD
+	ControlSetText, %TCEditMarks%, cd %ThisMenuItem%, ahk_class TTOTAL_CMD
+	ControlSend, %TCEditMarks%, {Enter}, ahk_class TTOTAL_CMD
 	Return
 }
 <ListMark>:
@@ -553,9 +580,12 @@ Return
 ListMark()
 {
 	Global Mark_Arr,VIATCINI
-	If Not Mark_Arr["ms"]
-        MsgBox, "No mark to show"
-	Return
+    If Not Mark_Arr["ms"]
+    {
+        Tooltip No marks to show
+        Settimer,<RemoveHelpTip>,950
+        Return
+    }
 	ControlGetFocus,TLB,ahk_class TTOTAL_CMD
 	ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
 	Menu,MarkMenu,Show,%xn%,%yn%
@@ -814,6 +844,41 @@ DeleteCMD()
 If SendPos(0)
 	ListMapKey()
 Return
+ListMapKeyMultiColumn()
+{
+	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
+	Map := MapKey_Arr["Hotkeys"]
+	Stringsplit,ListMap,Map,%A_Space%
+    Global ColumnCount := 2
+    ItemCount := 0
+	Loop,% ListMap0
+	{
+		If ListMap%A_Index%
+		{
+			Action := MapKey_Arr[ListMap%A_Index%]
+			If Action = <Exec>
+			{
+				EX := SubStr(ListMap%A_Index%,1,1) . TransHotkey(SubStr(ListMap%A_Index%,2))
+				Action := "(" . ExecFile_Arr[EX] . ")"
+			}
+			If Action = <Text>
+			{
+				TX := SubStr(ListMap%A_Index%,1,1) . TransHotkey(SubStr(ListMap%A_Index%,2))
+				Action := "{" . SendText_Arr[TX] . "}"
+			}
+			LM .= SubStr(ListMap%A_Index%,1,1) . "  " . SubStr(ListMap%A_Index%,2) . "  " . Action  . "`t`t"
+            ItemCount ++
+            if Mod(ItemCount, ColumnCount) = 0
+                LM .= "`n"
+		}
+	}
+	ControlGetPos,xn,yn,,hn,%TCEdit%,AHK_CLASS TTOTAL_CMD
+	yn := yn - hn - ( ListMap0 * 8 ) - 2
+	Tooltip,%LM%,%xn%,%yn%
+	Settimer,<RemoveToolTipEx>,100
+}
+
+;ListMapKeySingleColumn()
 ListMapKey()
 {
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
@@ -837,11 +902,14 @@ ListMapKey()
 			LM .= SubStr(ListMap%A_Index%,1,1) . "  " . SubStr(ListMap%A_Index%,2) . "  " . Action  . "`n"
 		}
 	}
+    Msgbox  %Lm%
 	ControlGetPos,xn,yn,,hn,%TCEdit%,AHK_CLASS TTOTAL_CMD
 	yn := yn - hn - ( ListMap0 * 8 ) - 2
 	Tooltip,%LM%,%xn%,%yn%
 	Settimer,<RemoveToolTipEx>,100
 }
+
+
 <FocusCmdLineEx>:
 If SendPos(4003)
 {
@@ -875,7 +943,7 @@ WinMaxLeft()
         ; 2000 is just a big numer to make Panel1 tall, pushing panel2 out of screen
 		ControlMove,%TCPanel1%,0,2000,,,ahk_class TTOTAL_CMD
         ; another way to fix it would be set both panels to 50% and then double the first panel
-
+        ; Years later I think I know what was the problem, TC 64bit has different names for things like %TCPanel1%
 	ControlClick, %TCPanel1%,ahk_class TTOTAL_CMD
 	WinActivate ahk_class TTOTAL_CMD
 }
@@ -959,7 +1027,7 @@ Half()
     ;Recalculate again, a bit innacurate, it's a quick dirty fix
     ;HalfLine := Ceil( Height/2 ) + Top - 1   
     ;debug info in the line below !!!
-    MsgBox, h=%h% h1=%h1% Top=%Top% HalfLine=%HalfLine%   Height=%Height%  x1=%x1% y1=%y1% w1=%w1% x=%x% y=%y% w=%w%
+    ;MsgBox, h=%h% h1=%h1% Top=%Top% HalfLine=%HalfLine%   Height=%Height%  x1=%x1% y1=%y1% w1=%w1% x=%x% y=%y% w=%w%
 	PostMessage, 0x19E, %HalfLine%, 1,, AHK_id %cid%
 }
 <azTab>:
@@ -1125,15 +1193,25 @@ VimRNCreateGui()
 	Loop,8
 	{
 		ControlGetFocus,ThisCtrl,AHK_CLASS TTOTAL_CMD
-		If ThisCtrl = TInEdit1
+		;If ThisCtrl = TInEdit1
+		If ThisCtrl = Edit1
 		{
-			ControlGetText,GetName,TInEdit1,AHK_CLASS TTOTAL_CMD
+			;ControlGetText,GetName,TInEdit1,AHK_CLASS TTOTAL_CMD
+			ControlGetText,GetName,Edit1,AHK_CLASS TTOTAL_CMD
 			Break
 		}
 		Sleep,50
 	}
 	If Not GetName
-		Return
+        Return
+
+    ;Abort if VimReName is not enabled
+    IniRead,Enabled,%ViatcIni%,VimReName,Enabled
+	If Enabled = ERROR
+        return
+	If Enabled = 0
+        return
+
 	StringRight,GetDir,GetName,1
 	If GetDir = \
 	{
@@ -1142,30 +1220,33 @@ VimRNCreateGui()
 	}
 	Else
 		GetDir := False
+
+
 	WinGet,TCID,ID,AHK_CLASS TTOTAL_CMD
 	Gui,New
 	Gui,+HwndVimRN_ID
 	Gui,+Owner%TCID%
 	Gui,Menu,VimRN_MENU
-	Gui,Add,Edit,r6 w300 -WantReturn gVimRN_Edit,%GetName%
+    Gui,Font,s16,Arial  ;font for the rename window
+	Gui,Add,Edit,r5 w800 -WantReturn gVimRN_Edit,%GetName%
 	Gui,Add,StatusBar
 	Gui,Add,Button,Default Hidden gVimRN_Enter
-	Gui,Show,h125,ViATc  Rename
+	Gui,Show,h175,ViATc Fancy Rename
 	PostMessage,0x00C5,256,,Edit1,AHK_ID %VimRN_ID%
 	VimRN := GetConfig("VimReName","Mode")
 	If VimRN
 	{
-		Menu,VimRN_Set,Check, default Vim mode `tAlt+V
+		Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
 		Status := "  mode : Vim                                    "
 	}
 	Else
-		Status := "  mode : Normal                                 "
+		Status := "  mode : Insert                                 "
 	ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
-	If GetConfig("VimReName","SelectExt")
+	If GetConfig("VimReName","UnselectExt")
 	{
 		SplitPath,GetName,,,Ext
-		Menu,VimRN_Set,Check, default Vim mode `tAlt+V
-		Menu,VimRN_Set,Check, The default suffix is selected `tAlt+E
+		Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
+        Menu,VimRN_Set,Check, Unselect extension at start `tAlt+E
 	}
 	If Ext And ( Not GetDir )
 	{
@@ -1173,6 +1254,8 @@ VimRNCreateGui()
 		EndPos := StrLen(GetName) - strlen(Ext) - 1
 		VimRN_SetPos(StartPos,EndPos)
 	}
+
+
 	VimRN_History["s"] := 0
 	VimRN_History[0] := StartPos . "," . EndPos . "," . GetName
 	VimRN_History["String"] := GetName
@@ -1206,6 +1289,14 @@ VimRN_SendKey(key)
 Return
 VimRN_Left:
 Key := VimRN_Vis ? "+{Left}" : "{Left}"
+VimRN_SendKey(key)
+Return
+VimRN_Word:
+Key := VimRN_Vis ? "^+{Right}" : "^{Right}"
+VimRN_SendKey(key)
+Return
+VimRN_BackWord:
+Key := VimRN_Vis ? "^+{Left}" : "^{Left}"
 VimRN_SendKey(key)
 Return
 VimRN_Right:
@@ -1364,7 +1455,7 @@ VimRN_Insert:
 If VimRN_SendKey("")
 {
 	VimRN := False
-	Status := "  mode : Normal                                 "
+	Status := "  mode : Insert                                 "
 	ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
 }
 Return
@@ -1393,16 +1484,16 @@ Postmessage,1075,1007,0,,AHK_CLASS TTOTAL_CMD
 Loop,40
 {
 	ControlGetFocus,This,AHK_CLASS TTOTAL_CMD
-	If This = TInEdit1
+	If This = Edit1
 	{
-		ControlGetText,ConfirName,TInEdit1,AHK_CLASS TTOTAL_CMD
-		ControlSetText,TInEdit1,%NewName%,AHK_CLASS TTOTAL_CMD
+		ControlGetText,ConfirName,Edit1,AHK_CLASS TTOTAL_CMD
+		ControlSetText,Edit1,%NewName%,AHK_CLASS TTOTAL_CMD
 		Break
 	}
 	Sleep,50
 }
 If Diff(ConfirName,GetName)
-	ControlSend,TInEdit1,{enter},AHK_CLASS TTOTAL_CMD
+	ControlSend,Edit1,{enter},AHK_CLASS TTOTAL_CMD
 Else
 	Return
 Return
@@ -1412,51 +1503,63 @@ Return
 VimRN_SelMode:
 SetConfig("VimReName","Mode",!GetConfig("VimReName","Mode"))
 If GetConfig("VimReName","Mode")
-	Menu,VimRN_Set,Check, default Vim mode `tAlt+V
+	Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
 Else
-	Menu,VimRN_Set,UnCheck, default Vim mode `tAlt+V
+	Menu,VimRN_Set,UnCheck, Vim mode at start `tAlt+V
 Return
 VimRN_SelExt:
-SetConfig("VimReName","SelectExt",!GetConfig("VimReName","SelectExt"))
-If GetConfig("VimReName","SelectExt")
-	Menu,VimRN_Set,Check, The default suffix is selected `tAlt+E
+SetConfig("VimReName","UnselectExt",!GetConfig("VimReName","UnselectExt"))
+If GetConfig("VimReName","UnselectExt")
+	Menu,VimRN_Set,Check, Unselect extension at start `tAlt+E
 Else
-	Menu,VimRN_Set,UnCheck, The default suffix is selected `tAlt+E
+	Menu,VimRN_Set,UnCheck, Unselect extension at start `tAlt+E
 Return
 VimRN_Help:
 VimRN_Help()
 Return
+
+; line taken out of the help
+;Esc :  Vim's Normal mode (use the real Esc, not Capslock)
+
 VimRN_Help()
 {
-	test =
+	rename_help =
 (
-h :  move to the left N Character
-j :  Move Downward N Character
-k :  Move up N Character
-l :  move to the right N Character
-w :  Select the file name
-e :  Select the extension
-u :  Revoked
-x :  Removed later
-d :  Deleted forward
-y :  Copy characters
-p :  Paste the character
-t :  Two characters for changing the cursor
-r :  Only replace the characters at the cursor
-R :  Replace all characters after the cursor, Straight encounter Esc
-a :  select all
-g :  The cursor is in the first character
-b :  The cursor is at the last character
-s :  The cursor is at the last character of the selected character
-f :  Find characters, E.g f Press after a, Is to find a
-q :  Exit rename
-i :  Edit mode
-v :  Select mode
-Esc :  Normal mode
+This is a simple Vim emulator
+q :  Quit, cancel rename without saving
+i :  Insert mode
+v :  Visual select mode (v again to toggle to Vim Normal mode)
+Esc :  Vim's Normal mode
+Capslock : same as Escape
 Enter :  Save rename
+
+h :  Move to the left N characters
+l :  move to the right N characters
+H :  Select to the left N characters
+L :  Select to the right N characters
+w :  Word
+b :  Back a word
+j :  Move downward N lines (if filename is so long that it wraps)
+k :  Move up N lines (if filename is so long that it wraps)
+u :  Undo
+x :  Delete forward
+d :  Delete backward (like backspace or X in vim)
+y :  Copy characters (in Visual mode only)
+p :  Paste the character
+f :  Find characters, E.g 'f' then 'a' to find 'a'
+t :  Transpose two characters at the cursor
+r :  Only replace the characters at the cursor
+R :  Replace all characters after the cursor, untill Esc
+n :  Select the file name
+e :  Select the extension
+a :  Select all
+g :  Deselect, put cursor at the first character
+^ :  Deselect, put cursor at the first character
+$ :  Deselect, put cursor at the last character
+s :  Deselect, put cursor at the end of the selected text
 )
 	WinGetPos,,,w,h,AHK_ID %VimRN_ID%
-	tooltip,%test%,0,%h%
+	tooltip,%rename_help%,0,%h%
 	Settimer,<RemoveHelpTip>,50
 	Return
 }
@@ -1607,11 +1710,14 @@ VimRN_SetPos(Pos1,Pos2)
 {
 	PostMessage,0x00B1,%Pos1%,%Pos2%,Edit1,AHK_ID %VimRN_ID%
 }
+
+;hardcoded settings
 SetDefaultKey()
 {
 	Hotkey,Ifwinactive,ahk_class TQUICKSEARCH
 	Hotkey,+j,<Down>
 	Hotkey,+k,<Up>
+
 	Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
 	HotKey,1,<Num1>,on,UseErrorLevel
 	HotKey,2,<Num2>,on,UseErrorLevel
@@ -1623,46 +1729,59 @@ SetDefaultKey()
 	HotKey,8,<Num8>,on,UseErrorLevel
 	HotKey,9,<Num9>,on,UseErrorLevel
 	HotKey,0,<Num0>,on,UseErrorLevel
-	HotKey,j,<Down>,on,UseErrorLevel
-	HotKey,k,<up>,on,UseErrorLevel
-	HotKey,h,<left>,on,UseErrorLevel
-	HotKey,l,<right>,on,UseErrorLevel
-	HotKey,+k,<UpSelect>,on,UseErrorLevel
-	HotKey,+j,<DownSelect>,on,UseErrorLevel
-	HotKey,+h,<GotoPreviousDir>,on,UseErrorLevel
-	HotKey,+l,<GotoNextDir>,on,UseErrorLevel
-	HotKey,d,<DirectoryHotlist>,on,UseErrorLevel
-	HotKey,+d,<GoDesktop>,on,UseErrorLevel
-	Hotkey,.,<SingleRepeat>,On,UseErrorLevel
-	HotKey,e,<ContextMenu>,on,UseErrorLevel
-	HotKey,+e,<ExecuteDOS>,on,UseErrorLevel
-	HotKey,u,<GotoParentEx>,on,UseErrorLevel
-	HotKey,+u,<GotoRoot>,on,UseErrorLevel
-	Hotkey,i,<CreateNewFile>,on,UseErrorLevel
-	;Hotkey,x,<Delete>,On,UseErrorLevel
-	Hotkey,+x,<ForceDel>,On,UseErrorLevel
-	;HotKey,o,<LeftOpenDrives>,on,UseErrorLevel
-	HotKey,o,<SrcOpenDrives>,on,UseErrorLevel
-	HotKey,+o,<RightOpenDrive>,on,UseErrorLevel
-	HotKey,q,<SrcQuickview>,on,UseErrorLevel
-	HotKey,p,<PackFiles>,on,UseErrorLevel
-	HotKey,+p,<UnpackFiles>,on,UseErrorLevel
-	HotKey,t,<OpenNewTab>,on,UseErrorLevel
-	HotKey,+t,<OpenNewTabBg>,on,UseErrorLevel
-	HotKey,c,<CloseCurrentTab>,on,UseErrorLevel
-	Hotkey,r,<VimRN>,on,UseErrorLevel
-	Hotkey,+r,<MultiRenameFiles>,on,UseErrorLevel
-	Hotkey,f,<PageDown>,On,UseErrorLevel
-	Hotkey,+f,<Hint>,On,UseErrorLevel
+	HotKey,+a,<SetAttrib>,on,UseErrorLevel
 	Hotkey,b,<PageUp>,On,UseErrorLevel
 	Hotkey,+b,<azTab>,On,UseErrorLevel
-	Hotkey,y,<CopyNamesToClip>,On,UseErrorLevel
-	Hotkey,+y,<CopyFullNamesToClip>,On,UseErrorLevel
+	HotKey,c,<CloseCurrentTab>,on,UseErrorLevel
+    HotKey,+c,<ExecuteDOS>,on,UseErrorLevel
+	HotKey,d,<DirectoryHotlist>,on,UseErrorLevel
+	HotKey,+d,<GoDesktop>,on,UseErrorLevel
+	HotKey,e,<ContextMenu>,on,UseErrorLevel
+	HotKey,+e,<Edit>,on,UseErrorLevel
+	Hotkey,f,<PageDown>,On,UseErrorLevel
+	Hotkey,+f,<Hint>,On,UseErrorLevel
+	Hotkey,+g,<End>,On,UseErrorLevel
+	HotKey,h,<left>,on,UseErrorLevel
+    HotKey,+h,<GotoPreviousDir>,on,UseErrorLevel
+    Hotkey,i,<Return>,on,UseErrorLevel
+	HotKey,j,<Down>,on,UseErrorLevel
+    HotKey,+j,<DownSelect>,on,UseErrorLevel
+	HotKey,k,<up>,on,UseErrorLevel
+    HotKey,+k,<UpSelect>,on,UseErrorLevel
+	HotKey,l,<right>,on,UseErrorLevel
+	HotKey,+l,<GotoNextDir>,on,UseErrorLevel
+    Hotkey,m,<Mark>,On,UseErrorLevel
+	Hotkey,+m,<Half>,On,UseErrorLevel
+	Hotkey,n,<azhistory>,On,UseErrorLevel
+	Hotkey,+n,<DirectoryHistory>,On,UseErrorLevel
+	HotKey,o,<SrcOpenDrives>,on,UseErrorLevel
+	HotKey,+o,<OpenDrives>,on,UseErrorLevel
+	HotKey,p,<PackFiles>,on,UseErrorLevel
+	HotKey,+p,<UnpackFiles>,on,UseErrorLevel
+	HotKey,q,<SrcQuickview>,on,UseErrorLevel
+	HotKey,+q,<Internetsearch>,on,UseErrorLevel
+	Hotkey,r,<VimRN>,on,UseErrorLevel
+	Hotkey,+r,<RenameSingleFile>,on,UseErrorLevel
+    ;Hotkey,+r,<MultiRenameFiles>,on,UseErrorLevel
+	HotKey,t,<OpenNewTab>,on,UseErrorLevel
+	HotKey,+t,<OpenNewTabBg>,on,UseErrorLevel
+	HotKey,u,<GotoParentEx>,on,UseErrorLevel
+	HotKey,+u,<GotoRoot>,on,UseErrorLevel
+	Hotkey,v,<ContextMenu>,On,UseErrorLevel
+	Hotkey,w,<SrcCustomViewMenu>,On,UseErrorLevel
+	Hotkey,+w,<Enter>,On,UseErrorLevel
+	Hotkey,x,<CloseCurrentTab>,On,UseErrorLevel
+	Hotkey,y,<Copy>,On,UseErrorLevel
+	Hotkey,+y,<MoveOnly>,On,UseErrorLevel
+    ;Hotkey,y,<CopyNamesToClip>,On,UseErrorLevel
+	;Hotkey,+y,<CopyFullNamesToClip>,On,UseErrorLevel
+	Hotkey,.,<SingleRepeat>,On,UseErrorLevel
 	Hotkey,/,<ShowQuickSearch>,On,UseErrorLevel
 	Hotkey,+/,<SearchFor>,On,UseErrorLevel
 	Hotkey,`;,<FocusCmdLine>,On,UseErrorLevel
 	Hotkey,:,<FocusCmdLineEx>,On,UseErrorLevel
 	Hotkey,[,<SelectCurrentName>,On,UseErrorLevel
+	Hotkey,^[,<Esc>,On,UseErrorLevel
 	Hotkey,+[,<UnselectCurrentName>,On,UseErrorLevel
 	Hotkey,],<SelectCurrentExtension>,On,UseErrorLevel
 	Hotkey,+],<UnselectCurrentExtension>,On,UseErrorLevel
@@ -1670,23 +1789,12 @@ SetDefaultKey()
 	Hotkey,+\,<ClearAll>,On,UseErrorLevel
 	Hotkey,=,<MatchSrc>,On,UseErrorLevel
 	Hotkey,-,<SwitchSeparateTree>,On,UseErrorLevelHotkey,\,<ExchangeSelection>,On,UseErrorLevel
-	Hotkey,v,<ContextMenu>,On,UseErrorLevel
-	;HotKey,a,<SetAttrib>,on,UseErrorLevel
-	Hotkey,m,<Mark>,On,UseErrorLevel
-	Hotkey,+m,<Half>,On,UseErrorLevel
 	Hotkey,',<ListMark>,On,UseErrorLevel
-	HotKey,+q,<Internetsearch>,on,UseErrorLevel
-	Hotkey,+g,<End>,On,UseErrorLevel
-	Hotkey,w,<SrcCustomViewMenu>,On,UseErrorLevel
-	Hotkey,+w,<Enter>,On,UseErrorLevel
-	Hotkey,n,<azhistory>,On,UseErrorLevel
-	Hotkey,+n,<DirectoryHistory>,On,UseErrorLevel
 	Hotkey,`,,<None>,On,UseErrorLevel
 	Hotkey,$Enter,<Enter>,On,UseErrorLevel
 	Hotkey,Esc,<Esc>,On,UseErrorLevel
-	HotKey,+a,<None>,on,UseErrorLevel
 	Hotkey,+.,<None>,On,UseErrorLevel
-	Hotkey,+s,<None>,On,UseErrorLevel
+	;Hotkey,+s,<None>,On,UseErrorLevel
 	Hotkey,+',<None>,On,UseErrorLevel
 	GroupKeyAdd("zz","<50Percent>")
 	GroupKeyAdd("zi","<WinMaxLeft>")
@@ -1705,6 +1813,7 @@ SetDefaultKey()
 	GroupKeyAdd("se","<SrcByExt>")
 	GroupKeyAdd("ss","<SrcBySize>")
 	GroupKeyAdd("sd","<SrcByDateTime>")
+	GroupKeyAdd("sg","<Internetsearch>")
 	GroupKeyAdd("sr","<SrcNegOrder>")
 	GroupKeyAdd("s1","<SrcSortByCol1>")
 	GroupKeyAdd("s2","<SrcSortByCol2>")
@@ -1724,7 +1833,6 @@ SetDefaultKey()
 	GroupKeyAdd("gb","<OpenDirInNewTabOther>")
 	GroupKeyAdd("ge","<Exchange>")
 	GroupKeyAdd("gw","<ExchangeWithTabs>")
-	GroupKeyAdd("gi","<Enter>")                 ;!!!added
 	GroupKeyAdd("g1","<SrcActivateTab1>")
 	GroupKeyAdd("g2","<SrcActivateTab2>")
 	GroupKeyAdd("g3","<SrcActivateTab3>")
@@ -1744,18 +1852,25 @@ SetDefaultKey()
 	GroupKeyAdd("<Shift>vc","<VisCurDir>")
 	GroupKeyAdd("<Shift>vt","<VisTabHeader>")
 	GroupKeyAdd("<Shift>vs","<VisStatusbar>")
+    ;GroupKeyAdd("<Shift>vms","<SwitchDarkmode>")
+	;GroupKeyAdd("<Shift>vmd","<EnableDarkmode>")
+	;GroupKeyAdd("<Shift>vml","<DisableDarkmode>")
 	GroupKeyAdd("<Shift>vn","<VisCmdLine>")
 	GroupKeyAdd("<Shift>vf","<VisKeyButtons>")
 	GroupKeyAdd("<Shift>vw","<VisDirTabs>")
 	GroupKeyAdd("<Shift>ve","<CommandBrowser>")
-	;GroupKeyAdd("cl","<DeleteLHistory>")
-	;GroupKeyAdd("cr","<DeleteRHistory>")
-	;GroupKeyAdd("cc","<DelCmdHistory>")
-	Hotkey,IfWinActive,ViATc Rename
+	;GroupKeyAdd("chl","<DeleteLHistory>")
+	;GroupKeyAdd("chr","<DeleteRHistory>")
+	;GroupKeyAdd("chc","<DelCmdHistory>")
+    
+    ;keys for fancy rename 
+	Hotkey,IfWinActive,ViATc Fancy Rename
 	Hotkey,j,VimRN_Down,on,UseErrorLevel
 	Hotkey,k,VimRN_Up,on,UseErrorLevel
 	Hotkey,h,VimRN_Left,on,UseErrorLevel
 	Hotkey,l,VimRN_Right,on,UseErrorLevel
+	Hotkey,w,VimRN_Word,on,UseErrorLevel
+	Hotkey,b,VimRN_BackWord,on,UseErrorLevel
 	Hotkey,+j,VimRN_SDown,on,UseErrorLevel
 	Hotkey,+k,VimRN_SUp,on,UseErrorLevel
 	Hotkey,+h,VimRN_SLeft,on,UseErrorLevel
@@ -1770,15 +1885,20 @@ SetDefaultKey()
 	Hotkey,+r,VimRN_MultiReplace,on,UseErrorLevel
 	Hotkey,a,VimRN_Selectall,on,UseErrorLevel
 	Hotkey,s,VimRN_SelectThis,on,UseErrorLevel
-	Hotkey,w,VimRN_Selectfilename,on,UseErrorLevel
+	Hotkey,n,VimRN_Selectfilename,on,UseErrorLevel
     Hotkey,e,VimRN_Selectext,on,UseErrorLevel
+	;Hotkey,0,VimRN_Home,on,UseErrorLevel
+	Hotkey,^,VimRN_Home,on,UseErrorLevel
 	Hotkey,g,VimRN_Home,on,UseErrorLevel
-	Hotkey,b,VimRN_End,on,UseErrorLevel
+	Hotkey,$,VimRN_End,on,UseErrorLevel
 	Hotkey,q,VimRN_Quit,on,UseErrorLevel
 	Hotkey,u,VimRN_Undo,on,UseErrorLevel
 	Hotkey,v,VimRN_Visual,on,UseErrorLevel
 	Hotkey,p,VimRN_Paste,on,UseErrorLevel
 	Hotkey,Esc,VimRN_Esc,on,UseErrorLevel
+	Hotkey,Capslock,VimRN_Esc,on,UseErrorLevel
+	;Hotkey,^Capslock,Capslock,on,UseErrorLevel
+    ;SetCapsLockState, % GetKeyState("CapsLock", "T")? "Off":"On"
 	Hotkey,1,VimRN_Num,on,UseErrorLevel
 	Hotkey,2,VimRN_Num,on,UseErrorLevel
 	Hotkey,3,VimRN_Num,on,UseErrorLevel
@@ -1788,7 +1908,7 @@ SetDefaultKey()
 	Hotkey,7,VimRN_Num,on,UseErrorLevel
 	Hotkey,8,VimRN_Num,on,UseErrorLevel
 	Hotkey,9,VimRN_Num,on,UseErrorLevel
-	Hotkey,0,VimRN_Num,on,UseErrorLevel
+    Hotkey,0,VimRN_Num,on,UseErrorLevel
 }
 SendKey(HotKey)
 {
@@ -2231,8 +2351,6 @@ FindPath(File)
     FileSF_FileName:= "C:\"
 	If RegExMatch(File,"exe")
 	{
-		;GetPath := A_ScriptDir . "\totalcmd.exe"
-        ;GetPath64 := A_ScriptDir . "\totalcmd64.exe"
 		GetPath := "C:\Program Files (x86)\totalcmd\totalcmd.exe"
 		GetPath64 := "C:\Program Files\totalcmd\totalcmd64.exe"
 		Reg := "InstallDir"
@@ -2240,7 +2358,7 @@ FindPath(File)
 		FileSF_FileName:= "C:\Program Files\totalcmd\"
 		FileSF_Prompt := "TOTALCMD.EXE"
 		FileSF_Filter := "*.EXE"
-		FileSF_Error := "Could not find TOTALCMD.EXE"
+		FileSF_Error := "Could not find TOTALCMD.EXE nor TOTALCMD64.EXE"
 	}
 	If RegExMatch(File,"ini")
 	{
@@ -2463,7 +2581,7 @@ CreateConfig(Section,Key)
 	If Section = VimReName
 		If Key = Mode
 			SetVar := 1
-	If Key = SelectExt
+	If Key = UnselectExt
 		SetVar := 1
 	If Section = Other
 		If Key = LnkToDesktop
@@ -2728,6 +2846,33 @@ Enter()
 	Else
 		ControlSend,%ThisControl%,{Enter},AHK_CLASS TTOTAL_CMD
 }
+
+iEnter()
+{
+    ; don't use it <Return> is better
+    ;this function is to be invoked only by the 'i' key
+
+    ;check if the focus is on any of the panels, and only then send enter else send 'i'
+    ControlGetFocus,focus_control,AHK_CLASS TTOTAL_CMD
+	MatchCtrl := "^" . TCListBox
+	If RegExMatch(focus_control,MatchCtrl)
+	{
+        Send {Enter}
+    }
+    else
+        Send,i
+    return
+
+    Msgbox Debugging %Version% _____  ;!!!
+    textbox :=
+	ControlGetText,textbox,%TCEdit%,AHK_CLASS TTOTAL_CMD
+    if Not textbox
+        Send {Enter}
+    else
+        Send,i
+        ;Msgbox  Debugging [%textbox%] _____  ;!!!
+}
+
 CreateNewFile()
 {
 	Global ViatcIni
@@ -3047,11 +3192,11 @@ Setting()
 	Gui,Add,CheckBox,x25 y50 h20 checked%startup% vStartup, Startup VIATC(&R)
 	Gui,Add,CheckBox,x180 y50 h20 checked%Service% vService, Background process (&B)
 	Gui,Add,CheckBox,x25 y70 h20 checked%TrayIcon% vTrayIcon, System tray icon (&T)
-	Gui,Add,CheckBox,x180 y70 h20 checked%Vim% vVim, default Vim mode (&V)
+	Gui,Add,CheckBox,x180 y70 h20 checked%Vim% vVim, Default Vim mode (&V)
 	Gui,Add,Text,x25 y100 h20, Activate/Minimize TC (&F)
 	Gui,Add,Edit,x24 y120 h20 w140 vToggle ,%Toggle%
 	Gui,Add,CheckBox,x180 y120 h20 checked%GlobalTogg% vGlobalTogg, Global (&G) So it will work outside TC too
-	Gui,Add,Text,x25 y150 h20, Enable/Disable Vim Hotkey (&A)
+	Gui,Add,Text,x25 y150 h20, Enable/Disable ViATc (&A)
 	Gui,Add,Edit,x25 y170 h20 w140 vSusp ,%Susp%
 	Gui,Add,CheckBox,x180 y170 h20 checked%GlobalSusp% vGlobalSusp, Global (&L)
 	Gui,Add,GroupBox,x16 y210 H110 w390, Other settings
@@ -3088,7 +3233,7 @@ Setting()
 	Gui,Add,CheckBox,x25 y295 h20 checked%transpHelp% vTranspHelp, Transparent help interface  (&I)
 	Gui,Add,Button,x270 y290 h30 w120 Center g<Help>, Open VIATC Help (&?)
 	Gui,Tab,2
-	Gui,Add,ListView,x16 y32 h170 w390 count20 sortdesc  -Multi vListView g<ListViewDK>,*| hotkey | action | Description
+	Gui,Add,ListView,x16 y32 h170 w390 count20 sortdesc  -Multi vListView g<ListViewDK>,*| Hotkey | Command | Description
 	Lv_modifycol(2,100)
 	Lv_modifycol(3,100)
 	Lv_modifycol(4,300)
@@ -3119,30 +3264,31 @@ Setting()
 		}
 	}
 	Gui,Add,GroupBox,x16 y210 h110 w390
-	Gui,Add,Text,x22 y223 h20, hotkey (&K)
-	Gui,Add,Edit,x78 y220 h20 w100 g<CheckGorH>
+	Gui,Add,Button,x14 y220 h20 w20 Center g<Help>, (&?)
+	Gui,Add,Text,x35 y223 h20, Hotkey (&K)
+	Gui,Add,Edit,x88 y220 h20 w90 g<CheckGorH>
 	Gui,Add,CheckBox,x183 y221 h20, Global (&L)
 	Gui,Add,Button,x250 y220 w70 g<TestTH>, Analysis (&A)
 	Gui,Add,text,x325 y220 h50, * column legend:`n  S - Global`n  H - Hotkey`n  G - GroupKey
-	Gui,Add,text,x28 y249 h20, action (&W)
-	Gui,Add,Edit,x78 y246 h20 w240
+	Gui,Add,text,x20 y249 h20, Command (&M)
+	Gui,Add,Edit,x88 y246 h20 w230
 	Gui,Add,Button,x21 y270 h20 w100 g<VimCMD> ,ViATc command (&V)
-	Gui,Add,Button,x140 y270 h20 w100 g<TCCMD> ,TC command (&T)
-	Gui,Add,Button,x21 y294 h20 w100 g<RunFile>, Run (&R)
-	Gui,Add,Button,x140 y294 h20 w100 g<SendString>, Send text (&N)
+	Gui,Add,Button,x130 y270 h20 w120 g<TCCMD> ,TC command (&T)
+	Gui,Add,Button,x21 y294 h20 w100 g<RunFile>, Run command (&R)
+	Gui,Add,Button,x130 y294 h20 w120 g<SendString>, Send text command (&N)
 	Gui,Add,Button,x260 y274 h40 w60 g<CheckKey>, Save (&S)`n before clicking OK
 	Gui,Add,Button,x325 y274 h40 w65 g<DeleItem>, Delete (&D)
 	Gui,Tab,3
 	Gui,Add,Text,x18 y35 h16 center,TC executable "TOTALCMD64.EXE" or "TOTALCMD.EXE" location :
 	Gui,Add,Edit,x18 y55 h20 +ReadOnly w350,%TCEXE%
 	Gui,Add,Button,x375 y53 w30 g<GuiTCEXE>,...(&1)
-	Gui,Add,Text,x18 y100 h16 center,TC "wincmd.ini" file location (this is never used, no need to set):
+	Gui,Add,Text,x18 y100 h16 center,TC "wincmd.ini" file location :
 	Gui,Add,Edit,x18 y120 h20 +ReadOnly w350,%TCINI%
 	Gui,Add,Button,x375 y120 w30 g<GuiTCINI> ,...(&2)
-	Gui,Add,Text,x18 y165 h16 center,ViATc "viatc.ini" location (changing will move the current file):
+	Gui,Add,Text,x18 y165 h16 center,ViATc "viatc.ini" location (changing will move the current file) :
 	Gui,Add,Edit,x18 y185 h20 +ReadOnly w350,%ViATcIni%
 	Gui,Add,Button,x375 y185 w30 g<GuiViATcINI> ,...(&3)
-	Gui,Add,Text,x18 y230 h16 center,Vim "gvim.exe" location (or any other editor):
+	Gui,Add,Text,x18 y230 h16 center,Vim "gvim.exe" location (or any other editor) :
 	Gui,Add,Edit,x18 y250 h20 +ReadOnly w350,%VimPath%
 	Gui,Add,Button,x375 y250 w30 g<GuiVimPath> ,...(&4)
 	Gui,Tab
@@ -3162,15 +3308,16 @@ Menu,RightClick,Add,Delete (&D),<DeleItem>
 Menu,RightClick,Show
 Return
 
-;exit Settings on ESC if uncommented all 8 lines below
-;GuiEscape:
-;Tooltip
-;Gui,Destroy
+;exit windows on ESC
+GuiEscape:
+Tooltip
+Gui,Destroy
 ;If NeedReload
-	;GoSub,<ReloadVIATC>
+    ;GoSub,<ReloadVIATC>
 ;Else
-	;EmptyMem()
-;Return
+    EmptyMem()
+Return
+
 
 <AddSearchEng>:
 AddSearchEng()
@@ -3321,7 +3468,7 @@ VimCMD()
 	lv_delete(1)
 	Gui, Add, Button, x280 y420 w60 h24 Default g<VIMCMDB1>, &OK
 	Gui, Add, Button, x350 y420 w60 h24 g<Cancel>, &Cancel
-	Gui,Show,,VIATC Default action
+	Gui,Show,,VIATC Command
 }
 <VIMCMDB1>:
 ControlGet,EventInfo,List, Count Focused,SysListView321,ahk_id %VIMCMDHwnd%
@@ -3744,13 +3891,16 @@ Help()
     Gui,Add,Text,x262 y115 w40 h18 center Border g<ShowHelp>,RAlt
     Gui,Add,Text,x304 y115 w40 h18 center Border g<ShowHelp>,Apps
     Gui,Add,Text,x346 y115 w40 h18 center Border g<ShowHelp>,RCtrl
+	Gui,Font,s11,Arial
+    Gui,Add,Text,x399 y25 w200 h100 , Click on the keyboard to see what the key does. Please note that some info might not be accurate because any of the hotkeys can be overriden in the Settings.
+	Gui,Font,s9,Arial Bold    
     Gui,Add,Groupbox,x12 y135 w574 h40
     Gui,Add,Button,x15 y146 w60 gIntro, Intro (&I)
-    Gui,Add,Button,x80 y146 w105 gFunct, Hotkey (&H)
-    Gui,Add,Button,x189 y146 w130 gGroupk, Group Key (&G)
-    Gui,Add,Button,x322 y146 w120 gCmdl, Command Line (&C)
-    Gui,Add,Button,x448 y146 w62 gAction, Action (&N)
-    Gui,Add,Button,x515 y146 w62 gAbout, About (&A)
+    Gui,Add,Button,x80 y146 w75 gFunct, Hotkey (&H)
+    Gui,Add,Button,x159 y146 w100 gGroupk, Group Key (&G)
+    Gui,Add,Button,x265 y146 w130 gCmdl, Command Line (&L)
+    Gui,Add,Button,x400 y146 w105 gAction, Commands (&C)
+    Gui,Add,Button,x510 y146 w67 gAbout, About (&A)
     Intro := HelpInfo_Arr["Intro"]
     Gui,Font,s11,Arial  ;font for the bottom textarea box in help window
     Gui,Add,Edit,x12 y180 w574 h310 +ReadOnly,%Intro%
@@ -3776,7 +3926,7 @@ Help()
 	GuiControl,Text,Edit1,%var%
 	Return
 	action:
-	var := HelpInfo_Arr["action"]
+	var := HelpInfo_Arr["command"]
 	GuiControl,Text,Edit1,%var%
 	Return
 	about:
@@ -3795,7 +3945,7 @@ Help()
 	SetHelpInfo()
 	{
 		Global HelpInfo_arr
-		HelpInfo_arr["Esc"] :="Esc >> Esc (This version doesn't have any other than Normal mode)"
+		HelpInfo_arr["Esc"] :="Esc >> Esc. Like in Vim it cancels all unfinished commands"
 		HelpInfo_arr["F1"] :="F1 >> No mapping `nOpen TC help"
 		HelpInfo_arr["F2"] :="F2 >> No mapping `nRefresh the source window"
 		HelpInfo_arr["F3"] :="F3 >> No mapping `nView file"
@@ -3825,55 +3975,56 @@ Help()
 		HelpInfo_arr["Tab"] :="Tab >> No mapping `nSwitch the window "
 		HelpInfo_arr["Q"] :="q >> Quick view function `nQ >> Use the default browser to search for the current file name / Folder name "
 		HelpInfo_arr["W"] :="w >> Small menu `nW >> No mapping "
-		HelpInfo_arr["E"] :="e >> e... Group Key (before was: The right-click shortcut menu) `nE >> Run in the current directory CMD.EXE `nee >> Enter"
-		HelpInfo_arr["R"] :="r >> Rename the file `nR >> Batch rename file "
+		HelpInfo_arr["E"] :="e >> e...  (Group Key, requires another key) `nee >> Enter`nep >> Edit path in tabbar`nee >> Enter`nee >> Enter`n`n`nE >> Run cmd.exe in the current directory"
+		HelpInfo_arr["R"] :="r >> Fancy Rename `nR >> Rename (simple default TC, not fancy ViATc) "
 		HelpInfo_arr["T"] :="t >> New tab `nT >> Create a new tab in the background "
-		HelpInfo_arr["Y"] :="y >> Copy the file name `nY >> Copy the file name and the full path "
+		HelpInfo_arr["Y"] :="y >> Copy window like F5  `nY >> Copy the file name and the full path "
 		HelpInfo_arr["U"] :="u >> Up a directory `nU >> Up to the root directory "
-		HelpInfo_arr["I"] :="i >> Insert a new folder `nI >> No mapping "
-		HelpInfo_arr["O"] :="o >> Open the left drive list `nO >> Open the list of right drives "
+		HelpInfo_arr["I"] :="i >> Enter `nI >> No mapping "
+		HelpInfo_arr["O"] :="o >> Open the left drive list `nO >> Open the list of drives and special folders.  Equivalent to 'This PC' in Windows Explorer"
 		HelpInfo_arr["P"] :="p >> Compressed file / folder `nP >> unzip "
-		HelpInfo_arr["[{"] :="[ >> Select files with the same file name `n{ >> Do not select files with the same file name "
-		HelpInfo_arr["]}"] :="] >> Select files with the same extension `n} >> Do not select files with the same extension "
+		HelpInfo_arr["[{"] :="[ >> Select files with the same file name `n{ >> Unselect files with the same file name "
+		HelpInfo_arr["]}"] :="] >> Select files with the same extension `n} >> Unselect files with the same extension "
 		HelpInfo_arr["\|"] :="\ >> Invert all selections for files and folders  `n| >> Clears all selections"
-		HelpInfo_arr["CapsLock"] :="CapsLock  No mapping "
-		HelpInfo_arr["A"] :="a >> Change attributes `n A >> No mapping "
+		HelpInfo_arr["CapsLock"] :="CapsLock >> Esc (in some cases it doesn't behave identical, it doesn't hide tooltips"
+       ; quits in 'fancy rename' instead of going to Vim mode)"
+		HelpInfo_arr["A"] :="a >> (Group Key, requires another key) `n A >>  "
 		HelpInfo_arr["S"] :="s >> Sort by... (Group Key, requires another key) `nS >> (Group Key, requires another key) show all, executables, etc. `nsn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nst >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9 >>"
 		HelpInfo_arr["D"] :="d >> Favourite folders hotlist`nD >> Open the desktop folder "
 		HelpInfo_arr["F"] :="f >> Page down, Equivalent to PageDown`nF >> Switch to TC Default fast search mode "
 		HelpInfo_arr["G"] :="g >> Tab operation (Group Key, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngt >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab) also gr, I don't know how to bind gT`nga >> Close All tabs `ngc >> Close the Current tab `ngn >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab "
-		HelpInfo_arr["H"] :="h >> Go Left num times `nH >> Go Backward in dir history"
-		HelpInfo_arr["J"] :="j >> Go Down num times `nJ >> Select down Num File (folder), In QuickSearch(ctrl+s) go down"
-		HelpInfo_arr["K"] :="k >> Go Up num times `nK >> Select up Num File (folder), In QuickSearch(ctrl+s) go up"
-		HelpInfo_arr["L"] :="l >> Go Right num times `nL >> Go Forward in dir history"
+		HelpInfo_arr["H"] :="h >> enters command line `nH >> Go Backward in dir history"
+		HelpInfo_arr["J"] :="j >> Go Down num times `nJ >> Select down Num files (folders), In QuickSearch(ctrl+s) go down"
+		HelpInfo_arr["K"] :="k >> Go Up num times `nK >> Select up Num files (folders), In QuickSearch(ctrl+s) go up"
+		HelpInfo_arr["L"] :="l >>  (Group Key, requires another key) `nL >> Go Forward in dir history"
 		HelpInfo_arr["`;:"] :="; >> Put focus on the command line `n: >> Get into VIATC command line mode : (like ex mode in vim)"
-		HelpInfo_arr["'"""] :="' >> Marks don't work at all yet. But should: Go to mark (Mark by m) `n"" >> No mapping "
+		HelpInfo_arr["'"""] :="' >> Marks. `n Go to mark by single quote (Create mark by m) `n"" >> No mapping "
 		HelpInfo_arr["Enter"] :="Enter >> Enter "
-		HelpInfo_arr["LShift"] :="Lshift >> Left shift key, can also be made by Shift instead "
-		HelpInfo_arr["Z"] :="z >> Tool (Group Key, requires another key) `nZ >> No mapping `nzz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzi >> Maximize the left panel `nzo >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzr >> Return to normal size, Restore `nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent `nzf >> The simplest TC`nzq >> Exit TC`nza >> Reload TC"
+		HelpInfo_arr["LShift"] :="Lshift >> Left shift key, can also be accessed in hotkeys by Shift "
+		HelpInfo_arr["Z"] :="z >> Various TC window settings (Group Key, requires another key) zz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzi >> Maximize the left panel `nzo >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzr >> Return to normal size, Restore `nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent `nzf >> The simplest TC`nzq >> Exit TC`nza >> Reload TC`n`n`nZ >> No mapping `n"
 		;HelpInfo_arr["X"] :="x >> Delete Files\folders`nX >> Force Delete, like shift+delete ignores recycle bin"
 		HelpInfo_arr["X"] :="x >> Close tab`nX >> Enter or Run file under cursor"
 		HelpInfo_arr["C"] :="c >> (Group Key, requires another key) `ncc >> Delete `ncf >> Force Delete, like shift+delete ignores recycle bin`nC (Group Key, requires another key)>> decode/encode `n"
-		HelpInfo_arr["V"] :="v >> Context menu (was View menu)`nV >> View... (Group Key, requires another key)`n<Shift>vb >> display / hide :  toolbar `n<Shift>vd >> display / hide :  Drive button `n<Shift>vo >> display / hide :  Two drive button bars `n<Shift>vr >> display / hide :  Drive list `n<Shift>vc >> display / hide :  Current folder `n<Shift>vt >> display / hide :  Sort tab `n<Shift>vs >> display / hide :  Status Bar `n<Shift>vn >> display / hide :  Command Line `n<Shift>vf >> display / hide :  Function button `n<Shift>vw >> display / hide :  Folder tab `n<Shift>ve >> Browse internal commands "
-		HelpInfo_arr["B"] :="b >> Move up a page, Equivalent to PageUp`nB >> Open the tabbed browsing window "
+		HelpInfo_arr["V"] :="v >> Context menu `nV >> View... (Group Key, requires another key)`n<Shift>vb >> display / hide :  toolbar `n<Shift>vd >> display / hide :  Drive button `n<Shift>vo >> display / hide :  Two drive button bars `n<Shift>vr >> display / hide :  Drive list `n<Shift>vc >> display / hide :  Current folder `n<Shift>vt >> display / hide :  Sort tab `n<Shift>vs >> display / hide :  Status Bar `n<Shift>vn >> display / hide :  Command Line `n<Shift>vf >> display / hide :  Function button `n<Shift>vw >> display / hide :  Folder tab `n<Shift>ve >> Browse internal commands "
+		HelpInfo_arr["B"] :="b >> Move up a page, Equivalent to PageUp`nB >> Open the tabbed browsing window, works in 32bit TConly"
 		HelpInfo_arr["N"] :="n >> Show the folder history ( band a-z navigation )`nN >> No mapping "
-		HelpInfo_arr["M"] :="m >> Marks don't work at all yet. Marking function, Mark the current folder `nM >> Move to the middle of the list `n Marking function, Similar to Vim m key. When m is pressed the command line displays m and prompts to enter the mark letter, You can save the current folder path to the mark. For example, enter it in the normal mode ma Enter, Then press ' it will show all the marks, Press then a, you will go to the corresponding folder "
+		HelpInfo_arr["M"] :="m >> Marking function like in Vim. Create mark by m then go to mark by single quote. For example ma will make mark a then press 'a to go to mark a `n When m is pressed the command line displays m and prompts to enter the mark letter, when this letter is entered command line closes and the current folder-path is stored as the mark. You can browse away to a different folder, and when you press ' it will show all the marks, press a and you will go to the folder where you were before.`n`nIn ViATc marks are volotile, they are stored in memory only, if the script is reloaded they are gone. For permanent effect use TC's directory hotlist by pressing ctrl+d or just d `n`n`nM >> Move to the middle of the list (the position is often not accurate, and if there are few lines the cursor might stay the same) Alternatively you can just use 11j"
 		HelpInfo_arr[",<"] :=", >> Display command history ( band a-z navigation )`n< >> No mapping "
-		HelpInfo_arr[".>"] :=". >> Repeat the last action `n> >> No mapping `n Repeat the last action, For example when you enter 10j move downward 10 rows, and want to move down again 10 rows, no need to press again 10j Just press the dot . It also works if you press gn switching to the next tab, Move again? Only need to press ."
+		HelpInfo_arr[".>"] :=". >> Repeat the last command. For example: `n   when you enter 10j (go down 10 lines) then to repeat just press the dot .`n   when you enter gt (switch to the next tab) then to repeat you only need to press .`n`n`n> >> No mapping "
 		HelpInfo_arr["/?"] :="/ >> Use quick search `n? >> Use the file search function ( advanced )"
 		HelpInfo_arr["RShift"] :="Rshift >> right shift key, can also be Shift instead "
 		HelpInfo_arr["LCtrl"] :="Lctrl >> left ctrl key, can also be control or ctrl instead "
-		HelpInfo_arr["LWin"] :="LWin >>Win key. Due to ahk limits the lwin must be used instead of just win"
-		HelpInfo_arr["LAlt"] :="LAlt >> left Alt key, Can also be alt instead "
+		HelpInfo_arr["LWin"] :="LWin >>Win key. Due to ahk limits the LWin must be used witl 'L', 'Win' alone cannot be used"
+		HelpInfo_arr["LAlt"] :="LAlt >> left Alt key, Can also be Alt instead "
 		HelpInfo_arr["Space"] :="Space >> Space, No mapping "
-		HelpInfo_arr["RAlt"] :="RAlt >> right Alt key, can also be alt instead "
+		HelpInfo_arr["RAlt"] :="RAlt >> right Alt key, can also be Alt instead "
 		HelpInfo_arr["Apps"] :="Apps >> Open the context menu ( Right-click menu )"
 		HelpInfo_arr["RCtrl"] :="Rctrl >> right ctrl key, can also be control or ctrl instead "
     HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts. Press alt+`` (alt+backtick) (this shortcut can be modifed) to disable all ViATc functionality, or simply quit ViATc, TC won't be affected at all.`nDouble-click the tray icon, or Win+F (modifiable) to show/hide TC window`n")
 		HelpInfo_arr["Funct"] :="Single key to operate `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: ctrl, alt, shift or LWin (must be LWin not Win).`n`nExamples:`n<LWin>g           - this works as intended`n<ctrl><shift>a  - invalid, more than one modifier`n<ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >`n`nPlease click on the keyboard above to get details of each key.`n"
-		HelpInfo_arr["GroupK"] :="Also known as Combo Hotkeys. They take multiple keys to operate `nGroup Keys can be composed from any characters`nAdditionally the first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`n<ctrl>ab (means press ctrl+a and release, then press b to work)`n<ctrl>a<ctrl>b    -invalid, The first key can have up to one modifier, but the second key cannot`n`nVIATC comes by default with five groups of keys. Click the keyboard above for details z,c,V,g,s"
-		HelpInfo_arr["cmdl"] :="WARNNING: Doesn't work in this version`nThe command line in VIATC supports abbreviations :h :s :r :m :sm :e, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys `n If you type :map in the command line then all custom hotkeys will be displayed.`n If the input is :map key action, where key represents the hotkey to map (it can be a Group Key or a Hotkey) action represents the action to be carried out. This feature is suitable for the scenario where there is a temporary need for a function mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file which is located in the TC directory.`n:smap and :map are the same except map is a global hotkey and does not support mapping Group Keys `n:edit  Directly edit ViATc.ini file "
-		HelpInfo_arr["action"] :="For geeks only: `n`nIn VIATC all operations can be understood as actions. All actions can be found in the Hotkey tab of the Settings window. Actions are divided into 4 categories :`n`n1.VIATC takes action, VIATC provides some TC enhancements to make more convenient to operate TC.`n2.TC Internal action, that is TC internal commands beginning with the cm_ such as cm_SrcComments.`n`n3. Run a program or open a file. Of course TC has similar functions built-in but ViATc way is often more convenient than using TC to run a program or edit a file.`n`n4. Send a string. If you want TC to input a text, you can use the Group Key to map the action of sending a string.`n`n The above four actions, 1 and 2 must be surrounded by <  > , 3 needs to be surrounded with (  ) , 4 with {  }.`nFor example `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Group Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Group Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be Interpreted by VIATC as pressing the Enter key."
+		HelpInfo_arr["GroupK"] :="Also known as Combo Hotkeys. They take multiple keys to operate `nGroup Keys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with eight Groups Keys z,c,V,g,s,a,l,e. Click the keyboard above for details of what they do. For actual mappings open the Settings window where you can remap everything, you can even remap single Hotkeys into Groups Keys and vice versa."
+		HelpInfo_arr["cmdl"] :="WARNNING: Doesn't work in 64bit TC version`nThe command line in VIATC supports abbreviations :h :s :r :m :sm :e, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys. If you type :map in the command line then all custom hotkeys will be displayed.`n If the input is :map key command, where key represents the hotkey to map (it can be a Group Key or a Hotkey). This feature is suitable for the scenario where there is a temporary need for a function mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file which is located in the TC directory.`n:smap and :map are the same except map is a global hotkey and does not support mapping Group Keys `n:edit  Directly edit ViATc.ini file "
+		HelpInfo_arr["command"] :="All commands can be found in the Settings window on the 'Hotkeys' tab. Commands are divided into 4 categories (there are 4 buttons there that will help you enter into into the  Command textbox)  :`n`n1.VIATC command, VIATC provides some TC enhancements`n`n2.TC internal command, it beginns with the 'cm_' such as cm_PackFiles but will be input as <PackFiles>.`n`n3. Run a program or open a file. TC has similar functions built-in but ViATc way might be more convenient`n`n4. Send a string of text. If you want to input a text into the command line then you can use the Group Key to map the command of sending a text string.`n`n The above four commands, 1 and 2 must be surrounded by <  > , 3 needs to be surrounded with (  ) , 4 with {  }.`nFor example `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Group Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Group Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be Interpreted by VIATC as pressing the Enter key."
 		HelpInfo_arr["About"] :="Author of the original Chinese version is linxinhong https://github.com/linxinhong  (linxinhong.sky@gmail.com) He knows basic English but is AHK guru.`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname @gmail.com    I know nothing about Chinese, I've used Google translate initially and then rephrased and modified this software. I'm just a junior in AHK.`n`nThis version is not perfected yet, any help appreciated."
 	}
 	SetGroupInfo()
@@ -3888,12 +4039,12 @@ Help()
 	SetVimAction()
 	{
 		Global VimAction
-		VimAction := " <help> <Setting> <ToggleTC> <EnableVIM> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <singleRepeat> <Esc> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <up> <Left> <Right> <DownSelect> <PageUp> <PageDown> <Home> <Half> <End> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <ListMapKey> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <EditViATCIni> <azTab>"
+		VimAction := " <help> <Setting> <ToggleTC> <EnableViATc> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <iEnter> <singleRepeat> <Esc> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <up> <Left> <Right> <DownSelect> <PageUp> <PageDown> <Home> <Half> <End> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <ListMapKey> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <EditViATCIni> <azTab>"
 	}
 	SetActionInfo()
 	{
 		Global ActionInfo_arr
-		ActionInfo_Arr["<azTab>"] := " use a-z To browse the tab (x64 unavailable)"
+		ActionInfo_Arr["<azTab>"] := "(works only in x32 bit TC) use a-z To browse the tab (x64 unavailable)"
 		ActionInfo_Arr["<ReLoadVIATC>"] :=" Reload VIATC"
 		ActionInfo_Arr["<ReLoadTC>"] :=" Reload TC"
 		ActionInfo_Arr["<QuitTC>"] :=" Exit TC"
@@ -3904,11 +4055,12 @@ Help()
 		ActionInfo_Arr["<CreateNewFile>"] := " File template function, Create a new file or a new directory "
 		ActionInfo_Arr["<TCLite>"] := " The simplest TC"
 		ActionInfo_Arr["<ExReName>"] := " Rename, Do not select an extension "
-		ActionInfo_Arr["<Help>"] :=  "ViATc Help" . Version
+		ActionInfo_Arr["<Help>"] :=  "ViATc Help"
 		ActionInfo_Arr["<Setting>"] := "VIATC Settings"
 		ActionInfo_Arr["<ToggleTC>"] :=" Show / Hide TC"
-		ActionInfo_Arr["<EnableVIM>"] :=" Enable / Disable Vim mode "
+		ActionInfo_Arr["<EnableViATc>"] :=" Enable / Disable ViATc  "
 		ActionInfo_Arr["<Enter>"] :="Enter"
+		ActionInfo_Arr["<iEnter>"] :="(don't use it <Return> is better than <iEnter>) Send an Enter key in any of the panels, otherwise send 'i'. Invoke this function by the 'i' key only"
 		ActionInfo_Arr["<SingleRepeat>"] :=" Repeat the last action "
 		ActionInfo_Arr["<Esc>"] :=" Reset and send ESC"
 		ActionInfo_Arr["<EditViATCIni>"] :=" Directly edit ViATc.ini file "
@@ -3934,7 +4086,7 @@ Help()
 		ActionInfo_Arr["<PageUp>"] :=" Page Up "
 		ActionInfo_Arr["<PageDown>"] :=" Page Down "
 		ActionInfo_Arr["<ForceDel>"] :=" Forced Delete, like shift+delete ignores recycle bin"
-		ActionInfo_Arr["<Mark>"] :=" (Marks don't work at all yet.) Marking function, Mark the current folder, use ' to go to the corresponding mark "
+		ActionInfo_Arr["<Mark>"] :=" Marks like in Vim, Mark the current folder with ma, use 'a to go to the corresponding mark "
 		ActionInfo_Arr["<ListMark>"] :=" Show all marks ( Mark by m like in Vim) "
 		ActionInfo_Arr["<Internetsearch>"] :=" Use the default internet browser to search for the current file "
 		ActionInfo_Arr["<azHistory>"] :=" Prefix the history of the folder, Easy to use a-z navigation "
@@ -3946,9 +4098,9 @@ Help()
 		ActionInfo_Arr["<Transparent>"] :=" TC Transparent "
 		ActionInfo_Arr["<DeleteLHistory>"] :=" Delete history of the left folder "
 		ActionInfo_Arr["<DeleteRHistory>"] :=" Delete history of the right folder "
-		ActionInfo_Arr["<DelCmdHistory>"] :=" Delete command line history "
+		ActionInfo_Arr["<DelCmdHistory>"] :=" Delete command-line history "
 		ActionInfo_Arr["<GoLastTab>"] :=" Go to the last tab "
-		ActionInfo_Arr["<TCLite>"] :=" Simplest TC"
+		ActionInfo_Arr["<TCLite>"] :=" Minimalistic TC"
 		ActionInfo_Arr["<TCFullScreen>"] :="TC full screen "
 		ActionInfo_Arr["<SrcComments>"] :=" Source window :  Show file comments "
 		ActionInfo_Arr["<SrcShort>"] :=" Source window :  List "
@@ -4082,7 +4234,7 @@ Help()
 		ActionInfo_Arr["<GetFileSpace>"] :=" Calculate the footprint "
 		ActionInfo_Arr["<VolumeId>"] :=" Set the tab "
 		ActionInfo_Arr["<VersionInfo>"] :=" Version Information "
-		ActionInfo_Arr["<ExecuteDOS>"] :=" Open the Command Prompt window "
+		ActionInfo_Arr["<ExecuteDOS>"] :=" cmd.exe Console with Command Prompt "
 		ActionInfo_Arr["<CompareDirs>"] :=" Compare folders "
 		ActionInfo_Arr["<CompareDirsWithSubdirs>"] :=" Compare folders ( Also mark a subfolder that does not have another window )"
 		ActionInfo_Arr["<ContextMenu>"] :=" Show the shortcut menu "
@@ -4097,7 +4249,7 @@ Help()
 		ActionInfo_Arr["<FocusButtonBar>"] :=" Focus on the toolbar "
 		ActionInfo_Arr["<CountDirContent>"] :=" Calculate the space occupied by all folders "
 		ActionInfo_Arr["<UnloadPlugins>"] :=" Unload all plugins "
-		ActionInfo_Arr["<DirMatch>"] :=" Mark a new file, Hide the same person "
+		ActionInfo_Arr["<DirMatch>"] :=" Mark a new file, Hide the same "
 		ActionInfo_Arr["<Exchange>"] :=" Exchange left and right windows "
 		ActionInfo_Arr["<MatchSrc>"] :=" target  =  source "
 		ActionInfo_Arr["<ReloadSelThumbs>"] :=" Refresh the thumbnail of the selected file "
