@@ -884,7 +884,7 @@ ListMapKey()
 {
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
 	Map := MapKey_Arr["Hotkeys"]
-    InfoLine := "ini file mappings only, built-in not listed`n"
+    InfoLine := "ini file mappings only, built-in not listed`nS=Global   H=Hotkey   G=GroupKey`n"
 	Stringsplit,ListMap,Map,%A_Space%
 	Loop,% ListMap0
 	{
@@ -901,16 +901,18 @@ ListMapKey()
 				TX := SubStr(ListMap%A_Index%,1,1) . TransHotkey(SubStr(ListMap%A_Index%,2))
 				Action := "{" . SendText_Arr[TX] . "}"
 			}
-			LM .= SubStr(ListMap%A_Index%,1,1) . "  " . SubStr(ListMap%A_Index%,2) . "  " . Action  . "`n"
+			;LM .= SubStr(ListMap%A_Index%,1,1) . "   " . SubStr(ListMap%A_Index%,2) . " `t" . Action  . "`n"
+			LM .= SubStr(ListMap%A_Index%,1,1) . "   " . SubStr(ListMap%A_Index%,2) . "   " . Action  . "`n"
 		}
 	}
 
     LM = %InfoLine%%LM%
     Msgbox  %Lm%
-	ControlGetPos,xn,yn,,hn,%TCEdit%,AHK_CLASS TTOTAL_CMD
-	yn := yn - hn - ( ListMap0 * 8 ) - 2
-	Tooltip,%LM%,%xn%,%yn%
-	Settimer,<RemoveToolTipEx>,100
+    ;; show tooltip
+	;ControlGetPos,xn,yn,,hn,%TCEdit%,AHK_CLASS TTOTAL_CMD
+	;yn := yn - hn - ( ListMap0 * 8 ) - 2
+	;Tooltip,%LM%,%xn%,%yn%
+	;Settimer,<RemoveToolTipEx>,100
 }
 
 
@@ -3926,7 +3928,8 @@ Help()
     Gui,Add,Button,x400 y146 w105 gAction, Commands (&C)
     Gui,Add,Button,x510 y146 w67 gAbout, About (&A)
     Intro := HelpInfo_Arr["Intro"]
-    Gui,Font,s11,Arial  ;font for the bottom textarea box in help window
+    Gui,Font,s11,Arial   ;font for the bottom textarea box in help window
+    ;Gui,Font,s12,Georgia   ;font for the bottom textarea box in help window
     Gui,Add,Edit,x12 y180 w574 h310 +ReadOnly,%Intro%
     Gui,Show,w600 h500,Help   VIATC %Version% 
     If TranspHelp
@@ -4045,11 +4048,11 @@ Help()
 		HelpInfo_arr["Apps"] :="Apps >> Open the context menu ( Right-click menu )"
 		HelpInfo_arr["RCtrl"] :="Rctrl >> right ctrl key, can also be control or ctrl instead "
     HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts. Press alt+`` (alt+backtick) (this shortcut can be modifed) to disable all ViATc functionality, or simply quit ViATc, TC won't be affected at all.`nDouble-click the tray icon, or Win+F (modifiable) to show/hide TC window`n")
-		HelpInfo_arr["Funct"] :="Single key to operate `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: ctrl, alt, shift or LWin (must be LWin not Win).`n`nExamples:`n<LWin>g           - this works as intended`n<ctrl><shift>a  - invalid, more than one modifier`n<ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >`n`nPlease click on the keyboard above to get details of each key.`n"
+		HelpInfo_arr["Funct"] :="Single key to operate `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: ctrl, alt, shift or LWin (must be LWin not Win).`n`nExamples:`n<LWin>g           - this works as intended`n<ctrl><shift>a  - invalid, more than one modifier`n<ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >`n`nPlease click on the keyboard above to get details of each key.`nAlso in the TC window press lm = list mappings from the ini file."
 		HelpInfo_arr["GroupK"] :="Also known as Combo Hotkeys. They take multiple keys to operate `nGroup Keys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with eight Groups Keys z,c,V,g,s,a,l,e. Click the keyboard above for details of what they do. For actual mappings open the Settings window where you can remap everything, you can even remap single Hotkeys into Groups Keys and vice versa."
 		HelpInfo_arr["cmdl"] :="The command line in VIATC supports abbreviations :h :s :r :m :sm :e, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys. If you type :map in the command line then all custom hotkeys will be displayed.`n If the input is :map key command, where key represents the hotkey to map (it can be a Group Key or a Hotkey). This feature is suitable for the scenario where there is a temporary need for a function mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file which is located in the TC directory.`n:smap and :map are the same except map is a global hotkey and does not support mapping Group Keys `n:edit  Directly edit ViATc.ini file "
 		HelpInfo_arr["command"] :="All commands can be found in the Settings window on the 'Hotkeys' tab. Commands are divided into 4 categories (there are 4 buttons there that will help you enter into into the  Command textbox)  :`n`n1.VIATC command, VIATC provides some TC enhancements`n`n2.TC internal command, it beginns with the 'cm_' such as cm_PackFiles but will be input as <PackFiles>.`n`n3. Run a program or open a file. TC has similar functions built-in but ViATc way might be more convenient`n`n4. Send a string of text. If you want to input a text into the command line then you can use the Group Key to map the command of sending a text string.`n`n The above four commands, 1 and 2 must be surrounded by <  > , 3 needs to be surrounded with (  ) , 4 with {  }.`nFor example `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Group Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Group Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be Interpreted by VIATC as pressing the Enter key."
-		HelpInfo_arr["About"] :="Author of the original Chinese version is linxinhong https://github.com/linxinhong  (linxinhong.sky@gmail.com) He knows basic English but is AHK guru.`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname @gmail.com    I know nothing about Chinese, I've used Google translate initially and then rephrased and modified this software. I'm just a junior in AHK.`n`nThis version is not perfected yet, any help appreciated."
+		HelpInfo_arr["About"] :="Author of the original Chinese version is Linxinhong `nhttps://github.com/linxinhong`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname @gmail.com    I don't speak Chinese, I've used Google translate initially and then rephrased and modified this software. I'm not proficient in AHK.`n`nThis version is not perfected yet, any help appreciated."
 	}
 	SetGroupInfo()
 	{

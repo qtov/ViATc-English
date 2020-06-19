@@ -39,7 +39,6 @@ f  = Page Down
 b  = Page Up  
 t  = open tab, same as Ctrl+t  
 x  = close tab, same as Ctrl+w  
-r  = rename, same as Shift+F6  
 d  = directory hotlist, same as Ctrl+d  
 o  = open drive drop-box, same as Alt+F1  
 u  = go up in directory, same as Backspace  
@@ -47,6 +46,8 @@ i  = Enter
 cc = Delete  
 gg = go top  
 G  = go bottom  
+r  = rename with a fancy vim emulator,   
+shift+r  = simple rename, same as Shift+F6  
 Ctrl+[   = Esc  
 Capslock = Esc  
 
