@@ -26,8 +26,9 @@ Reload ViATc manually after any changes made directly in the ini file to take ef
 In the ini file all lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
 
 CapsLock is mapped in the script as Escape. To bypass this try ctrl+CapsLock
+<!-- 
 [//]: # (Commented out as CapsLock is mapped in the script itself). If you have mapped CapsLock as Escape in other AHK script you need to map it again in viatc.ini like this `<CapsLock>=<Esc>`
-
+ -->
 Usage
 =====
 A small subset of commands:
