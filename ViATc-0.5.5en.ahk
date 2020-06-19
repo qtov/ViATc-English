@@ -7,7 +7,7 @@ Setkeydelay,-1
 SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
-Global Version := "0.5.5en beta 1"
+Global Version := "0.5.5en beta 2"
 Global VimPath := "gvim.exe"
 Global IconPath := A_ScriptDir . "\viatc.ico"
 Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
@@ -192,6 +192,7 @@ TranspVar := GetConfig("Configuration","TranspVar")
 DefaultSE := GetConfig("SearchEngine","Default")
 SearchEng := GetConfig("SearchEngine",DefaultSE)
 LnkToDesktop := GetConfig("Other","LnkToDesktop")
+VimRN  := GetConfig("VimReName","Enabled")
 Return
 <32768>:
 Get32768()
@@ -1715,10 +1716,12 @@ VimRN_SetPos(Pos1,Pos2)
 ;hardcoded settings
 SetDefaultKey()
 {
+    ; ---------  keys for quick-search (ctrl+s)
 	Hotkey,Ifwinactive,ahk_class TQUICKSEARCH
 	Hotkey,+j,<Down>
 	Hotkey,+k,<Up>
 
+    ; -------- single keys
 	Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
 	HotKey,1,<Num1>,on,UseErrorLevel
 	HotKey,2,<Num2>,on,UseErrorLevel
@@ -1730,7 +1733,7 @@ SetDefaultKey()
 	HotKey,8,<Num8>,on,UseErrorLevel
 	HotKey,9,<Num9>,on,UseErrorLevel
 	HotKey,0,<Num0>,on,UseErrorLevel
-	HotKey,+a,<SetAttrib>,on,UseErrorLevel
+	HotKey,+a,<SelectAllBoth>,on,UseErrorLevel
 	Hotkey,b,<PageUp>,On,UseErrorLevel
 	Hotkey,+b,<azTab>,On,UseErrorLevel
 	HotKey,c,<CloseCurrentTab>,on,UseErrorLevel
@@ -1791,49 +1794,20 @@ SetDefaultKey()
 	Hotkey,=,<MatchSrc>,On,UseErrorLevel
 	Hotkey,-,<SwitchSeparateTree>,On,UseErrorLevelHotkey,\,<ExchangeSelection>,On,UseErrorLevel
 	Hotkey,',<ListMark>,On,UseErrorLevel
-	Hotkey,`,,<None>,On,UseErrorLevel
+	;Hotkey,`,,<None>,On,UseErrorLevel
 	Hotkey,$Enter,<Enter>,On,UseErrorLevel
 	Hotkey,Esc,<Esc>,On,UseErrorLevel
+	Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
+	Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
 	Hotkey,+.,<None>,On,UseErrorLevel
 	;Hotkey,+s,<None>,On,UseErrorLevel
 	Hotkey,+',<None>,On,UseErrorLevel
-	GroupKeyAdd("zz","<50Percent>")
-	GroupKeyAdd("zi","<WinMaxLeft>")
-	GroupKeyAdd("zo","<WinMaxRight>")
-	GroupKeyAdd("zt","<AlwayOnTop>")
-	GroupKeyAdd("zn","<Minimize>")
-	GroupKeyAdd("zm","<Maximize>")
-	GroupKeyAdd("zr","<Restore>")
-	GroupKeyAdd("zv","<VerticalPanels>")
-	GroupKeyAdd("zs","<Transparent>")
-	GroupKeyAdd("zf","<TCFullScreen>")
-	GroupKeyAdd("zl","<TCLite>")
-	GroupKeyAdd("zq","<QuitTC>")
-	GroupKeyAdd("za","<ReLoadTC>")
-	GroupKeyAdd("sn","<SrcByName>")
-	GroupKeyAdd("se","<SrcByExt>")
-	GroupKeyAdd("ss","<SrcBySize>")
-	GroupKeyAdd("sd","<SrcByDateTime>")
-	GroupKeyAdd("sg","<Internetsearch>")
-	GroupKeyAdd("sr","<SrcNegOrder>")
-	GroupKeyAdd("s1","<SrcSortByCol1>")
-	GroupKeyAdd("s2","<SrcSortByCol2>")
-	GroupKeyAdd("s3","<SrcSortByCol3>")
-	GroupKeyAdd("s4","<SrcSortByCol4>")
-	GroupKeyAdd("s5","<SrcSortByCol5>")
-	GroupKeyAdd("s6","<SrcSortByCol6>")
-	GroupKeyAdd("s7","<SrcSortByCol7>")
-	GroupKeyAdd("s8","<SrcSortByCol8>")
-	GroupKeyAdd("s9","<SrcSortByCol9>")
-	GroupKeyAdd("gt","<SwitchToNextTab>")
-	GroupKeyAdd("gp","<SwitchToPreviousTab>")
-	GroupKeyAdd("gr","<SwitchToPreviousTab>")
-	GroupKeyAdd("ga","<CloseAllTabs>")
-	GroupKeyAdd("gc","<CloseCurrentTab>")
-	GroupKeyAdd("gn","<OpenDirInNewTab>")
-	GroupKeyAdd("gb","<OpenDirInNewTabOther>")
-	GroupKeyAdd("ge","<Exchange>")
-	GroupKeyAdd("gw","<ExchangeWithTabs>")
+
+    ; ------ combo keys:
+    GroupKeyAdd("ca","<SetAttrib>")
+	;GroupKeyAdd("chc","<DelCmdHistory>")
+	;GroupKeyAdd("chl","<DeleteLHistory>")
+	;GroupKeyAdd("chr","<DeleteRHistory>")
 	GroupKeyAdd("g1","<SrcActivateTab1>")
 	GroupKeyAdd("g2","<SrcActivateTab2>")
 	GroupKeyAdd("g3","<SrcActivateTab3>")
@@ -1844,27 +1818,59 @@ SetDefaultKey()
 	GroupKeyAdd("g8","<SrcActivateTab8>")
 	GroupKeyAdd("g9","<SrcActivateTab9>")
 	GroupKeyAdd("g0","<GoLastTab>")
+	GroupKeyAdd("ga","<CloseAllTabs>")
+	GroupKeyAdd("gb","<OpenDirInNewTabOther>")
+	GroupKeyAdd("ge","<Exchange>")
 	GroupKeyAdd("gg","<Home>")
-	GroupKeyAdd("ee","<Enter>")                 ;!!!added
-	GroupKeyAdd("<Shift>vb","<VisButtonbar>")
-	GroupKeyAdd("<Shift>vd","<VisDriveButtons>")
-	GroupKeyAdd("<Shift>vo","<VisTwoDriveButtons>")
-	GroupKeyAdd("<Shift>vr","<VisDriveCombo>")
-	GroupKeyAdd("<Shift>vc","<VisCurDir>")
-	GroupKeyAdd("<Shift>vt","<VisTabHeader>")
-	GroupKeyAdd("<Shift>vs","<VisStatusbar>")
-    ;GroupKeyAdd("<Shift>vms","<SwitchDarkmode>")
+	GroupKeyAdd("gn","<OpenDirInNewTab>")
+	GroupKeyAdd("gp","<SwitchToPreviousTab>")
+	GroupKeyAdd("gr","<SwitchToPreviousTab>")
+	GroupKeyAdd("gt","<SwitchToNextTab>")
+	GroupKeyAdd("gw","<ExchangeWithTabs>")
+	GroupKeyAdd("s1","<SrcSortByCol1>")
+	GroupKeyAdd("s2","<SrcSortByCol2>")
+	GroupKeyAdd("s3","<SrcSortByCol3>")
+	GroupKeyAdd("s4","<SrcSortByCol4>")
+	GroupKeyAdd("s5","<SrcSortByCol5>")
+	GroupKeyAdd("s6","<SrcSortByCol6>")
+	GroupKeyAdd("s7","<SrcSortByCol7>")
+	GroupKeyAdd("s8","<SrcSortByCol8>")
+	GroupKeyAdd("s9","<SrcSortByCol9>")
+	GroupKeyAdd("sd","<SrcByDateTime>")
+	GroupKeyAdd("se","<SrcByExt>")
+	GroupKeyAdd("sg","<Internetsearch>")
+	GroupKeyAdd("sn","<SrcByName>")
+	GroupKeyAdd("sr","<SrcNegOrder>")
+	GroupKeyAdd("ss","<SrcBySize>")
 	;GroupKeyAdd("<Shift>vmd","<EnableDarkmode>")
 	;GroupKeyAdd("<Shift>vml","<DisableDarkmode>")
-	GroupKeyAdd("<Shift>vn","<VisCmdLine>")
-	GroupKeyAdd("<Shift>vf","<VisKeyButtons>")
-	GroupKeyAdd("<Shift>vw","<VisDirTabs>")
+    ;GroupKeyAdd("<Shift>vms","<SwitchDarkmode>")
+	GroupKeyAdd("<Shift>vb","<VisButtonbar>")
+	GroupKeyAdd("<Shift>vc","<VisCurDir>")
+	GroupKeyAdd("<Shift>vd","<VisDriveButtons>")
 	GroupKeyAdd("<Shift>ve","<CommandBrowser>")
-	;GroupKeyAdd("chl","<DeleteLHistory>")
-	;GroupKeyAdd("chr","<DeleteRHistory>")
-	;GroupKeyAdd("chc","<DelCmdHistory>")
+	GroupKeyAdd("<Shift>vf","<VisKeyButtons>")
+	GroupKeyAdd("<Shift>vn","<VisCmdLine>")
+	GroupKeyAdd("<Shift>vo","<VisTwoDriveButtons>")
+	GroupKeyAdd("<Shift>vr","<VisDriveCombo>")
+	GroupKeyAdd("<Shift>vs","<VisStatusbar>")
+	GroupKeyAdd("<Shift>vt","<VisTabHeader>")
+	GroupKeyAdd("<Shift>vw","<VisDirTabs>")
+	GroupKeyAdd("za","<ReLoadTC>")
+	GroupKeyAdd("zf","<TCFullScreen>")
+	GroupKeyAdd("zi","<WinMaxLeft>")
+	GroupKeyAdd("zl","<TCLite>")
+	GroupKeyAdd("zm","<Maximize>")
+	GroupKeyAdd("zn","<Minimize>")
+	GroupKeyAdd("zo","<WinMaxRight>")
+	GroupKeyAdd("zq","<QuitTC>")
+	GroupKeyAdd("zr","<Restore>")
+	GroupKeyAdd("zs","<Transparent>")
+	GroupKeyAdd("zt","<AlwayOnTop>")
+	GroupKeyAdd("zv","<VerticalPanels>")
+	GroupKeyAdd("zz","<50Percent>")
     
-    ;keys for fancy rename 
+    ; -------  keys for fancy rename 
 	Hotkey,IfWinActive,ViATc Fancy Rename
 	Hotkey,j,VimRN_Down,on,UseErrorLevel
 	Hotkey,k,VimRN_Up,on,UseErrorLevel
@@ -1880,9 +1886,9 @@ SetDefaultKey()
 	Hotkey,d,VimRN_Backspace,on,UseErrorLevel
 	Hotkey,x,VimRN_Delete,on,UseErrorLevel
 	Hotkey,i,VimRN_Insert,on,UseErrorLevel
-	Hotkey,r,VimRN_Replace,on,UseErrorLevel
 	Hotkey,t,VimRN_Trade,on,UseErrorLevel
 	Hotkey,f,VimRN_Find,on,UseErrorLevel
+    Hotkey,r,VimRN_Replace,on,UseErrorLevel
 	Hotkey,+r,VimRN_MultiReplace,on,UseErrorLevel
 	Hotkey,a,VimRN_Selectall,on,UseErrorLevel
 	Hotkey,s,VimRN_SelectThis,on,UseErrorLevel
@@ -2588,6 +2594,10 @@ CreateConfig(Section,Key)
 	If Section = Other
 		If Key = LnkToDesktop
 			SetVar := 1
+	If Section = VimReName
+		If Key = Enabled
+			SetVar := 1
+    
 	IniRead,GetVar,%ViatcIni%,%Section%,%Key%
 	If Getvar = ERROR
 		Iniwrite,%SetVar%,%ViatcIni%,%Section%,%Key%
@@ -3179,7 +3189,7 @@ Diff(String1,String2)
 }
 Setting()
 {
-	Global StartUp,Service,TrayIcon,Vim,GlobalTogg,Toggle,GlobalSusp,Susp,GroupWarn,TranspHelp,Transparent,SearchEng,DefaultSE,ViATcIni,TCExe,TCINI,NeedReload
+	Global StartUp,Service,TrayIcon,Vim,GlobalTogg,Toggle,GlobalSusp,Susp,GroupWarn,TranspHelp,Transparent,SearchEng,DefaultSE,ViATcIni,TCExe,TCINI,NeedReload,LnkToDesktop 
 	NeedReload := 1
 	Global ListView
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
@@ -3978,7 +3988,7 @@ Help()
 		HelpInfo_arr["Q"] :="q >> Quick view function `nQ >> Use the default browser to search for the current file name / Folder name "
 		HelpInfo_arr["W"] :="w >> Small menu `nW >> No mapping "
 		HelpInfo_arr["E"] :="e >> e...  (Group Key, requires another key) `nee >> Enter`nep >> Edit path in tabbar`nee >> Enter`nee >> Enter`n`n`nE >> Run cmd.exe in the current directory"
-		HelpInfo_arr["R"] :="r >> Fancy Rename `nR >> Rename (simple default TC, not fancy ViATc) "
+		HelpInfo_arr["R"] :="r >> Fancy Rename`n alt+r >> Fancy Rename`nR >> Rename (simple default TC, not fancy ViATc) "
 		HelpInfo_arr["T"] :="t >> New tab `nT >> Create a new tab in the background "
 		HelpInfo_arr["Y"] :="y >> Copy window like F5  `nY >> Copy the file name and the full path "
 		HelpInfo_arr["U"] :="u >> Up a directory `nU >> Up to the root directory "
@@ -3990,7 +4000,7 @@ Help()
 		HelpInfo_arr["\|"] :="\ >> Invert all selections for files and folders  `n| >> Clears all selections"
 		HelpInfo_arr["CapsLock"] :="CapsLock >> Esc (in some cases it doesn't behave identical, it doesn't hide tooltips"
        ; quits in 'fancy rename' instead of going to Vim mode)"
-		HelpInfo_arr["A"] :="a >> (Group Key, requires another key) `n A >>  Attributes window"
+		HelpInfo_arr["A"] :="a >> (Group Key, requires another key) `n A >>  All selected:  Files and folders "
 		HelpInfo_arr["S"] :="s >> Sort by... (Group Key, requires another key) `nS >> (Group Key, requires another key) show all, executables, etc. `nsn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nst >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9 >>"
 		HelpInfo_arr["D"] :="d >> Favourite folders hotlist`nD >> Open the desktop folder "
 		HelpInfo_arr["F"] :="f >> Page down, Equivalent to PageDown`nF >> Switch to TC Default fast search mode "
@@ -4197,7 +4207,7 @@ Help()
 		ActionInfo_Arr["<Decode>"] :=" Decode the file (MIME/UUE/XXE/BinHex  format )"
 		ActionInfo_Arr["<CRCcreate>"] :=" Create a check file "
 		ActionInfo_Arr["<CRCcheck>"] :=" Verify checksum "
-		ActionInfo_Arr["<SetAttrib>"] :=" Change the property "
+		ActionInfo_Arr["<SetAttrib>"] :=" Change attributes "
 		ActionInfo_Arr["<Config>"] :=" Configuration :  layout "
 		ActionInfo_Arr["<DisplayConfig>"] :=" Configuration :  display "
 		ActionInfo_Arr["<IconConfig>"] :=" Configuration :  icon "
