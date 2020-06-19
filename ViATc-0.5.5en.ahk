@@ -146,13 +146,13 @@ GlobalSusp := GetConfig("Configuration","GlobalSusp")
 If GlobalSusp
 {
 	HotKey,Ifwinactive
-	Hotkey,%Susp%,<EnableVim>,On,UseErrorLevel
+	Hotkey,%Susp%,<EnableViATc>,On,UseErrorLevel
 	Susp := GetConfig("Configuration","Suspend")
 }
 Else
 {
 	HotKey,Ifwinactive,AHK_CLASS TTOTAL_CMD
-	Hotkey,%Susp%,<EnableVim>,On,UseErrorLevel
+	Hotkey,%Susp%,<EnableViATc>,On,UseErrorLevel
 	Susp := GetConfig("Configuration","Suspend")
 }
 TrayIcon := GetConfig("Configuration","TrayIcon")
@@ -1525,12 +1525,13 @@ VimRN_Help()
 {
 	rename_help =
 (
-This is a simple Vim emulator
+ -----  simple Vim emulator -----
 q :  Quit, cancel rename without saving
 i :  Insert mode
 v :  Visual select mode (v again to toggle to Vim Normal mode)
 Esc :  Vim's Normal mode
-Capslock : same as Escape
+^[  :  same as Esc
+Capslock : same as Esc
 Enter :  Save rename
 
 h :  Move to the left N characters
@@ -1896,6 +1897,7 @@ SetDefaultKey()
 	Hotkey,v,VimRN_Visual,on,UseErrorLevel
 	Hotkey,p,VimRN_Paste,on,UseErrorLevel
 	Hotkey,Esc,VimRN_Esc,on,UseErrorLevel
+	Hotkey,^[,VimRN_Esc,on,UseErrorLevel
 	Hotkey,Capslock,VimRN_Esc,on,UseErrorLevel
 	;Hotkey,^Capslock,Capslock,on,UseErrorLevel
     ;SetCapsLockState, % GetKeyState("CapsLock", "T")? "Off":"On"
@@ -3892,7 +3894,7 @@ Help()
     Gui,Add,Text,x304 y115 w40 h18 center Border g<ShowHelp>,Apps
     Gui,Add,Text,x346 y115 w40 h18 center Border g<ShowHelp>,RCtrl
 	Gui,Font,s11,Arial
-    Gui,Add,Text,x399 y25 w200 h100 , Click on the keyboard to see what the key does. Please note that some info might not be accurate because any of the hotkeys can be overriden in the Settings.
+    Gui,Add,Text,x399 y25 w200 h120 , Click on the keyboard to see what the key does. Please note that some info might not be accurate because any of the hotkeys can be overriden in the Settings.
 	Gui,Font,s9,Arial Bold    
     Gui,Add,Groupbox,x12 y135 w574 h40
     Gui,Add,Button,x15 y146 w60 gIntro, Intro (&I)
@@ -3988,7 +3990,7 @@ Help()
 		HelpInfo_arr["\|"] :="\ >> Invert all selections for files and folders  `n| >> Clears all selections"
 		HelpInfo_arr["CapsLock"] :="CapsLock >> Esc (in some cases it doesn't behave identical, it doesn't hide tooltips"
        ; quits in 'fancy rename' instead of going to Vim mode)"
-		HelpInfo_arr["A"] :="a >> (Group Key, requires another key) `n A >>  "
+		HelpInfo_arr["A"] :="a >> (Group Key, requires another key) `n A >>  Attributes window"
 		HelpInfo_arr["S"] :="s >> Sort by... (Group Key, requires another key) `nS >> (Group Key, requires another key) show all, executables, etc. `nsn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nst >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9 >>"
 		HelpInfo_arr["D"] :="d >> Favourite folders hotlist`nD >> Open the desktop folder "
 		HelpInfo_arr["F"] :="f >> Page down, Equivalent to PageDown`nF >> Switch to TC Default fast search mode "
