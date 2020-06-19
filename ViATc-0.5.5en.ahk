@@ -845,7 +845,7 @@ DeleteCMD()
 If SendPos(0)
 	ListMapKey()
 Return
-ListMapKeyMultiColumn()
+ListMapKeyMultiColumn()  ;not used
 {
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
 	Map := MapKey_Arr["Hotkeys"]
@@ -884,6 +884,7 @@ ListMapKey()
 {
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
 	Map := MapKey_Arr["Hotkeys"]
+    InfoLine := "ini file mappings only, built-in not listed`n"
 	Stringsplit,ListMap,Map,%A_Space%
 	Loop,% ListMap0
 	{
@@ -903,6 +904,8 @@ ListMapKey()
 			LM .= SubStr(ListMap%A_Index%,1,1) . "  " . SubStr(ListMap%A_Index%,2) . "  " . Action  . "`n"
 		}
 	}
+
+    LM = %InfoLine%%LM%
     Msgbox  %Lm%
 	ControlGetPos,xn,yn,,hn,%TCEdit%,AHK_CLASS TTOTAL_CMD
 	yn := yn - hn - ( ListMap0 * 8 ) - 2
@@ -1918,6 +1921,8 @@ SetDefaultKey()
 	Hotkey,9,VimRN_Num,on,UseErrorLevel
     Hotkey,0,VimRN_Num,on,UseErrorLevel
 }
+
+
 SendKey(HotKey)
 {
 	Global KeyCount,KeyTemp,Repeat,MaxCount
@@ -1950,6 +1955,7 @@ SendKey(HotKey)
 		Send %hotkey%
 	}
 }
+
 SendNum(HotKey)
 {
 	Global KeyCount,KeyTemp,GetNum
@@ -1972,6 +1978,7 @@ SendNum(HotKey)
 		Send %hotkey%
 	}
 }
+
 SendPos(Num,IsCount=False)
 {
 	Global KeyCount,KeyTemp,Repeat
@@ -2005,6 +2012,7 @@ SendPos(Num,IsCount=False)
 		Return False
 	}
 }
+
 ExecFile()
 {
 	Global ExecFile_Arr,KeyTemp,GoExec,Repeat
@@ -2031,6 +2039,7 @@ ExecFile()
 	Repeat := "(" . File . ")"
 	GoExec :=
 }
+
 SendText()
 {
 	Global SendText_Arr,KeyTemp,Repeat,GoText
@@ -2064,6 +2073,7 @@ SendText()
 	Repeat := "{" . Text . "}"
 	GoText :=
 }
+
 Groupkey(Hotkey)
 {
 	Global GroupKey_Arr,KeyTemp,KeyCount,GroupInfo_arr,GroupWarn,Repeat,SendText_Arr,ExecFile_Arr,GoExec,GoText
@@ -2095,7 +2105,7 @@ Groupkey(Hotkey)
 					Repeat := Action
 				}
 				Else
-					Msgbox % KeyTemp " action " Action " Error "
+					Msgbox % KeyTemp " command " Action " Error "
 			}
 			Else
 				ControlSetText,%TCEdit%,%KeyTemp%,AHK_CLASS TTOTAL_CMD
@@ -3377,7 +3387,9 @@ SetDefaultSE()
 		IniWrite,%SE%,%VIATCINI%,SearchEngine,Default
 	}
 }
+; on OK pressed
 <GuiEnter>:
+CheckKey()  ;this is what Save button does on the Settings middle tab
 Gui,Submit
 IniWrite,%TrayIcon%,%ViATcIni%,Configuration,TrayIcon
 IniWrite,%Vim%,%ViATcIni%,Configuration,Vim

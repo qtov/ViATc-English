@@ -24,7 +24,9 @@ Settings
 You can add and remove shortcuts directly in the ini file or via ViATc Settings window. After changes you must click Save before clicking OK. This will reload ViaTC automatically
 Reload ViATc manually after any changes made directly in the ini file to take effect.
 In the ini file all lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
-If you have mapped CapsLock as Escape in other AHK script you need to map it again in viatc.ini like this `<CapsLock>=<Esc>`
+
+CapsLock is mapped in the script as Escape. To bypass this try ctrl+CapsLock
+[//]: # (Commented out as CapsLock is mapped in the script itself). If you have mapped CapsLock as Escape in other AHK script you need to map it again in viatc.ini like this `<CapsLock>=<Esc>`
 
 Usage
 =====
@@ -40,9 +42,7 @@ r  = rename, same as Shift+F6
 d  = directory hotlist, same as Ctrl+d  
 o  = open drive drop-box, same as Alt+F1  
 u  = go up in directory, same as Backspace  
-lk = go up in directory, same as Backspace  
-lj = Enter  
-aj = Enter  
+i  = Enter  
 cc = Delete
 gg = go top
 G  = go bottom
