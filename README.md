@@ -44,9 +44,9 @@ d  = directory hotlist, same as Ctrl+d
 o  = open drive drop-box, same as Alt+F1  
 u  = go up in directory, same as Backspace  
 i  = Enter  
-cc = Delete
-gg = go top
-G  = go bottom
+cc = Delete  
+gg = go top  
+G  = go bottom  
 Ctrl+[   = Esc  
 Capslock = Esc  
 
