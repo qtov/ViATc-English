@@ -1,7 +1,7 @@
 ViATc
 =====
 
-Warning: This version 0.6 is unfinished and most likely never will be. Please use 0.5
+This version 0.6 is unfinished and most likely never will be. Please use 0.5
 
 ViATc - Vim mode at Total Commander
 
@@ -16,7 +16,7 @@ ViATc - Vim mode at Total Commander
 Use:
 =====
 - Download and install Autohotkey, simple to learn but powerful. https://autohotkey.com/
-- Download ViATc https://github.com/magicstep/ViATc-0.6-English/archive/master.zip, extract and double-click viatc-0.6.1en.ahk
+- Download ViATc https://github.com/magicstep/ViATc-0.6-English/archive/master.zip, extract and double-click viatc-0.6.2en.ahk
 - Look for a new icon in the tray.
 
 Author
