@@ -1555,8 +1555,8 @@ y :  Copy characters (in Visual mode only)
 p :  Paste the character
 f :  Find characters, E.g 'f' then 'a' to find 'a'
 t :  Transpose two characters at the cursor
-r :  Only replace the characters at the cursor
-R :  Replace all characters after the cursor, untill Esc
+r :  Replace one character at the cursor
+R :  Replace continuously characters untill Esc
 n :  Select the file name
 e :  Select the extension
 a :  Select all
