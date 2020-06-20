@@ -1,4 +1,11 @@
-;tripple underscores ___  and exclamations !!! are markers for debugging
+; Author of the original Chinese version is linxinhong https://github.com/linxinhong
+; Translator and maintainer of the English version is magicstep https://github.com/magicstep  
+; Alternatively you can contact me with the same nickname @gmail.com
+; This script works on Windows with AutoHotkey installed 
+;  only as an addition to "Total Commander" - the file manager from www.ghisler.com  
+; ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium or better yet SurfingKeys.
+
+;tripple underscores ___ question ??? and exclamations !!! are markers for debugging
 #SingleInstance Force
 #Persistent
 #NoEnv
@@ -7,8 +14,9 @@ Setkeydelay,-1
 SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
+Global Date := "2020/06/20"
 Global Version := "0.5.5en beta 3"
-Global VimPath := "gvim.exe"
+Global VimPath := "gvim.exe"  ; it is overwritten later
 Global IconPath := A_ScriptDir . "\viatc.ico"
 Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
 KeyTemp :=
@@ -62,9 +70,6 @@ Global TCEditMarks := "Edit1"
 RegRead,ViATcIni,HKEY_CURRENT_USER,Software\VIATC,ViATcINI
 If Not FileExist(ViATcINI)
 	ViatcIni :=  A_ScriptDir . "\viatc.ini"
-    ;ViatcIni := TcDir . "\viatc.ini"
-;MsgBox , %ViatcIni% ;!!!
-
 RegRead,VimPath,HKEY_LOCAL_MACHINE,Software\vim\gvim,path
 If Not FileExist(VimPath)   ;fallback to the user setting
     RegRead,VimPath,HKEY_CURRENT_USER,Software\VIATC,VimPathReg
@@ -95,7 +100,6 @@ Menu,Tray,Default, Run TC (&T)
 If TrayIcon
 	Menu,Tray,Icon
 Menu,Tray,NoStandard
-;If Not A_IsCompiled
 If FileExist(IconPath)
     Menu,Tray,Icon,%IconPath%
 SetHelpInfo()
@@ -106,25 +110,8 @@ ReadKeyFromIni()
 EmptyMem()
 Winactivate,AHK_CLASS TTOTAL_CMD
 <Esc>
-;Sleep 500
-;Send {Esc}
-    ;-----------!!!!
-	;Suspend,off
-    ;Send {Esc}
-    ;Sleep 700
-    ;Send {Esc}
-    ;Sleep 200
-    ;Send j
-
-    ;Send {Esc}
-    ;ToolTip Reloaded
-    ;WinWait,AHK_CLASS TTOTAL_CMD,3
-	;Winactivate,AHK_CLASS TTOTAL_CMD
-	;Settimer,<CheckTCExist>,100
-    ;Gui,Cancel
-    ;EmptyMem()
-
 return
+
 
 <ConfigVar>:
 Vim := GetConfig("Configuration","Vim")
@@ -312,12 +299,7 @@ If Not IsSuspended
     If FileExist(IconDisabledPath)
     {
         If A_IsCompiled
-        {
-            ;MsgBox , %IconDisabledPath% ;!!!
-            ;Menu,Tray,icon,%IconDisabledPath%,1,1
-            ;Menu,Tray,icon,%IconDisabledPath%,5,1
             Menu,Tray,Icon,viatcdis.ico
-        }
         Else
             Menu,Tray,Icon,%IconDisabledPath%
     }
@@ -364,7 +346,7 @@ ReloadVIATC()
 Return
 
 <EditScriptWithVim>:
-    run, %VimPath% --remote-tab-silent %a_scriptFullPath%    ; open in existing vim in a new tab
+    run, %VimPath% -p --remote-tab-silent %a_scriptFullPath%    ; open in existing vim in a new tab
     ;run, %VimPath% %a_scriptFullPath%    ; open in vim (new instance if vim already opened)
 Return
 
@@ -3200,7 +3182,7 @@ Editviatcini()
 	INI := Regexreplace(viatcini,".*",match)
 	If Fileexist(VimPath)
 		;editini := VimPath . a_space . ini                 ;open in a new Vim instance
-		editini := VimPath . " --remote-tab-silent " . ini  ;open in a new Vim tab
+		editini := VimPath . " -p --remote-tab-silent " . ini  ;open in a new Vim tab
 	Else
 		editini := "notepad.exe" . a_space . ini
 	Run,%editini%,,UseErrorLevel
