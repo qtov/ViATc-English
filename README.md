@@ -22,14 +22,14 @@ Installation
 
 Settings
 ========
-You can add and remove shortcuts via the ViATc Settings window. After changes you must click Save or OK (OK will save and reload ViaTC).
+You can add and remove shortcuts via the ViATc Settings window. After changes you must click Save or OK (OK will save and reload ViaTC).  
 You can also add and remove shortcuts directly in the ini file. Reload ViATc manually after any changes made directly in the ini file to take effect.
 In the ini file all lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
 
-CapsLock is mapped in the script as Escape. To bypass this try ctrl+CapsLock 
-Known issues: 
+CapsLock is mapped in the script as Escape. To bypass this try ctrl+CapsLock  
+Known issues:  
 - enabling CapsLock doesn't produce uppercase in fancy vim rename
-- after using the fancy vim rename, sometimes  command-line "ex" commands don't work 
+- sometimes  :command-line and making marks is not recognized
 
 Usage
 =====
