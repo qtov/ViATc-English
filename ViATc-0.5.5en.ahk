@@ -47,7 +47,7 @@ Splitpath,TcExe,,TcDir
 If RegExMatch(TcExe,"i)totalcmd64\.exe")
 {
 	Global TCListBox := "LCLListBox"
-	Global TCEdit := "Edit2"
+	Global TCEdit := "Edit1"
 	GLobal TCPanel1 := "Window1"
 	Global TCPanel2 := "Window11"
 }
@@ -196,14 +196,15 @@ VimRN  := GetConfig("VimReName","Enabled")
 Return
 <32768>:
 Get32768()
-RETURN
+Return
+
 Get32768()
 {
 	Global InsertMode
 	WinGet,MenuID,ID,AHK_CLASS #32768
 	IF MenuID
 		InsertMode := True
-	ELSE
+	Else
 	{
 		InsertMode := False
 		SetTimer,<32768>,OFF
@@ -301,6 +302,7 @@ Else
 }
 EmptyMem()
 Return
+
 <EnableViATc>:
 Suspend
 If Not IsSuspended
@@ -344,6 +346,7 @@ Suspend,on
 Else
 	Suspend,off
 Return
+
 <ReLoadVIATC>:
 ReloadVIATC()
 Return
@@ -841,6 +844,7 @@ DeleteCMD()
 	Else
 		Winactivate ahk_class TTOTAL_CMD
 }
+
 <ListMapKey>:
 If SendPos(0)
 	ListMapKey()
@@ -915,7 +919,7 @@ ListMapKey()
 	;Settimer,<RemoveToolTipEx>,100
 }
 
-
+;!!! ccc
 <FocusCmdLineEx>:
 If SendPos(4003)
 {
@@ -923,6 +927,7 @@ If SendPos(4003)
 	Send,{end}
 }
 Return
+
 <WinMaxLeft>:
 If SendPos(0)
 	WinMaxLeft()
@@ -1036,6 +1041,7 @@ Half()
     ;MsgBox, h=%h% h1=%h1% Top=%Top% HalfLine=%HalfLine%   Height=%Height%  x1=%x1% y1=%y1% w1=%w1% x=%x% y=%y% w=%w%
 	PostMessage, 0x19E, %HalfLine%, 1,, AHK_id %cid%
 }
+
 <azTab>:
 If SendPos(0)
 	azTab()
@@ -1186,6 +1192,8 @@ ControlGetTabs(Control, WinTitle="", WinText="")
 	DllCall("CloseHandle", "ptr", hproc)
 	return tabs
 }
+
+; ----- fancy rename
 <VimRN>:
 If SendPos(0)
 	VimRNCreateGui()
@@ -1196,18 +1204,25 @@ VimRNCreateGui()
 	Global GetName
 	WinClose,AHK_ID %VimRN_ID%
 	PostMessage 1075, 1007, 0,, ahk_class TTOTAL_CMD
+    ;loop 8 times to wait till the little rename line opens, so we can copy content
 	Loop,8
 	{
 		ControlGetFocus,ThisCtrl,AHK_CLASS TTOTAL_CMD
 		;If ThisCtrl = TInEdit1
-		If ThisCtrl = Edit1
+        ;The bar with path has ID = Edit2 or Window17  
+        ;You can edit this bar if you double click on it or if you rename ".." at the top of the list
+        If ThisCtrl = Edit1
+		;If ((ThisCtrl = Edit1) or (ThisCtrl = Edit2) or (ThisCtrl = Window17))
+		;If ((%ThisCtrl%=Edit1) or (%ThisCtrl%=Edit2) or (%ThisCtrl%=Window17))
 		{
 			;ControlGetText,GetName,TInEdit1,AHK_CLASS TTOTAL_CMD
-			ControlGetText,GetName,Edit1,AHK_CLASS TTOTAL_CMD
+			ControlGetText,GetName,%ThisCtrl%,AHK_CLASS TTOTAL_CMD
 			Break
 		}
 		Sleep,50
 	}
+        ;Msgbox  ThisCtrl %ThisCtrl% ;!!!
+        ;Msgbox  GetName %GetName% ;!!!
 	If Not GetName
         Return
 
@@ -1238,7 +1253,7 @@ VimRNCreateGui()
 	Gui,Add,StatusBar
 	Gui,Add,Button,Default Hidden gVimRN_Enter
 	Gui,Show,h175,ViATc Fancy Rename
-	PostMessage,0x00C5,256,,Edit1,AHK_ID %VimRN_ID%
+	PostMessage,0x00C5,256,,%ThisCtrl%,AHK_ID %VimRN_ID%
 	VimRN := GetConfig("VimReName","Mode")
 	If VimRN
 	{
@@ -1272,6 +1287,7 @@ GetFindText(byRef w, byRef l)
 	If VimRN_IsFind
 	{
 		ThisChar := Chr(w)
+        ;!!! ??? need to change   Edit1 to  %ThisCtrl% <---- make it global var
 		ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
 		GetPos := VimRN_GetPos()
 		StartPos := GetPos[2] + 1
@@ -2757,13 +2773,22 @@ FS()
 	If MenuHandle
 		DllCall("SetMenu", "uint", hWin, "uint", 0)
 }
+
 Enter()
 {
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr,TabsBreak
 	ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-	Match_TCEdit := "^" . TCEdit . "$"
+    ;Msgbox  ThisControl %ThisControl% ;!!!
+    ;ThisControl = "Edit1"
+    ;TCEdit = "Edit1"
+    ;Msgbox  TCEdit %TCEdit% ;!!!
+    Match_TCEdit := "^" . TCEdit . "$"
+    ;Match_TCEdit := "^Edit1$"
+	;Match_TCEdit := "^" . TCEdit . ".$"
+	;Match_TCEdit := "^" . TCEdit
 	If RegExMatch(ThisControl,Match_TCEdit)
 	{
+        ; ----- command line (like the ex mode in Vim)
 		ControlGetText,CMD,%TCEdit%,AHK_CLASS TTOTAL_CMD
 		If RegExMatch(CMD,"^:.*")
 		{
@@ -4014,7 +4039,7 @@ Help()
 		HelpInfo_arr["]}"] :="] >> Select files with the same extension `n} >> Unselect files with the same extension "
 		HelpInfo_arr["\|"] :="\ >> Invert all selections for files and folders  `n| >> Clears all selections"
 		HelpInfo_arr["CapsLock"] :="CapsLock >> Esc (in some cases it doesn't behave identical"
-       ; quits in 'fancy rename' instead of going to Vim mode)"
+       ; it used to  quit in 'fancy rename' instead of going to Vim mode, but mapped there again)"
 		HelpInfo_arr["A"] :="a >> (Group Key, requires another key) `n A >>  All selected:  Files and folders "
 		HelpInfo_arr["S"] :="s >> Sort by... (Group Key, requires another key) `nS >> (Group Key, requires another key) show all, executables, etc. `nsn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nst >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9 >>"
 		HelpInfo_arr["D"] :="d >> Favourite folders hotlist`nD >> Open the desktop folder "
