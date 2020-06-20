@@ -17,7 +17,7 @@ Installation
 - You can download a compiled executable from https://magicstep.github.io/viatc/  
   A compiled executable most likely will be older than the current script version. 
 - You can run the script if you have Autohotkey installed. Download and install Autohotkey, it is powerful for many purposes. https://autohotkey.com  
-  To get the script download zip file from https://github.com/magicstep/ViATc-English/archive/master.zip, extract and you will see the ahk script. To run it double-click viatc-0.5.5en.ahk
+  To get the script download zip file from https://github.com/magicstep/ViATc-English/archive/master.zip, extract and you will see the ahk script. To run it double-click file with .ahk extension like viatc-0.5.5en.ahk
 - Look for a new icon in the tray, right-click on it and choose Help or Settings to get accustomed to the shortcuts.
 
 Settings
