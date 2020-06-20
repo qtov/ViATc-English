@@ -7,7 +7,7 @@ ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium
 What ViATc does to Total Commander (called later TC):
 - it's only a separate addition, easily disabled, it doesn't modify TC
 - adds more functionality - supports all that AutoHotkey does, not just TC
-- adds more shortcuts, user can add and configure shortcuts, in addition to Vim style, Emacs or any style can also be programmed-in
+- adds more shortcuts, user can add and configure shortcuts, in addition to Vim style, Emacs or any style can also be configured
 
 
 
@@ -21,14 +21,15 @@ Installation
 
 Settings
 ========
-You can add and remove shortcuts directly in the ini file or via ViATc Settings window. After changes you must click Save before clicking OK. This will reload ViaTC automatically
-Reload ViATc manually after any changes made directly in the ini file to take effect.
+You can add and remove shortcuts via the ViATc Settings window. After changes you must click Save or OK (OK will save and reload ViaTC).
+You can also add and remove shortcuts directly in the ini file. Reload ViATc manually after any changes made directly in the ini file to take effect.
 In the ini file all lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
 
-CapsLock is mapped in the script as Escape. To bypass this try ctrl+CapsLock
-<!-- 
-[//]: # (Commented out as CapsLock is mapped in the script itself). If you have mapped CapsLock as Escape in other AHK script you need to map it again in viatc.ini like this `<CapsLock>=<Esc>`
- -->
+CapsLock is mapped in the script as Escape. To bypass this try ctrl+CapsLock 
+Known issues: 
+- enabling CapsLock doesn't produce uppercase in fancy vim rename
+- after using the fancy vim rename, sometimes  command-line "ex" commands don't work 
+
 Usage
 =====
 A small subset of commands:
@@ -44,6 +45,12 @@ o  = open drive drop-box, same as Alt+F1
 u  = go up in directory, same as Backspace  
 i  = Enter  
 cc = Delete  
+ma = mark a
+'a = go to mark a
+lm = list mappings from ini file
+:h = help
+:s = settings
+:r = reload
 gg = go top  
 G  = go bottom  
 r  = rename with a fancy vim emulator,   
@@ -51,11 +58,9 @@ shift+r  = simple rename, same as Shift+F6
 Ctrl+[   = Esc  
 Capslock = Esc  
 
-
 Author
 ======
 - Author of the original Chinese version is linxinhong https://github.com/linxinhong
 - Translator and maintainer of the English version is magicstep https://github.com/magicstep  
-  Alternatively you can contact me with the same nickname @gmail.com I know nothing about Chinese, I've used Google translate initially and then rephrased and modified this software. I'm just a junior in AHK.
+  Alternatively you can contact me with the same nickname @gmail.com
 
-This version is not perfected yet, any help appreciated.
