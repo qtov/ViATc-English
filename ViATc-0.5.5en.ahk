@@ -457,10 +457,21 @@ G()
 }
 ; --- Marks {{{2
 <Mark>:
+;Msgbox  Debugging Version = [%Version%]  on line %A_LineNumber% ;!!!
 If SendPos(4003)
 {
-	ControlGet,EditId,Hwnd,,AHK_CLASS TTOTAL_CMD
+	;ControlGet,EditId,Hwnd,,AHK_CLASS TTOTAL_CMD
+    ;TCEditMarks = %EditId%  ;!!!
+
+    ;ControlGet,ThisControl,Hwnd,,AHK_CLASS TTOTAL_CMD
+    ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+    If (( %ThisCtrl% = Edit1) or ( %ThisCtrl% = Edit2) or ( %ThisCtrl% = Window17))  ;!!!
+        TCEditMarks = %ThisControl%  ;!!! added
+    else
+         Msgbox  mark error TCEditMarks = [%TCEditMarks% ]  on line %A_LineNumber% ;!!!
+
 	ControlSetText,%TCEditMarks%,m,AHK_CLASS TTOTAL_CMD
+    Send {right}
 	Postmessage,0xB1,2,2,%TCEditMarks%,AHK_CLASS TTOTAL_CMD
 	SetTimer,<MarkTimer>,100
 }
@@ -472,6 +483,16 @@ MarkTimer()
 {
 	Global Mark_Arr,VIATCINI
 	ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+
+
+	ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+    If (( %ThisCtrl% = Edit1) or ( %ThisCtrl% = Edit2) or ( %ThisCtrl% = Window17))  ;!!!
+        TCEditMarks = %ThisControl%  ;!!! added
+    else
+         Msgbox  mark timer error TCEditMarks = [%TCEditMarks% ]  on line %A_LineNumber% ;!!!
+
+
+
 	ControlGetText,OutVar,%TCEditMarks%,AHK_CLASS TTOTAL_CMD
 	Match_TCEditMarks := "i)^" . TCEditMarks . "$"
 	If Not RegExMatch(ThisControl,Match_TCEditMarks) OR Not RegExMatch(Outvar,"i)^m.?")
@@ -916,6 +937,8 @@ ListMapKey()
 If SendPos(4003)
 {
 	ControlSetText,%TCEdit%,:,AHK_CLASS TTOTAL_CMD
+	ControlSetText,Edit1,:,AHK_CLASS TTOTAL_CMD
+	ControlSetText,Edit2,:,AHK_CLASS TTOTAL_CMD
 	Send,{end}
 }
 Return
@@ -1201,11 +1224,9 @@ VimRNCreateGui()
 	{
 		ControlGetFocus,ThisCtrl,AHK_CLASS TTOTAL_CMD
 		;If ThisCtrl = TInEdit1
-        ;The bar with path has ID = Edit2 or Window17  
-        ;You can edit this bar if you double click on it or if you rename ".." at the top of the list
+        ;;The bar with path has ID = Window17 11 or 12   in 32bit TC ClassNN: PathPanel1
+        ;;You can edit this bar if you double click on it or if you rename ".." at the top of the list
         If ThisCtrl = Edit1
-		;If ((ThisCtrl = Edit1) or (ThisCtrl = Edit2) or (ThisCtrl = Window17))
-		;If ((%ThisCtrl%=Edit1) or (%ThisCtrl%=Edit2) or (%ThisCtrl%=Window17))
 		{
 			;ControlGetText,GetName,TInEdit1,AHK_CLASS TTOTAL_CMD
 			ControlGetText,GetName,%ThisCtrl%,AHK_CLASS TTOTAL_CMD
@@ -2796,18 +2817,41 @@ Enter() ;  on Enter pressed {{{2
 {
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr,TabsBreak
 	ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+        ;Msgbox  staring ThisCtrl = [%ThisCtrl% ]  on line %A_LineNumber% ;!!!
+
+Loop,8
+{
+	ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+    ;If ThisControl = Edit1
+	If (( %ThisCtrl% = Edit1) or ( %ThisCtrl% = Edit2) or ( %ThisCtrl% = Window17))  ;!!!
+
+	{
+        ;Msgbox  ThisCtrl = [%ThisCtrl%]  on line %A_LineNumber% ;!!!
+		Break
+	}
+	Sleep,50
+}
+
+
+
     ;Msgbox  ThisControl %ThisControl% ;!!!
     ;ThisControl = "Edit1"
     ;TCEdit = "Edit1"
     ;Msgbox  TCEdit %TCEdit% ;!!!
-    Match_TCEdit := "^" . TCEdit . "$"   ;<-------good working
     ;Match_TCEdit := "^Edit.$"
     ;Match_TCEdit := "^Edit1$"
 	;Match_TCEdit := "^" . TCEdit . ".$"
 	;Match_TCEdit := "^" . TCEdit
-	If RegExMatch(ThisControl,Match_TCEdit)
+    ;If ((ThisCtrl = Edit1) or (ThisCtrl = Edit2) or (ThisCtrl = Window17))
+    ;Match_TCEdit := ThisCtrl
+
+    ;Msgbox  ThisCtrl %ThisCtrl% ;!!!
+	;If ((%ThisCtrl%=Edit1) or (%ThisCtrl%=Edit2) or (%ThisCtrl%=Window17))  ;!!!
+    ;Match_TCEdit := "^" . TCEdit . "$"   ;<-------good working
+	;If RegExMatch(ThisControl,Match_TCEdit)
+    If (( %ThisCtrl% = Edit1) or ( %ThisCtrl% = Edit2) or ( %ThisCtrl% = Window17))  ;!!!
 	{
-        ;TCEdit = ThisControl  ;!!! added
+        TCEdit = %ThisControl%  ;!!! added
         ; ----- command line (like the ex mode in Vim)
 		ControlGetText,CMD,%TCEdit%,AHK_CLASS TTOTAL_CMD
 		If RegExMatch(CMD,"^:.*")
@@ -2906,6 +2950,9 @@ Enter() ;  on Enter pressed {{{2
 			}
 			yn := yn -  hn - 9
 			Tooltip, Invalid command line ,%xn%,%yn%
+            ControlSetText,Edit1,:,AHK_CLASS TTOTAL_CMD
+            ControlSetText,Edit2,:,AHK_CLASS TTOTAL_CMD
+            Send {Right}
 			Sleep,2000
 			Tooltip
 		}
