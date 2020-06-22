@@ -354,8 +354,8 @@ ReloadVIATC()
 Return
 
 <EditScriptWithVim>:
-    run, %VimPath% -p --remote-tab-silent %a_scriptFullPath%    ; open in existing vim in a new tab
-    ;run, %VimPath% %a_scriptFullPath%    ; open in vim (new instance if vim already opened)
+    run, %VimPath% -p --remote-tab-silent `"%a_scriptFullPath%`"    ; open in existing vim in a new tab
+    ;run, %VimPath% `"%a_scriptFullPath%`"      ; open in vim (new instance even if vim already opened)
 Return
 
 <Enter>:
@@ -1532,8 +1532,8 @@ If VimRN_SendKey("")
 Return
 VimRN_history:
     ;file := FileOpen(RenameHistoryPath ,"a")
-    Run, %VimPath% -p --remote-tab-silent %RenameHistoryPath%
-    ;Run,  %RenameHistoryPath%
+    Run, %VimPath% -p --remote-tab-silent `"%RenameHistoryPath%`"
+    ;Run, `"%RenameHistoryPath%`"
 Return
 
 VimRN_Enter:
@@ -6073,4 +6073,4 @@ Return
 SendPos(5514)
 Return
 ;}}}
-; vim: fdm=marker set foldlevel=0
+; vim: fdm=marker set foldlevel=2

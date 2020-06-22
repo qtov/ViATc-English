@@ -29,6 +29,7 @@ In the ini file all lines that begin with a semicolon ; are ignored. It's a stan
 CapsLock is hardcoded as Escape. To bypass this try ctrl+CapsLock  
 Known issues:  
 - enabling CapsLock doesn't produce uppercase in fancy vim rename
+- marks do not work in the compiled version
 
 Usage
 =====
