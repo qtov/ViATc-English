@@ -16,11 +16,12 @@ Setkeydelay,-1
 SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
-Global Date := "2020/06/20"
-Global Version := "0.5.5en beta 3"
+Global Date := "2020/06/22"
+Global Version := "0.5.5en beta 4"
 Global VimPath := "gvim.exe"  ; it is overwritten later
 Global IconPath := A_ScriptDir . "\viatc.ico"
 Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
+Global RenameHistoryPath := A_ScriptDir . "\history_of_rename.txt"
 KeyTemp :=
 Repeat :=
 VimAction :=
@@ -359,9 +360,6 @@ Return
 
 <Enter>:
 Enter()
-Return
-<iEnter>:
-iEnter()
 Return
 <Hint>:
 If SendPos(0)
@@ -1242,12 +1240,30 @@ VimRNCreateGui()
 	Gui,+HwndVimRN_ID
 	Gui,+Owner%TCID%
 	Gui,Menu,VimRN_MENU
+    ;Gui, Add, Text, x9 y9 w800 h23, Edit this filename:
     Gui,Font,s16,Arial  ;font for the rename window
-	Gui,Add,Edit,r5 w800 -WantReturn gVimRN_Edit,%GetName%
+	Gui,Add,Edit,r5 x9  w800 -WantReturn gVimRN_Edit,%GetName%
+	;Gui,Add,Edit,r1 w800 -WantReturn gVimRN_Edit,%GetName%  ;original
+    Gui,Font,s12
+    Gui, Add, Text, x9 y177 w800 h23, Original filename:
+    Gui, Add, Edit, x9 y202 w800 r5 ReadOnly, %GetName%  ;original 
+
+    ; save to file the original filename for possible undo rename, 
+    ;FileAppend, %GetName%, undo_rename_list.txt
+    file := FileOpen(RenameHistoryPath ,"a")
+	file.write("`n" . GetName)
+    file.close()
+
+    Gui,Font,s18
 	Gui,Add,StatusBar
-	Gui,Add,Button,Default Hidden gVimRN_Enter
-	Gui,Show,h175,ViATc Fancy Rename
-	PostMessage,0x00C5,256,,%ThisCtrl%,AHK_ID %VimRN_ID%
+	;Gui,Add,Button,Default Hidden gVimRN_Enter
+    Gui,Font,s11,Arial  ;font for the rename window
+    Gui, Add, Button, x22 y340 w140 h30 gCancel, &Cancel ; = q
+    Gui, Add, Button, x200 y340 w140 h30 Default gVimRN_Enter, &OK ;= Enter
+    Gui, Add, Button, x380 y340 w210 h30 gVimRN_history, &Browse history of rename 
+	Gui,Show,h400,ViATc Fancy Rename
+    PostMessage,0x00C5,256,,%ThisCtrl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 256
+
 	VimRN := GetConfig("VimReName","Mode")
 	If VimRN
 	{
@@ -1281,7 +1297,7 @@ GetFindText(byRef w, byRef l)
 	If VimRN_IsFind
 	{
 		ThisChar := Chr(w)
-        ;!!! ??? need to change   Edit1 to  %ThisCtrl% <---- make it global var
+        ;!!! ??? no need to change   Edit1 to  %ThisCtrl% <---- make it global var? no!
 		ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
 		GetPos := VimRN_GetPos()
 		StartPos := GetPos[2] + 1
@@ -1493,6 +1509,12 @@ VimRN_Undo:
 If VimRN_SendKey("")
 	VimRN_Undo()
 Return
+VimRN_history:
+    ;file := FileOpen(RenameHistoryPath ,"a")
+    Run, %VimPath% -p --remote-tab-silent %RenameHistoryPath%
+    ;Run,  %RenameHistoryPath%
+Return
+
 VimRN_Enter:
 GuiControlGet,NewName,,Edit1
 Gui,Destroy
@@ -2778,12 +2800,14 @@ Enter() ;  on Enter pressed {{{2
     ;ThisControl = "Edit1"
     ;TCEdit = "Edit1"
     ;Msgbox  TCEdit %TCEdit% ;!!!
-    Match_TCEdit := "^" . TCEdit . "$"
+    Match_TCEdit := "^" . TCEdit . "$"   ;<-------good working
+    ;Match_TCEdit := "^Edit.$"
     ;Match_TCEdit := "^Edit1$"
 	;Match_TCEdit := "^" . TCEdit . ".$"
 	;Match_TCEdit := "^" . TCEdit
 	If RegExMatch(ThisControl,Match_TCEdit)
 	{
+        ;TCEdit = ThisControl  ;!!! added
         ; ----- command line (like the ex mode in Vim)
 		ControlGetText,CMD,%TCEdit%,AHK_CLASS TTOTAL_CMD
 		If RegExMatch(CMD,"^:.*")
@@ -2890,34 +2914,8 @@ Enter() ;  on Enter pressed {{{2
 	}
 	Else
 		ControlSend,%ThisControl%,{Enter},AHK_CLASS TTOTAL_CMD
-}
+} ; Enter() end }}}2
 
-iEnter()
-{
-    ; don't use it <Return> is better
-    ;this function is to be invoked only by the 'i' key
-
-    ;check if the focus is on any of the panels, and only then send enter else send 'i'
-    ControlGetFocus,focus_control,AHK_CLASS TTOTAL_CMD
-	MatchCtrl := "^" . TCListBox
-	If RegExMatch(focus_control,MatchCtrl)
-	{
-        Send {Enter}
-    }
-    else
-        Send,i
-    return
-
-    Msgbox Debugging %Version% _____  ;!!!
-    textbox :=
-	ControlGetText,textbox,%TCEdit%,AHK_CLASS TTOTAL_CMD
-    if Not textbox
-        Send {Enter}
-    else
-        Send,i
-        ;Msgbox  Debugging [%textbox%] _____  ;!!!
-}
-; }}}2
 ; --- ini file {{{2
 CreateNewFile()
 {
@@ -4074,7 +4072,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["RAlt"] :="RAlt >> right Alt key, can also be Alt instead "
     HelpInfo_arr["Apps"] :="Apps >> Open the context menu ( Right-click menu )"
     HelpInfo_arr["RCtrl"] :="Rctrl >> right ctrl key, can also be control or ctrl instead "
-HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts. Press alt+`` (alt+backtick) (this shortcut can be modifed) to disable all ViATc functionality, or simply quit ViATc, TC won't be affected at all.`nDouble-click the tray icon, or Win+F (modifiable) to show/hide TC window`n")
+HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts. Press alt+`` (alt+backtick) (this shortcut can be modifed) to disable all ViATc functionality, or simply quit ViATc, TC won't be affected.`nDouble-click the tray icon, or Win+F (modifiable) to show/hide TC window`n")
     HelpInfo_arr["Funct"] :="Single key to operate `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: ctrl, alt, shift or LWin (must be LWin not Win).`n`nExamples:`n<LWin>g           - this works as intended`n<ctrl><shift>a  - invalid, more than one modifier`n<ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >`n`nPlease click on the keyboard above to get details of each key.`nAlso in the TC window press lm = list mappings from the ini file."
     HelpInfo_arr["GroupK"] :="Also known as Combo Hotkeys. They take multiple keys to operate `nGroup Keys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with eight Groups Keys z,c,V,g,s,a,l,e. Click the keyboard above for details of what they do. For actual mappings open the Settings window where you can remap everything, you can even remap single Hotkeys into Groups Keys and vice versa."
     HelpInfo_arr["cmdl"] :="The command line in VIATC supports abbreviations :h :s :r :m :sm :e :q, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys. If you type :map in the command line then all custom hotkeys (all ini file mappings, but not built-in) will be displayed in a tooltip`n If the input is :map key command, where key represents the hotkey to map (it can be a Group Key or a Hotkey). This feature is suitable for the scenario where there is a temporary need for a function mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file which is located in the TC directory.`n:smap and :map are the same except map is a global hotkey and does not support mapping Group Keys `n:edit  Directly edit ViATc.ini file `n:q quit TC"
@@ -4097,13 +4095,13 @@ SetGroupInfo() ; combo keys help {{{2
 SetVimAction()  ; --- internal ViATc commands
 {
     Global VimAction
-    VimAction := " <help> <Setting> <ToggleTC> <EnableViATc> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <iEnter> <singleRepeat> <Esc> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <up> <Left> <Right> <DownSelect> <PageUp> <PageDown> <Home> <Half> <End> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <ListMapKey> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <EditViATCIni> <azTab>"
+    VimAction := " <help> <Setting> <ToggleTC> <EnableViATc> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <singleRepeat> <Esc> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <up> <Left> <Right> <DownSelect> <PageUp> <PageDown> <Home> <Half> <End> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <ListMapKey> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <EditViATCIni> <azTab>"
 }
 
 SetActionInfo()  ; --- command's descriptions
 {
     Global ActionInfo_arr
-    ActionInfo_Arr["<azTab>"] := "(works only in x32 bit TC) use a-z To browse the tab (x64 unavailable)"
+    ActionInfo_Arr["<azTab>"] := "(works only in 32 bit TC) use a-z To browse the tab (64 bit TC unavailable)"
     ActionInfo_Arr["<ReLoadVIATC>"] :=" Reload VIATC"
     ActionInfo_Arr["<ReLoadTC>"] :=" Reload TC"
     ActionInfo_Arr["<QuitTC>"] :=" Exit TC"
@@ -4119,7 +4117,6 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<ToggleTC>"] :=" Show / Hide TC"
     ActionInfo_Arr["<EnableViATc>"] :=" Enable / Disable ViATc  "
     ActionInfo_Arr["<Enter>"] :="Enter"
-    ActionInfo_Arr["<iEnter>"] :="(don't use it <Return> is better than <iEnter>) Send an Enter key in any of the panels, otherwise send 'i'. Invoke this function by the 'i' key only"
     ActionInfo_Arr["<SingleRepeat>"] :=" Repeat the last action "
     ActionInfo_Arr["<Esc>"] :=" Reset and send ESC"
     ActionInfo_Arr["<EditViATCIni>"] :=" Directly edit ViATc.ini file "
@@ -4469,7 +4466,7 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<VisHistHotButtons>"] :=" display / hide :  Folder history and frequently used folder buttons "
     ActionInfo_Arr["<SwitchWatchDirs>"] :=" Enable / Disable :  The folder is automatically refreshed "
     ActionInfo_Arr["<SwitchIgnoreList>"] :=" Enable / Disable :  Customize hidden files "
-    ActionInfo_Arr["<SwitchX64Redirection>"] :=" Open / Close : 32  Bit  system32  Directory redirect (64  Bit  Windows)"
+    ActionInfo_Arr["<SwitchX64Redirection>"] :=" Open / Close : 32  Bit system32  Directory redirect (64 Bit  Windows)"
     ActionInfo_Arr["<SeparateTreeOff>"] :=" Close the separate folder tree panel "
     ActionInfo_Arr["<SeparateTree1>"] :=" A separate folder tree panel "
     ActionInfo_Arr["<SeparateTree2>"] :=" Two separate folder tree panels "
@@ -6029,3 +6026,4 @@ Return
 SendPos(5514)
 Return
 ;}}}
+; vim: fdm=marker set foldlevel=0
