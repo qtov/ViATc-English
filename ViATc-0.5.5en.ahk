@@ -1266,7 +1266,7 @@ VimRNCreateGui()
 	Gui,Add,Edit,r5 x9  w800 -WantReturn gVimRN_Edit,%GetName%
 	;Gui,Add,Edit,r1 w800 -WantReturn gVimRN_Edit,%GetName%  ;original
     Gui,Font,s12
-    Gui, Add, Text, x9 y177 w800 h23, Original filename:
+    Gui, Add, Text, x9 y177 w800 h23, Original filename (saved to the history of rename):
     Gui, Add, Edit, x9 y202 w800 r5 ReadOnly, %GetName%  ;original 
 
     ; save to file the original filename for possible undo rename, 

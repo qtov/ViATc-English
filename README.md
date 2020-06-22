@@ -26,14 +26,13 @@ You can add and remove shortcuts via the ViATc Settings window. After changes yo
 You can also add and remove shortcuts directly in the ini file. Reload ViATc manually after any changes made directly in the ini file to take effect.
 In the ini file all lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
 
-CapsLock is mapped in the script as Escape. To bypass this try ctrl+CapsLock  
+CapsLock is hardcoded as Escape. To bypass this try ctrl+CapsLock  
 Known issues:  
 - enabling CapsLock doesn't produce uppercase in fancy vim rename
-- sometimes  :command-line and making marks is not recognized
 
 Usage
 =====
-A small subset of commands:
+A subset of best commands:
 
 j  = Down  
 k  = Up  
