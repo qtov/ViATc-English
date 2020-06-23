@@ -1,7 +1,7 @@
 ViATc
 =====
 ViATc - Vim mode at Total Commander.  
-2020/06/22  version 0.5.5en beta 4  
+2020/06/23  version 0.5.5en beta 5  
 This software works on Windows and only as an addition to "Total Commander" - the greatest file manager (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
 ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium or better yet SurfingKeys.
 
@@ -29,7 +29,7 @@ In the ini file all lines that begin with a semicolon ; are ignored. It's a stan
 CapsLock is hardcoded as Escape. To bypass this try ctrl+CapsLock  
 Known issues:  
 - enabling CapsLock doesn't produce uppercase in fancy vim rename
-- marks do not work in the compiled version
+- marks do not work if used immediately after rename 
 
 Usage
 =====

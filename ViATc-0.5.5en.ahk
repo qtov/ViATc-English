@@ -16,12 +16,14 @@ Setkeydelay,-1
 SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
-Global Date := "2020/06/22"
-Global Version := "0.5.5en beta 4"
+Global Date := "2020/06/23"
+Global Version := "0.5.5en beta 5"
+If A_IsCompiled
+    Version .= " Compiled"
 Global VimPath := "gvim.exe"  ; it is overwritten later
 Global IconPath := A_ScriptDir . "\viatc.ico"
 Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
-Global RenameHistoryPath := A_ScriptDir . "\history_of_rename.txt"
+Global HistoryOfRenamePath := A_ScriptDir . "\history_of_rename.txt"
 KeyTemp :=
 Repeat :=
 VimAction :=
@@ -58,7 +60,7 @@ Splitpath,TcExe,,TcDir
 If RegExMatch(TcExe,"i)totalcmd64\.exe")
 {
 	Global TCListBox := "LCLListBox"
-	Global TCEdit := "Edit1"
+	Global TCEdit := "Edit2"
 	GLobal TCPanel1 := "Window1"
 	Global TCPanel2 := "Window11"
 }
@@ -146,6 +148,7 @@ Else
 	Hotkey,%Susp%,<EnableViATc>,On,UseErrorLevel
 	Susp := GetConfig("Configuration","Suspend")
 }
+HistoryOfRename := GetConfig("Configuration","HistoryOfRename")
 TrayIcon := GetConfig("Configuration","TrayIcon")
 Service := GetConfig("Configuration","Service")
 If Not Service
@@ -176,14 +179,14 @@ Else
 	Regdelete,HKEY_CURRENT_USER,SOFTWARE\Microsoft\Windows\CurrentVersion\Run,ViATc
 GroupWarn := GetConfig("Configuration","GroupWarn")
 GlobalSusp := GetConfig("Configuration","GlobalSusp")
-Transparent := GetConfig("Configuration","Transparent")
+HistoryOfRename := GetConfig("Configuration","HistoryOfRename")
 TranspHelp := GetConfig("Configuration","TranspHelp")
 MaxCount := GetConfig("Configuration","MaxCount")
 TranspVar := GetConfig("Configuration","TranspVar")
 DefaultSE := GetConfig("SearchEngine","Default")
 SearchEng := GetConfig("SearchEngine",DefaultSE)
 LnkToDesktop := GetConfig("Other","LnkToDesktop")
-VimRN  := GetConfig("VimReName","Enabled")
+VimRN  := GetConfig("VimRename","Enabled")
 Return
 ;}}}
 
@@ -460,15 +463,13 @@ G()
 ;Msgbox  Debugging Version = [%Version%]  on line %A_LineNumber% ;!!!
 If SendPos(4003)
 {
-	;ControlGet,EditId,Hwnd,,AHK_CLASS TTOTAL_CMD
-    ;TCEditMarks = %EditId%  ;!!!
-
-    ;ControlGet,ThisControl,Hwnd,,AHK_CLASS TTOTAL_CMD
-    ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-    If (( %ThisCtrl% = Edit1) or ( %ThisCtrl% = Edit2) or ( %ThisCtrl% = Window17))  ;!!!
-        TCEditMarks = %ThisControl%  ;!!! added
-    else
-         Msgbox  mark error TCEditMarks = [%TCEditMarks% ]  on line %A_LineNumber% ;!!!
+    Loop,22
+    {
+        ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+        If (( %ThisCtrl% = Edit1 ) or ( %ThisCtrl% = Edit2 ))
+            Break
+        Sleep,50
+    }
 
 	ControlSetText,%TCEditMarks%,m,AHK_CLASS TTOTAL_CMD
     Send {right}
@@ -484,14 +485,13 @@ MarkTimer()
 	Global Mark_Arr,VIATCINI
 	ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
 
-
-	ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-    If (( %ThisCtrl% = Edit1) or ( %ThisCtrl% = Edit2) or ( %ThisCtrl% = Window17))  ;!!!
-        TCEditMarks = %ThisControl%  ;!!! added
-    else
-         Msgbox  mark timer error TCEditMarks = [%TCEditMarks% ]  on line %A_LineNumber% ;!!!
-
-
+    Loop,22
+    {
+        ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+        If (( %ThisCtrl% = Edit1 ) or ( %ThisCtrl% = Edit2 ))
+            Break
+        Sleep,50
+    }
 
 	ControlGetText,OutVar,%TCEditMarks%,AHK_CLASS TTOTAL_CMD
 	Match_TCEditMarks := "i)^" . TCEditMarks . "$"
@@ -1239,8 +1239,17 @@ VimRNCreateGui()
 	If Not GetName
         Return
 
-    ;Abort if VimReName is not enabled
-    IniRead,Enabled,%ViatcIni%,VimReName,Enabled
+    IniRead,HistoryOfRename,%ViatcIni%,Configuration,HistoryOfRename
+    If HistoryOfRename
+    {
+        ; save to file the original filename for possible undo rename, 
+        file := FileOpen(HistoryOfRenamePath ,"a")
+        file.write("`n" . GetName)
+        file.close()
+    }
+
+    ;Abort if VimRename is not enabled
+    IniRead,Enabled,%ViatcIni%,VimRename,Enabled
 	If Enabled = ERROR
         return
 	If Enabled = 0
@@ -1269,12 +1278,6 @@ VimRNCreateGui()
     Gui, Add, Text, x9 y177 w800 h23, Original filename (saved to the history of rename):
     Gui, Add, Edit, x9 y202 w800 r5 ReadOnly, %GetName%  ;original 
 
-    ; save to file the original filename for possible undo rename, 
-    ;FileAppend, %GetName%, undo_rename_list.txt
-    file := FileOpen(RenameHistoryPath ,"a")
-	file.write("`n" . GetName)
-    file.close()
-
     Gui,Font,s18
 	Gui,Add,StatusBar
 	;Gui,Add,Button,Default Hidden gVimRN_Enter
@@ -1285,7 +1288,7 @@ VimRNCreateGui()
 	Gui,Show,h400,ViATc Fancy Rename
     PostMessage,0x00C5,256,,%ThisCtrl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 256
 
-	VimRN := GetConfig("VimReName","Mode")
+	VimRN := GetConfig("VimRename","Mode")
 	If VimRN
 	{
 		Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
@@ -1294,7 +1297,7 @@ VimRNCreateGui()
 	Else
 		Status := "  mode : Insert                                 "
 	ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
-	If GetConfig("VimReName","UnselectExt")
+	If GetConfig("VimRename","UnselectExt")
 	{
 		SplitPath,GetName,,,Ext
 		Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
@@ -1531,9 +1534,8 @@ If VimRN_SendKey("")
 	VimRN_Undo()
 Return
 VimRN_history:
-    ;file := FileOpen(RenameHistoryPath ,"a")
-    Run, %VimPath% -p --remote-tab-silent `"%RenameHistoryPath%`"
-    ;Run, `"%RenameHistoryPath%`"
+    Run, %VimPath% -p --remote-tab-silent `"%HistoryOfRenamePath%`"
+    ;Run, `"%HistoryOfRenamePath%`"
 Return
 
 VimRN_Enter:
@@ -1560,15 +1562,15 @@ VimRN_Edit:
 VimRN_Edit()
 Return
 VimRN_SelMode:
-SetConfig("VimReName","Mode",!GetConfig("VimReName","Mode"))
-If GetConfig("VimReName","Mode")
+SetConfig("VimRename","Mode",!GetConfig("VimRename","Mode"))
+If GetConfig("VimRename","Mode")
 	Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
 Else
 	Menu,VimRN_Set,UnCheck, Vim mode at start `tAlt+V
 Return
 VimRN_SelExt:
-SetConfig("VimReName","UnselectExt",!GetConfig("VimReName","UnselectExt"))
-If GetConfig("VimReName","UnselectExt")
+SetConfig("VimRename","UnselectExt",!GetConfig("VimRename","UnselectExt"))
+If GetConfig("VimRename","UnselectExt")
 	Menu,VimRN_Set,Check, Unselect extension at start `tAlt+E
 Else
 	Menu,VimRN_Set,UnCheck, Unselect extension at start `tAlt+E
@@ -2630,6 +2632,8 @@ CreateConfig(Section,Key)
 		SetVar := 1
 	If Key = Suspend
 		SetVar := "<alt>``"
+	If Key = HistoryOfRename 
+		SetVar := 1
 	If Key = GlobalSusp
 		SetVar := 0
 	If Key = Startup
@@ -2653,7 +2657,7 @@ CreateConfig(Section,Key)
 		SetVar := "http://www.google.com/search?q={%1}"
 	If Key = 2
 		SetVar := "http://www.bing.com/search?q={%1}"
-	If Section = VimReName
+	If Section = VimRename
 		If Key = Mode
 			SetVar := 1
 	If Key = UnselectExt
@@ -2661,7 +2665,7 @@ CreateConfig(Section,Key)
 	If Section = Other
 		If Key = LnkToDesktop
 			SetVar := 1
-	If Section = VimReName
+	If Section = VimRename
 		If Key = Enabled
 			SetVar := 1
     
@@ -3269,7 +3273,7 @@ Diff(String1,String2)
 
 Setting() ; --- {{{1
 {
-	Global StartUp,Service,TrayIcon,Vim,GlobalTogg,Toggle,GlobalSusp,Susp,GroupWarn,TranspHelp,Transparent,SearchEng,DefaultSE,ViATcIni,TCExe,TCINI,NeedReload,LnkToDesktop 
+	Global StartUp,Service,TrayIcon,Vim,GlobalTogg,Toggle,GlobalSusp,Susp,GroupWarn,TranspHelp,Transparent,SearchEng,DefaultSE,ViATcIni,TCExe,TCINI,NeedReload,LnkToDesktop,HistoryOfRename,VimRenameEnabled
 	NeedReload := 1
 	Global ListView
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
@@ -3291,6 +3295,7 @@ Setting() ; --- {{{1
 	Gui,Add,Text,x25 y150 h20, Enable/Disable ViATc (&A)
 	Gui,Add,Edit,x25 y170 h20 w140 vSusp ,%Susp%
 	Gui,Add,CheckBox,x180 y170 h20 checked%GlobalSusp% vGlobalSusp, Global (&L)
+    Gui,Add,CheckBox,x280 y170 h20 checked%HistoryOfRename% vHistoryOfRename, HistoryOfRename (&Y)
 	Gui,Add,GroupBox,x16 y210 H110 w390, Other settings
 	Gui,Add,Text,x25 y228 h20, Search for the selected file name or folder (&Q)
 	D := 1
@@ -3466,6 +3471,7 @@ IniWrite,%Vim%,%ViATcIni%,Configuration,Vim
 IniWrite,%Toggle%,%ViATcIni%,Configuration,Toggle
 IniWrite,%Susp%,%ViATcIni%,Configuration,Suspend
 IniWrite,%GlobalTogg%,%ViATcIni%,Configuration,GlobalTogg
+IniWrite,%HistoryOfRename%,%ViATcIni%,Configuration,HistoryOfRename
 IniWrite,%GlobalSusp%,%ViATcIni%,Configuration,GlobalSusp
 IniWrite,%StartUp%,%ViATcIni%,Configuration,StartUp
 IniWrite,%Service%,%ViATcIni%,Configuration,Service
@@ -3836,9 +3842,9 @@ CheckKey()
 	Else
 	{
 		GuiControlGet,VarPos,Pos,Edit4
-		Tooltip, Shortcuts or actions are empty ,%VarPosX%,%VarPosY%
-		Sleep,2000
-		Tooltip
+		Tooltip, Shortcuts or commands are empty ,%VarPosX%,%VarPosY%
+		;Sleep,2000
+		;Tooltip
 	}
 }
 <ChangeTab>:
@@ -4124,7 +4130,7 @@ HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `
     HelpInfo_arr["GroupK"] :="Also known as Combo Hotkeys. They take multiple keys to operate `nGroup Keys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with eight Groups Keys z,c,V,g,s,a,l,e. Click the keyboard above for details of what they do. For actual mappings open the Settings window where you can remap everything, you can even remap single Hotkeys into Groups Keys and vice versa."
     HelpInfo_arr["cmdl"] :="The command line in VIATC supports abbreviations :h :s :r :m :sm :e :q, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys. If you type :map in the command line then all custom hotkeys (all ini file mappings, but not built-in) will be displayed in a tooltip`n If the input is :map key command, where key represents the hotkey to map (it can be a Group Key or a Hotkey). This feature is suitable for the scenario where there is a temporary need for a function mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file which is located in the TC directory.`n:smap and :map are the same except map is a global hotkey and does not support mapping Group Keys `n:edit  Directly edit ViATc.ini file `n:q quit TC"
     HelpInfo_arr["command"] :="All commands can be found in the Settings window on the 'Hotkeys' tab. Commands are divided into 4 categories (there are 4 buttons there that will help you enter into into the  Command textbox)  :`n`n1.VIATC command, VIATC provides some TC enhancements`n`n2.TC internal command, it beginns with the 'cm_' such as cm_PackFiles but will be input as <PackFiles>.`n`n3. Run a program or open a file. TC has similar functions built-in but ViATc way might be more convenient`n`n4. Send a string of text. If you want to input a text into the command line then you can use the Group Key to map the command of sending a text string.`n`n The above four commands, 1 and 2 must be surrounded by <  > , 3 needs to be surrounded with (  ) , 4 with {  }.`nFor example `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Group Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Group Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be Interpreted by VIATC as pressing the Enter key."
-    HelpInfo_arr["About"] :="Author of the original Chinese version is Linxinhong `nhttps://github.com/linxinhong`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname @gmail.com    I don't speak Chinese, I've used Google translate initially and then rephrased and modified this software. I'm not proficient in AHK.`n`nThis version is not perfected yet, any help appreciated."
+    HelpInfo_arr["About"] :="Author of the original Chinese version is Linxinhong `nhttps://github.com/linxinhong`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname @gmail.com    I don't speak Chinese, I've used Google translate initially and then rephrased and modified this software. I'm not proficient in AHK.`n`n"
 } ;}}}2
 
 SetGroupInfo() ; combo keys help {{{2
@@ -4667,7 +4673,7 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<ContentStopLoadFields>"] :=" Stop background loading notes "
 }
 
-; ---- Action Codes{{{1
+; ---- Action Codes{{{3
 <SrcComments>:
 SendPos(300)
 Return
