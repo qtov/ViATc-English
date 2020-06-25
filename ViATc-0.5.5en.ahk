@@ -16,8 +16,8 @@ Setkeydelay,-1
 SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
-Global Date := "2020/06/23"
-Global Version := "0.5.5en beta 5"
+Global Date := "2020/06/25"
+Global Version := "0.5.5en beta 6"
 If A_IsCompiled
     Version .= " Compiled"
 Global VimPath := "gvim.exe"  ; it is overwritten later
@@ -60,7 +60,7 @@ Splitpath,TcExe,,TcDir
 If RegExMatch(TcExe,"i)totalcmd64\.exe")
 {
 	Global TCListBox := "LCLListBox"
-	Global TCEdit := "Edit2"
+	Global TCEdit := "Edit1"  ; sometimes TC changes it to "Edit2"
 	GLobal TCPanel1 := "Window1"
 	Global TCPanel2 := "Window11"
 }
@@ -460,16 +460,23 @@ G()
 }
 ; --- Marks {{{2
 <Mark>:
-;Msgbox  Debugging Version = [%Version%]  on line %A_LineNumber% ;!!!
 If SendPos(4003)
 {
     Loop,22
     {
         ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-        If (( %ThisCtrl% = Edit1 ) or ( %ThisCtrl% = Edit2 ))
+        If (( %ThisControl% = Edit1 ) or ( %ThisControl% = Edit2 ))
+        {
+            ;Msgbox  Debugging ThisControl  [ %ThisControl% ]  on line %A_LineNumber% ;!!! 
+            TCEditMarks := ThisControl
+            ;Msgbox  Debugging TCEditMarks  [%TCEditMarks%]  on line %A_LineNumber% ;!!!
             Break
+        }
         Sleep,50
     }
+    ;TCEditMarks = %ThisControl%
+    ;Msgbox  Debugging ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!! 
+    ;Msgbox  Debugging TCEditMarks = [%TCEditMarks%]  on line %A_LineNumber% ;!!!
 
 	ControlSetText,%TCEditMarks%,m,AHK_CLASS TTOTAL_CMD
     Send {right}
@@ -488,10 +495,14 @@ MarkTimer()
     Loop,22
     {
         ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-        If (( %ThisCtrl% = Edit1 ) or ( %ThisCtrl% = Edit2 ))
+        If (( %ThisControl% = Edit1 ) or ( %ThisControl% = Edit2 ))
             Break
         Sleep,50
     }
+
+    TCEditMarks =  %ThisControl%
+    ;Msgbox  Debugging ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!! 
+    ;Msgbox  Debugging TCEditMarks = [%TCEditMarks%]  on line %A_LineNumber% ;!!!
 
 	ControlGetText,OutVar,%TCEditMarks%,AHK_CLASS TTOTAL_CMD
 	Match_TCEditMarks := "i)^" . TCEditMarks . "$"
@@ -1222,19 +1233,19 @@ VimRNCreateGui()
     ;loop 8 times to wait till the little rename line opens, so we can copy content
 	Loop,8
 	{
-		ControlGetFocus,ThisCtrl,AHK_CLASS TTOTAL_CMD
-		;If ThisCtrl = TInEdit1
+		ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+		;If ThisControl = TInEdit1
         ;;The bar with path has ID = Window17 11 or 12   in 32bit TC ClassNN: PathPanel1
         ;;You can edit this bar if you double click on it or if you rename ".." at the top of the list
-        If ThisCtrl = Edit1
+        If ThisControl = Edit1
 		{
 			;ControlGetText,GetName,TInEdit1,AHK_CLASS TTOTAL_CMD
-			ControlGetText,GetName,%ThisCtrl%,AHK_CLASS TTOTAL_CMD
+			ControlGetText,GetName,%ThisControl%,AHK_CLASS TTOTAL_CMD
 			Break
 		}
 		Sleep,50
 	}
-        ;Msgbox  ThisCtrl %ThisCtrl% ;!!!
+        ;Msgbox  ThisControl %ThisControl% ;!!!
         ;Msgbox  GetName %GetName% ;!!!
 	If Not GetName
         Return
@@ -1286,7 +1297,7 @@ VimRNCreateGui()
     Gui, Add, Button, x200 y340 w140 h30 Default gVimRN_Enter, &OK ;= Enter
     Gui, Add, Button, x380 y340 w210 h30 gVimRN_history, &Browse history of rename 
 	Gui,Show,h400,ViATc Fancy Rename
-    PostMessage,0x00C5,256,,%ThisCtrl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 256
+    PostMessage,0x00C5,256,,%ThisControl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 256
 
 	VimRN := GetConfig("VimRename","Mode")
 	If VimRN
@@ -1321,7 +1332,6 @@ GetFindText(byRef w, byRef l)
 	If VimRN_IsFind
 	{
 		ThisChar := Chr(w)
-        ;!!! ??? no need to change   Edit1 to  %ThisCtrl% <---- make it global var? no!
 		ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
 		GetPos := VimRN_GetPos()
 		StartPos := GetPos[2] + 1
@@ -2820,40 +2830,28 @@ FS()
 Enter() ;  on Enter pressed {{{2
 {
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr,TabsBreak
-	ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-        ;Msgbox  staring ThisCtrl = [%ThisCtrl% ]  on line %A_LineNumber% ;!!!
 
-Loop,8
-{
-	ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-    ;If ThisControl = Edit1
-	If (( %ThisCtrl% = Edit1) or ( %ThisCtrl% = Edit2) or ( %ThisCtrl% = Window17))  ;!!!
+    Loop,8
+    {
+        ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+        ;If ThisControl = Edit1
+        If (( %ThisControl% = Edit1) or ( %ThisControl% = Edit2) or ( %ThisControl% = Window17))  ;!!!
 
-	{
-        ;Msgbox  ThisCtrl = [%ThisCtrl%]  on line %A_LineNumber% ;!!!
-		Break
-	}
-	Sleep,50
-}
-
-
+        {
+            ;Msgbox  ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!!
+            Break
+        }
+        Sleep,50
+    }
 
     ;Msgbox  ThisControl %ThisControl% ;!!!
     ;ThisControl = "Edit1"
-    ;TCEdit = "Edit1"
-    ;Msgbox  TCEdit %TCEdit% ;!!!
-    ;Match_TCEdit := "^Edit.$"
-    ;Match_TCEdit := "^Edit1$"
-	;Match_TCEdit := "^" . TCEdit . ".$"
-	;Match_TCEdit := "^" . TCEdit
-    ;If ((ThisCtrl = Edit1) or (ThisCtrl = Edit2) or (ThisCtrl = Window17))
-    ;Match_TCEdit := ThisCtrl
 
-    ;Msgbox  ThisCtrl %ThisCtrl% ;!!!
-	;If ((%ThisCtrl%=Edit1) or (%ThisCtrl%=Edit2) or (%ThisCtrl%=Window17))  ;!!!
+    ;Msgbox  ThisControl %ThisControl% ;!!!
+	;If ((%ThisControl%=Edit1) or (%ThisControl%=Edit2) or (%ThisControl%=Window17))  ;!!!
     ;Match_TCEdit := "^" . TCEdit . "$"   ;<-------good working
 	;If RegExMatch(ThisControl,Match_TCEdit)
-    If (( %ThisCtrl% = Edit1) or ( %ThisCtrl% = Edit2) or ( %ThisCtrl% = Window17))  ;!!!
+    If (( %ThisControl% = Edit1) or ( %ThisControl% = Edit2) or ( %ThisControl% = Window17))  ;!!!
 	{
         TCEdit = %ThisControl%  ;!!! added
         ; ----- command line (like the ex mode in Vim)
