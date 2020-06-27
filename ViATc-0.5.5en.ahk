@@ -16,8 +16,8 @@ Setkeydelay,-1
 SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
-Global Date := "2020/06/25"
-Global Version := "0.5.5en beta 6"
+Global Date := "2020/06/27"
+Global Version := "0.5.5en beta 7"
 If A_IsCompiled
     Version .= " Compiled"
 Global VimPath := "gvim.exe"  ; it is overwritten later
@@ -478,6 +478,8 @@ If SendPos(4003)
     ;Msgbox  Debugging ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!! 
     ;Msgbox  Debugging TCEditMarks = [%TCEditMarks%]  on line %A_LineNumber% ;!!!
 
+	ControlSetText,Edit1,m,AHK_CLASS TTOTAL_CMD
+	ControlSetText,Edit2,m,AHK_CLASS TTOTAL_CMD
 	ControlSetText,%TCEditMarks%,m,AHK_CLASS TTOTAL_CMD
     Send {right}
 	Postmessage,0xB1,2,2,%TCEditMarks%,AHK_CLASS TTOTAL_CMD
@@ -2836,7 +2838,6 @@ Enter() ;  on Enter pressed {{{2
         ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
         ;If ThisControl = Edit1
         If (( %ThisControl% = Edit1) or ( %ThisControl% = Edit2) or ( %ThisControl% = Window17))  ;!!!
-
         {
             ;Msgbox  ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!!
             Break
@@ -3048,6 +3049,7 @@ Loop,4
 }
 Settimer,SetLnkToDesktop,off
 return
+
 template:
 template()
 Return
