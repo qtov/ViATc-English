@@ -3,4 +3,3 @@ ViATc doesn't save filenames renamed by double-click, shift+F6 nor multi-rename.
 You can disable this history completely in the settings.
 For the multi-rename TC has its own built-in "Undo" option that can restore last multi-rename.
 ------------------------
-
