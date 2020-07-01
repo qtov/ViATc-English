@@ -4,3 +4,5 @@ You can disable this history completely in the settings.
 For the multi-rename TC has its own built-in "Undo" option that can restore last multi-rename.
 
 ------------------------
+
+history_of_rename.txt
