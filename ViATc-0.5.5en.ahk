@@ -16,8 +16,8 @@ Setkeydelay,-1
 SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
-Global Date := "2020/06/27"
-Global Version := "0.5.5en beta 7"
+Global Date := "2020/07/01"
+Global Version := "0.5.5en beta 8"
 If A_IsCompiled
     Version .= " Compiled"
 Global VimPath := "gvim.exe"  ; it is overwritten later
@@ -4078,10 +4078,10 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["=+"] :="= >> target = source `n+ >> No mapping "
     HelpInfo_arr["Backspace"] :="Backspace >> No mapping `n Go up a folder or delete the text in edit mode "
     HelpInfo_arr["Tab"] :="Tab >> No mapping `nSwitch the window "
-    HelpInfo_arr["Q"] :="q >> Quick view function `nQ >> Use the default browser to search for the current file name / Folder name "
+    HelpInfo_arr["Q"] :="q >> Quick view `nQ >> Use the default browser to search for the current file or folder name "
     HelpInfo_arr["W"] :="w >> Small menu `nW >> No mapping "
-    HelpInfo_arr["E"] :="e >> e...  (Group Key, requires another key) `nee >> Enter`nep >> Edit path in tabbar`nee >> Enter`nee >> Enter`n`n`nE >> Edit file prompt"
-    HelpInfo_arr["R"] :="r >> Fancy Rename`n alt+r >> Fancy Rename`nR >> Rename (simple default TC, not fancy ViATc) "
+    HelpInfo_arr["E"] :="e >> e...  (Group Key, requires another key) `nec >> Compare files by content`nef >> Edit file`neh >> Toggle hidden files`nep >> Edit path in tabbar`n`n`nE >> Edit file prompt"
+    HelpInfo_arr["R"] :="r >> Fancy Rename`nR >> Rename (simple default TC, not fancy ViATc) "
     HelpInfo_arr["T"] :="t >> New tab `nT >> Create a new tab in the background "
     HelpInfo_arr["Y"] :="y >> Copy window like F5  `nY >> Copy the file name and the full path "
     HelpInfo_arr["U"] :="u >> Up a directory `nU >> Up to the root directory "
