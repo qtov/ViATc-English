@@ -16,7 +16,7 @@ Setkeydelay,-1
 SetControlDelay,-1
 Detecthiddenwindows,on
 Coordmode,Menu,Window
-Global Date := "2020/07/01"
+Global Date := "2020/07/04"
 Global Version := "0.5.5en beta 8"
 If A_IsCompiled
     Version .= " Compiled"
@@ -4098,10 +4098,10 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["D"] :="d >> Favourite folders hotlist`nD >> Open the desktop folder "
     HelpInfo_arr["F"] :="f >> Page down, Equivalent to PageDown`nF >> Switch to TC Default fast search mode "
     HelpInfo_arr["G"] :="g >> Tab operation (Group Key, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngt >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab) also gr, I don't know how to bind gT`nga >> Close All tabs `ngc >> Close the Current tab `ngn >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab "
-    HelpInfo_arr["H"] :="h >> Left arrow key. The effect is it enters command line `nH >> Go Backward in dir history"
+    HelpInfo_arr["H"] :="h >> Left arrow key. Works in thumbnail and brief mode. In full mode the effect is the cursor enters command line. `nH >> Go Backward in dir history"
     HelpInfo_arr["J"] :="j >> Go Down num times `nJ >> Select down Num files (folders), In QuickSearch(ctrl+s) go down"
     HelpInfo_arr["K"] :="k >> Go Up num times `nK >> Select up Num files (folders), In QuickSearch(ctrl+s) go up"
-    HelpInfo_arr["L"] :="l >>  (Group Key, requires another key) `nL >> Go Forward in dir history"
+    HelpInfo_arr["L"] :="l >> Right arrow key. Works in thumbnail and brief mode. In full mode the effect is the cursor enters command line. `nL >> Go Forward in dir history"
     HelpInfo_arr["`;:"] :="; >> Put focus on the command line `n: >> Get into VIATC command line mode : (like ex mode in vim)"
     HelpInfo_arr["'"""] :="' >> Marks. `n Go to mark by single quote (Create mark by m) `n"" >> No mapping "
     HelpInfo_arr["Enter"] :="Enter >> Enter "
