@@ -1,21 +1,22 @@
 ; Author of the original Chinese version is linxinhong https://github.com/linxinhong
 ; Translator and maintainer of the English version is magicstep https://github.com/magicstep  
 ; Alternatively you can contact me with the same nickname @gmail.com
-; This script works on Windows with AutoHotkey installed 
-;  only as an addition to "Total Commander" - the file manager from www.ghisler.com  
+; This script works on Windows with AutoHotkey installed only as an addition to ...
+;        ... "Total Commander" - the file manager from www.ghisler.com  
 ; ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium or better yet SurfingKeys.
 
 ;tripple underscores ___ question ??? and exclamations !!! are markers for debugging
+;tripple curly braces are for line folding in vim
 
 ; --- the main script {{{1
 #SingleInstance Force
 #Persistent
 #NoEnv
 #NoTrayIcon
-Setkeydelay,-1
-SetControlDelay,-1
-Detecthiddenwindows,on
-Coordmode,Menu,Window
+Setkeydelay -1
+SetControlDelay -1
+Detecthiddenwindows on
+Coordmode Menu,Window
 Global Date := "2020/07/04"
 Global Version := "0.5.5en beta 8"
 If A_IsCompiled
@@ -1633,7 +1634,9 @@ $ :  Deselect, put cursor at the last character
 s :  Deselect, put cursor at the end of the selected text
 )
 	WinGetPos,,,w,h,AHK_ID %VimRN_ID%
-	tooltip,%rename_help%,0,%h%
+    ;MsgBox, 262144, MyTitle, My Text Here   ;Always-on-top is  262144
+	Msgbox , 262144, Help for Fancy Rename , %rename_help%
+    ;tooltip,%rename_help%,0,%h%
 	Settimer,<RemoveHelpTip>,50
 	Return
 }
