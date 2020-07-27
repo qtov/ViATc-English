@@ -17,10 +17,10 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/07/04"
+Global Date := "2020/07/27"
 Global Version := "0.5.5en beta 8"
 If A_IsCompiled
-    Version .= " Compiled"
+    Version .= " Compiled Executable"
 Global VimPath := "gvim.exe"  ; it is overwritten later
 Global IconPath := A_ScriptDir . "\viatc.ico"
 Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
@@ -61,7 +61,8 @@ Splitpath,TcExe,,TcDir
 If RegExMatch(TcExe,"i)totalcmd64\.exe")
 {
 	Global TCListBox := "LCLListBox"
-	Global TCEdit := "Edit1"  ; sometimes TC changes it to "Edit2"
+	Global TCEdit := "Edit1"  
+    ; sometimes TC changes "Edit1" to "Edit2" when you open any of it's windows containing an edit-box
 	GLobal TCPanel1 := "Window1"
 	Global TCPanel2 := "Window11"
 }
