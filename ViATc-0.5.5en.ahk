@@ -1289,7 +1289,7 @@ VimRNCreateGui()
 	Gui,Add,Edit,r5 x9  w800 -WantReturn gVimRN_Edit,%GetName%
 	;Gui,Add,Edit,r1 w800 -WantReturn gVimRN_Edit,%GetName%  ;original
     Gui,Font,s12
-    Gui, Add, Text, x9 y177 w800 h23, Original filename (saved to the history of rename):
+    Gui, Add, Text, x9 y177 w800 h23, Original filename (saved to history_of_rename.txt):
     Gui, Add, Edit, x9 y202 w800 r5 ReadOnly, %GetName%  ;original 
 
     Gui,Font,s18
@@ -1298,7 +1298,7 @@ VimRNCreateGui()
     Gui,Font,s11,Arial  ;font for the rename window
     Gui, Add, Button, x22 y340 w140 h30 gCancel, &Cancel ; = q
     Gui, Add, Button, x200 y340 w140 h30 Default gVimRN_Enter, &OK ;= Enter
-    Gui, Add, Button, x380 y340 w210 h30 gVimRN_history, &Browse history of rename 
+    Gui, Add, Button, x380 y340 w210 h30 gVimRN_history, &Browse history_of_rename.txt 
 	Gui,Show,h400,ViATc Fancy Rename
     PostMessage,0x00C5,256,,%ThisControl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 256
 
@@ -1618,6 +1618,7 @@ j :  Move downward N lines (if filename is so long that it wraps)
 k :  Move up N lines (if filename is so long that it wraps)
 u :  Undo
 x :  Delete forward
+X :  Delete backward (like backspace or X in vim)
 d :  Delete backward (like backspace or X in vim)
 y :  Copy characters (in Visual mode only)
 p :  Paste the character
@@ -1959,6 +1960,7 @@ SetDefaultKey()
 	Hotkey,+l,VimRN_SRight,on,UseErrorLevel
 	Hotkey,y,VimRN_Copy,on,UseErrorLevel
 	Hotkey,d,VimRN_Backspace,on,UseErrorLevel
+	Hotkey,+X,VimRN_Backspace,on,UseErrorLevel
 	Hotkey,x,VimRN_Delete,on,UseErrorLevel
 	Hotkey,i,VimRN_Insert,on,UseErrorLevel
 	Hotkey,t,VimRN_Trade,on,UseErrorLevel
@@ -1970,7 +1972,8 @@ SetDefaultKey()
 	Hotkey,n,VimRN_Selectfilename,on,UseErrorLevel
     Hotkey,e,VimRN_Selectext,on,UseErrorLevel
 	;Hotkey,0,VimRN_Home,on,UseErrorLevel
-	Hotkey,^,VimRN_Home,on,UseErrorLevel
+	;Hotkey,^,VimRN_Home,on,UseErrorLevel
+	Hotkey,+6,VimRN_Home,on,UseErrorLevel
 	Hotkey,g,VimRN_Home,on,UseErrorLevel
 	Hotkey,$,VimRN_End,on,UseErrorLevel
 	Hotkey,q,VimRN_Quit,on,UseErrorLevel
