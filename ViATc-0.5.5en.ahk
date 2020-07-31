@@ -3293,10 +3293,10 @@ Setting() ; --- {{{1
 	;Gui,Add,Tab2,x10 y6 +theme h520 w405 center choose2, &General (&G) | Hotkeys (&H) | Paths (&P)
 	Gui,Add,Tab2,x10 y6 +theme h520 w405 center choose2, &General  | &Hotkeys  | &Paths 
 	Gui,Add,GroupBox,x16 y32 H170 w390, Global Settings
-	Gui,Add,CheckBox,x25 y50 h20 checked%startup% vStartup, Startup VIATC (&S)
-	Gui,Add,CheckBox,x180 y50 h20 checked%Service% vService, Background process (&B)
-	Gui,Add,CheckBox,x25 y70 h20 checked%TrayIcon% vTrayIcon, System tray icon (&T)
-	Gui,Add,CheckBox,x180 y70 h20 checked%Vim% vVim, Enabled ar start ;Default Vim mode (&V)
+	Gui,Add,CheckBox,x25 y50 h20 checked%startup% vStartup, &Startup VIATC
+	Gui,Add,CheckBox,x180 y50 h20 checked%Service% vService, &Background process
+	Gui,Add,CheckBox,x25 y70 h20 checked%TrayIcon% vTrayIcon, System &Tray icon
+	Gui,Add,CheckBox,x180 y70 h20 checked%Vim% vVim, &Enabled at start Default Vim mode
 	Gui,Add,Text,x25 y100 h20, Activate/Minimize TC (&F)
 	Gui,Add,Edit,x24 y120 h20 w140 vToggle ,%Toggle%
 	Gui,Add,CheckBox,x180 y120 h20 checked%GlobalTogg% vGlobalTogg, Global (&G) So it will work outside TC too
