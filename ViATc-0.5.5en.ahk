@@ -17,7 +17,7 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/07/29"
+Global Date := "2020/07/31"
 Global Version := "0.5.5en beta 9"
 If A_IsCompiled
     Version .= " Compiled Executable"
@@ -174,7 +174,7 @@ If StartUp
 	{
 		RegWrite,REG_SZ,HKEY_CURRENT_USEr,SOFTWARE\Microsoft\Windows\CurrentVersion\Run,ViATc,%A_ScriptFullPath%
 		If ErrorLevel
-			Msgbox,16,ViATc, Set boot failed ,3
+			Msgbox,16,ViATc, Set Startup failed ,3
 	}
 }
 Else
@@ -1875,10 +1875,10 @@ SetDefaultKey()
 	Hotkey,$Enter,<Enter>,On,UseErrorLevel
 	Hotkey,Esc,<Esc>,On,UseErrorLevel
 	Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
-	Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
-	Hotkey,+.,<None>,On,UseErrorLevel
+	;Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
+	;Hotkey,+.,<None>,On,UseErrorLevel
+    ;Hotkey,+',<None>,On,UseErrorLevel
 	;Hotkey,+s,<None>,On,UseErrorLevel
-	Hotkey,+',<None>,On,UseErrorLevel
 
     ; ------ combo keys:
     GroupKeyAdd("ca","<SetAttrib>")
@@ -3293,10 +3293,10 @@ Setting() ; --- {{{1
 	;Gui,Add,Tab2,x10 y6 +theme h520 w405 center choose2, &General (&G) | Hotkeys (&H) | Paths (&P)
 	Gui,Add,Tab2,x10 y6 +theme h520 w405 center choose2, &General  | &Hotkeys  | &Paths 
 	Gui,Add,GroupBox,x16 y32 H170 w390, Global Settings
-	Gui,Add,CheckBox,x25 y50 h20 checked%startup% vStartup, Startup VIATC (&R)
+	Gui,Add,CheckBox,x25 y50 h20 checked%startup% vStartup, Startup VIATC (&S)
 	Gui,Add,CheckBox,x180 y50 h20 checked%Service% vService, Background process (&B)
 	Gui,Add,CheckBox,x25 y70 h20 checked%TrayIcon% vTrayIcon, System tray icon (&T)
-	Gui,Add,CheckBox,x180 y70 h20 checked%Vim% vVim, Default Vim mode (&V)
+	Gui,Add,CheckBox,x180 y70 h20 checked%Vim% vVim, Enabled ar start ;Default Vim mode (&V)
 	Gui,Add,Text,x25 y100 h20, Activate/Minimize TC (&F)
 	Gui,Add,Edit,x24 y120 h20 w140 vToggle ,%Toggle%
 	Gui,Add,CheckBox,x180 y120 h20 checked%GlobalTogg% vGlobalTogg, Global (&G) So it will work outside TC too
@@ -3336,11 +3336,11 @@ Setting() ; --- {{{1
 	Gui,Add,CheckBox,x25 y270 h20 checked%GroupWarn% vGroupWarn, Show tooltips after a first key of Group Key aka Combo Hotkey (&K)
 	Gui,Add,CheckBox,x25 y295 h20 checked%transpHelp% vTranspHelp, Transparent help interface  (&I)
 	Gui,Add,Button,x270 y290 h30 w120 Center g<Help>, Open VIATC Help (&?)
-    Gui,Add,CheckBox,x25 y330 h20 checked%HistoryOfRename% vHistoryOfRename, HistoryOfRename (&Y)
+    Gui,Add,CheckBox,x25 y330 h20 checked%HistoryOfRename% vHistoryOfRename, HistoryOfRename (&R)   see history_of_rename.txt
 
 	Gui,Tab,2
 	Gui,Add,ListView,x16 y32 h300 w390 count20 sortdesc  -Multi vListView g<ListViewDK>,*| Hotkey | Command | Description
-	Lv_modifycol(2,100)
+	Lv_modifycol(2,60)
 	Lv_modifycol(3,100)
 	Lv_modifycol(4,300)
 	lv := MapKey_Arr["Hotkeys"]
@@ -3371,10 +3371,10 @@ Setting() ; --- {{{1
 	}
 	Gui,Add,text,x20 y340 h50, * column legend:`n  S - Global`n  H - Hotkey`n  G - GroupKey
 	Gui,Add,text,x130 y340 h50, Right-click any item on the list to edit or delete, `nor select any item and press ---> ;the Delete button
-    Gui,Add,Button,x285 y354 h20 w65 g<DeleItem>, Delete (&D)
+    Gui,Add,Button,x285 y354 h20 w65 g<DeleItem>, &Delete
     ;Gui,Add,Button,x350 y370 h40 w65 g<DeleItem>, Delete (&D)
 	Gui,Add,text,x130 y375 h20, Add items below. How? open the help window 
-    Gui,Add,Button,x130 y390 h20 w50 Center g<Help>, (&Help)
+    Gui,Add,Button,x130 y390 h20 w50 Center g<Help>, &Help
 	Gui,Add,text,x180 y390 h20,      and choose the fifth tab: Commands
 	;Gui,Add,Button,x350 y420 h20 w50 Center g<Help>, (&Help)
 	;Gui,Add,text,x330 y450 h20, choose the fifth `ntab: Commands
@@ -3382,27 +3382,28 @@ Setting() ; --- {{{1
 	Gui,Add,Text,x35 y423 h20, Hotkey (&K)
 	Gui,Add,Edit,x88 y420 h20 w90 g<CheckGorH>
 	Gui,Add,CheckBox,x183 y421 h20, Global (&L)
-	Gui,Add,Button,x250 y420 w70 g<TestTH>, Analysis (&A)
+	Gui,Add,Button,x250 y420 w70 g<TestTH>, &Analysis
 	Gui,Add,text,x20 y449 h20, Command (&M)
 	Gui,Add,Edit,x88 y446 h20 w230
 	Gui,Add,Button,x21 y470 h20 w100 g<VimCMD> ,    &1  ViATc ...
 	Gui,Add,Button,x130 y470 h20 w120 g<TCCMD> ,    &2  TC ...
 	Gui,Add,Button,x21 y494 h20 w100 g<RunFile>,    &3  Run  ...
 	Gui,Add,Button,x130 y494 h20 w120 g<SendString>,&4  Send text ...
-	Gui,Add,Button,x260 y474 h40 w60 g<CheckKey>, Save (&S)
+	Gui,Add,Button,x260 y474 h40 w60 g<CheckKey>, &Save
 	Gui,Tab,3
 	Gui,Add,Text,x18 y35 h16 center,TC executable "TOTALCMD64.EXE" or "TOTALCMD.EXE" location :
 	Gui,Add,Edit,x18 y55 h20 +ReadOnly w350,%TCEXE%
-	Gui,Add,Button,x375 y53 w30 g<GuiTCEXE>,...(&1)
+	Gui,Add,Button,x375 y53 w30 g<GuiTCEXE>,... &1
 	Gui,Add,Text,x18 y100 h16 center,TC "wincmd.ini" file location :
 	Gui,Add,Edit,x18 y120 h20 +ReadOnly w350,%TCINI%
-	Gui,Add,Button,x375 y120 w30 g<GuiTCINI> ,...(&2)
+	Gui,Add,Button,x375 y120 w30 g<GuiTCINI> ,... &2
 	Gui,Add,Text,x18 y165 h16 center,ViATc "viatc.ini" location (changing will move the current file) :
 	Gui,Add,Edit,x18 y185 h20 +ReadOnly w350,%ViATcIni%
-	Gui,Add,Button,x375 y185 w30 g<GuiViATcINI> ,...(&3)
+	Gui,Add,Button,x375 y185 w30 g<GuiViATcINI> ,... &3
 	Gui,Add,Text,x18 y230 h16 center,Vim "gvim.exe" location (or any other editor) :
 	Gui,Add,Edit,x18 y250 h20 +ReadOnly w350,%VimPath%
-	Gui,Add,Button,x375 y250 w30 g<GuiVimPath> ,...(&4)
+	Gui,Add,Button,x375 y250 w30 g<GuiVimPath> ,... &4
+	Gui,Add,Text,x18 y330 h16 center, All path are saved to registry
 	Gui,Tab
 	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&G
 	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&H
@@ -4018,12 +4019,12 @@ Help() ; --- Help {{{1
     Gui,Add,Text,x399 y25 w200 h120 , Click on the keyboard to see what the key does. Please note that some info might not be accurate because any of the hotkeys can be overriden in the Settings.
 	Gui,Font,s9,Arial Bold    
     Gui,Add,Groupbox,x12 y135 w574 h40
-    Gui,Add,Button,x15 y146 w60 gIntro, Intro (&I)
-    Gui,Add,Button,x80 y146 w75 gFunct, Hotkey (&H)
-    Gui,Add,Button,x159 y146 w100 gGroupk, Group Key (&G)
-    Gui,Add,Button,x265 y146 w130 gCmdl, Command Line (&L)
-    Gui,Add,Button,x400 y146 w105 gAction, Commands (&C)
-    Gui,Add,Button,x510 y146 w67 gAbout, About (&A)
+    Gui,Add,Button,x15 y146 w60 gIntro, &Intro
+    Gui,Add,Button,x80 y146 w75 gFunct, &Hotkey
+    Gui,Add,Button,x159 y146 w100 gGroupk, &Group Key
+    Gui,Add,Button,x265 y146 w130 gCmdl, Command &Line
+    Gui,Add,Button,x400 y146 w105 gAction, &Commands
+    Gui,Add,Button,x510 y146 w67 gAbout, &About
     Intro := HelpInfo_Arr["Intro"]
     Gui,Font,s11,Arial   ;font for the bottom textarea box in help window
     ;Gui,Font,s12,Georgia   ;font for the bottom textarea box in help window
@@ -4132,7 +4133,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     ;HelpInfo_arr["X"] :="x >> Delete Files\folders`nX >> Force Delete, like shift+delete ignores recycle bin"
     HelpInfo_arr["X"] :="x >> Close tab`nX >> Enter or Run file under cursor"
     HelpInfo_arr["C"] :="c >> (Group Key, requires another key) `ncc >> Delete `ncf >> Force Delete, like shift+delete ignores recycle bin`nC  >> Console. Run cmd.exe in the current directory"
-    HelpInfo_arr["V"] :="v >> Context menu `nV >> View... (Group Key, requires another key)`n<Shift>vb >> display / hide :  toolbar `n<Shift>vd >> display / hide :  Drive button `n<Shift>vo >> display / hide :  Two drive button bars `n<Shift>vr >> display / hide :  Drive list `n<Shift>vc >> display / hide :  Current folder `n<Shift>vt >> display / hide :  Sort tab `n<Shift>vs >> display / hide :  Status Bar `n<Shift>vn >> display / hide :  Command Line `n<Shift>vf >> display / hide :  Function button `n<Shift>vw >> display / hide :  Folder tab `n<Shift>ve >> Browse internal commands "
+    HelpInfo_arr["V"] :="v >> Context menu `nV >> View... (Group Key, requires another key)`n<Shift>vb >> Toggle visibility :  toolbar `n<Shift>vd >> Toggle visibility :  Drive button `n<Shift>vo >> Toggle visibility :  Two drive button bars `n<Shift>vr >> Toggle visibility :  Drive list `n<Shift>vc >> Toggle visibility :  Current folder `n<Shift>vt >> Toggle visibility :  Sort tab `n<Shift>vs >> Toggle visibility :  Status Bar `n<Shift>vn >> Toggle visibility :  Command Line `n<Shift>vf >> Toggle visibility :  Function button `n<Shift>vw >> Toggle visibility :  Folder tab `n<Shift>ve >> Browse internal commands "
     HelpInfo_arr["B"] :="b >> Move up a page, Equivalent to PageUp`nB >> Open the tabbed browsing window, works in 32bit TConly"
     HelpInfo_arr["N"] :="n >> Show the folder history ( band a-z navigation )`nN >> No mapping "
     HelpInfo_arr["M"] :="m >> Marking function like in Vim. Create mark by m then go to mark by single quote. For example ma will make mark a then press 'a to go to mark a `n When m is pressed the command line displays m and prompts to enter the mark letter, when this letter is entered command line closes and the current folder-path is stored as the mark. You can browse away to a different folder, and when you press ' it will show all the marks, press a and you will go to the folder where you were before.`n`nIn ViATc marks are volotile, they are stored in memory only, if the script is reloaded they are gone. For permanent effect use TC's directory hotlist by pressing ctrl+d or just d `n`n`nM >> Move to the middle of the list (the position is often not accurate, and if there are few lines the cursor might stay the same) Alternatively you can just use 11j"
@@ -4151,7 +4152,7 @@ HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `
     HelpInfo_arr["Funct"] :="Single key press to operate. `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: ctrl, alt, shift or LWin (must be LWin not Win).`n`nExamples:`n<LWin>g          - this works as intended`n<ctrl><shift>a  - invalid, more than one modifier`n<ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >`n`nPlease click on the keyboard above to get details of each key.`nAlso in the TC window press sm = show mappings from the ini file."
     HelpInfo_arr["GroupK"] :="Also known as Combo Hotkeys. They take multiple keys to operate. `nGroup Keys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with eight Groups Keys z,c,V,g,s,a,l,e. Click the keyboard above for details of what they do. For actual mappings open the Settings window where you can remap everything, you can even remap single Hotkeys into Groups Keys and vice versa."
     HelpInfo_arr["cmdl"] :="The command line in VIATC supports abbreviations :h :s :r :m :sm :e :q, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys. If you type :map in the command line then all custom hotkeys (all ini file mappings, but not built-in) will be displayed in a tooltip`n If the input is :map key command, where key represents the hotkey to map (it can be a Group Key or a Hotkey). This feature is suitable for the scenario where there is a temporary need for a mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file.`n:smap and :map are the same except map is a global hotkey and does not support mapping Group Keys `n:edit  Directly edit ViATc.ini file `n:q quit TC`n`nAll mappings added using the command line are temporary (one session, not saved into the ini file). Examples `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Group Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Group Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be interpreted by VIATC as pressing the Enter key."
-    HelpInfo_arr["command"] :="All commands can be found in the Settings window on the 'Hotkeys' tab. Commands are divided into 4 categories, there are 4 buttons there that will help you to fill-in the 'Command' textbox:`n`n1.ViATc command `n`n2.TC internal command, they begin with the 'cm_' such as cm_PackFiles but will be input as <PackFiles>.`n`n3. Run a program or open a file. TC has similar functions built-in but ViATc way might be more convenient`n`n4. Send a string of text. If you want to input a text into the command line then you can use the Group Key to map the command of sending a text string.`n`nThe above four commands, 1 and 2 must be surrounded by <  > , 3 needs to be surrounded with (  ) , 4 with {  }`n`nRight-click any item on the list to edit or delete. Double-click to edit, or select any item and press Delete `nPress the Analysis button anytime to get tooltip info about the Hotkey`nUse the Global option only when you want Hotkey to work everywhere outside TC.`nSave to take effect, OK will save and reload. Cancel if you mess-up, better take backups of the ini file."
+    HelpInfo_arr["command"] :="All commands can be found in the Settings window on the 'Hotkeys' tab. Commands are divided into 4 categories, there are 4 buttons there that will help you to fill-in the 'Command' textbox:`n`n1.ViATc command `n`n2.TC internal command, they begin with the 'cm_' such as cm_PackFiles but will be input as <PackFiles>.`n`n3. Run a program or open a file. TC has similar functions built-in but ViATc way might be more convenient`n`n4. Send a string of text. If you want to input a text into the command line then you can use the Group Key to map the command of sending a text string.`n`nThe above four commands, 1 and 2 must be surrounded by <  > , 3 needs to be surrounded with (  ) , 4 with {  }`n`nRight-click any item on the list to edit or delete. Double-click to edit, or select any item and press Delete `nPress the Analysis button anytime to get tooltip info about the Hotkey`nUse the Global option only when you want Hotkey to work everywhere outside TC. The Global option is not available for GroupKey aka ComboKey`nSave to take effect, OK will save and reload. Cancel if you mess-up. Please make backups of the ini file before any changes."
     HelpInfo_arr["About"] :="Author of the original Chinese version is Linxinhong `nhttps://github.com/linxinhong`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname @gmail.com    I don't speak Chinese, I've used Google translate initially and then rephrased and modified this software. I'm not proficient in AHK.`n`nYou can download a compiled executable on https://magicstep.github.io/viatc/ `nHowever the script version is most likely ahead of the compiled one."
 } ;}}}2
 
@@ -4161,7 +4162,7 @@ SetGroupInfo() ; combo keys help {{{2
     GroupInfo_arr["s"] :="sn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nsd >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9"
     GroupInfo_arr["z"] :="zz >> Set the window divider at 50%`nzx >> Set the window divider at 100% (TC 8.0+)`nzi >> Maximize the left panel `nzo >> Maximize the right panel `nzt >>TC window always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzr >> Return to normal size `nzv >> Vertical / Horizontal arrangement `nzs >>TC transparent `nzf >> Full screen TC`nzl >> The simplest TC`nzq >> Exit TC`nza >> Reload TC"
     GroupInfo_arr["g"] :="g`n ------------------------------ `ngn >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab)`nga >> Close All tabs `ngc >> Close the Current tab `ngt >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line in the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab "
-    GroupInfo_arr["Shift & v"] :="<Shift>vb >> display / hide :  Toolbar `n<Shift>vd >> display / hide :  Drive button `n<Shift>vo >> display / hide :  Two drive button bars `n<Shift>vr >> display / hide :  Drive list `n<Shift>vc >> display / hide :  Current folder `n<Shift>vt >> display / hide :  Sort tab `n<Shift>vs >> display / hide :  Status Bar `n<Shift>vn >> display / hide :  Command Line `n<Shift>vf >> display / hide :  Function buttons `n<Shift>vw >> display / hide :  Folder tab `n<Shift>ve >> Browse internal commands "
+    GroupInfo_arr["Shift & v"] :="<Shift>vb >> Toggle visibility :  Toolbar `n<Shift>vd >> Toggle visibility :  Drive button `n<Shift>vo >> Toggle visibility :  Two drive button bars `n<Shift>vr >> Toggle visibility :  Drive list `n<Shift>vc >> Toggle visibility :  Current folder `n<Shift>vt >> Toggle visibility :  Sort tab `n<Shift>vs >> Toggle visibility :  Status Bar `n<Shift>vn >> Toggle visibility :  Command Line `n<Shift>vf >> Toggle visibility :  Function buttons `n<Shift>vw >> Toggle visibility :  Folder tab `n<Shift>ve >> Browse internal commands "
     GroupInfo_arr["c"] :="cl >> Delete the history of the left folder `ncr >> Delete the history of the right folder `ncc >> Delete command line history "
 }
 
@@ -4170,7 +4171,7 @@ SetGroupInfo() ; combo keys help {{{2
 SetVimAction()  ; --- internal ViATc commands
 {
     Global VimAction
-    VimAction := " <help> <Setting> <ToggleTC> <EnableViATc> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <singleRepeat> <Esc> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <up> <Left> <Right> <DownSelect> <PageUp> <PageDown> <Home> <Half> <End> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <ListMapKey> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <EditViATCIni> <azTab>"
+    VimAction := " <Help> <Setting> <ToggleTC> <EnableViATc> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <singleRepeat> <Esc> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <up> <Left> <Right> <DownSelect> <PageUp> <PageDown> <Home> <Half> <End> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <ListMapKey> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <EditViATCIni> <azTab>"
 }
 
 SetActionInfo()  ; --- command's descriptions
@@ -4191,7 +4192,7 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<Setting>"] := "VIATC Settings"
     ActionInfo_Arr["<ToggleTC>"] :=" Show / Hide TC"
     ActionInfo_Arr["<EnableViATc>"] :=" Enable / Disable ViATc  "
-    ActionInfo_Arr["<Enter>"] :="Enter"
+    ActionInfo_Arr["<Enter>"] :="Enter does a lot of advanced checks,  use <Return> for simplicity"
     ActionInfo_Arr["<SingleRepeat>"] :=" Repeat the last action "
     ActionInfo_Arr["<Esc>"] :=" Reset and send ESC"
     ActionInfo_Arr["<EditViATCIni>"] :=" Directly edit ViATc.ini file "
@@ -4338,10 +4339,10 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<CustomColumnDlg>"] :=" Change the current custom column "
     ActionInfo_Arr["<LanguageConfig>"] :=" Configuration :  Language "
     ActionInfo_Arr["<Config2>"] :=" Configuration :  Operation method "
-    ActionInfo_Arr["<EditConfig>"] :=" Configuration :  edit / To view "
+    ActionInfo_Arr["<EditConfig>"] :=" Configuration :  edit / view "
     ActionInfo_Arr["<CopyConfig>"] :=" Configuration :  copy / delete "
     ActionInfo_Arr["<RefreshConfig>"] :=" Configuration :  Refresh "
-    ActionInfo_Arr["<QuickSearchConfig>"] :=" Configuration :  fast Search "
+    ActionInfo_Arr["<QuickSearchConfig>"] :=" Configuration :  quick search "
     ActionInfo_Arr["<FtpConfig>"] :=" Configuration : FTP"
     ActionInfo_Arr["<PluginsConfig>"] :=" Configuration :  Plugin "
     ActionInfo_Arr["<ThumbnailsConfig>"] :=" Configuration :  Thumbnails "
@@ -4511,43 +4512,43 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<CompareFilesByContent>"] :=" Compare the contents of the file "
     ActionInfo_Arr["<IntCompareFilesByContent>"] :=" Use the internal comparison program "
     ActionInfo_Arr["<CommandBrowser>"] :=" Browse internal commands "
-    ActionInfo_Arr["<VisButtonbar>"] :=" display / hide :  toolbar "
-    ActionInfo_Arr["<VisDriveButtons>"] :=" display / hide :  Drive button "
-    ActionInfo_Arr["<VisTwoDriveButtons>"] :=" display / hide :  Two drive button bars "
-    ActionInfo_Arr["<VisFlatDriveButtons>"] :=" Switch :  flat / Stereo drive button "
+    ActionInfo_Arr["<VisButtonbar>"] :=" Toggle visibility :  toolbar "
+    ActionInfo_Arr["<VisDriveButtons>"] :=" Toggle visibility :  Drive button "
+    ActionInfo_Arr["<VisTwoDriveButtons>"] :=" Toggle visibility :  Two drive button bars "
+    ActionInfo_Arr["<VisFlatDriveButtons>"] :=" Switch :  flat / convex drive button "
     ActionInfo_Arr["<VisFlatInterface>"] :=" Switch :  flat / Three-dimensional user interface "
-    ActionInfo_Arr["<VisDriveCombo>"] :=" display / hide :  Drive list "
-    ActionInfo_Arr["<VisCurDir>"] :=" display / hide :  Current folder "
-    ActionInfo_Arr["<VisBreadCrumbs>"] :=" display / hide :  Path navigation bar "
-    ActionInfo_Arr["<VisTabHeader>"] :=" display / hide :  Sort tab "
-    ActionInfo_Arr["<VisStatusbar>"] :=" display / hide :  Status Bar "
-    ActionInfo_Arr["<VisCmdLine>"] :=" display / hide :  Command Line "
-    ActionInfo_Arr["<VisKeyButtons>"] :=" display / hide :  Function button "
+    ActionInfo_Arr["<VisDriveCombo>"] :=" Toggle visibility :  Drive list "
+    ActionInfo_Arr["<VisCurDir>"] :=" Toggle visibility :  Current folder "
+    ActionInfo_Arr["<VisBreadCrumbs>"] :=" Toggle visibility :  Path navigation bar "
+    ActionInfo_Arr["<VisTabHeader>"] :=" Toggle visibility :  Sort tab "
+    ActionInfo_Arr["<VisStatusbar>"] :=" Toggle visibility :  Status Bar "
+    ActionInfo_Arr["<VisCmdLine>"] :=" Toggle visibility :  Command Line "
+    ActionInfo_Arr["<VisKeyButtons>"] :=" Toggle visibility :  Function button "
     ActionInfo_Arr["<ShowHint>"] :=" Show file prompts "
     ActionInfo_Arr["<ShowQuickSearch>"] :=" Show the quick search window "
-    ActionInfo_Arr["<SwitchLongNames>"] :=" Open / Close :  Long file name display "
+    ActionInfo_Arr["<SwitchLongNames>"] :=" Toggle visibility :  Long file name display "
     ActionInfo_Arr["<RereadSource>"] :=" Refresh the source window "
     ActionInfo_Arr["<ShowOnlySelected>"] :=" Only the selected files are displayed "
-    ActionInfo_Arr["<SwitchHidSys>"] :=" Open / Close :  Hidden or system file display "
-    ActionInfo_Arr["<Switch83Names>"] :=" Open / Close : 8.3  Type file name lowercase display "
-    ActionInfo_Arr["<SwitchDirSort>"] :=" Open / Close :  The folders are sorted by name "
+    ActionInfo_Arr["<SwitchHidSys>"] :=" Toggle hidden or system file display "
+    ActionInfo_Arr["<Switch83Names>"] :=" Toggle : 8.3  Type file name lowercase display "
+    ActionInfo_Arr["<SwitchDirSort>"] :=" Toggle :  The folders are sorted by name "
     ActionInfo_Arr["<DirBranch>"] :=" Expand all folders "
     ActionInfo_Arr["<DirBranchSel>"] :=" Only the selected folder is expanded "
     ActionInfo_Arr["<50Percent>"] :=" Set the window divider at 50%"
     ActionInfo_Arr["<100Percent>"] :=" Set the window divider at 100% (TC 8.0+)"
-    ActionInfo_Arr["<VisDirTabs>"] :=" display / hide :  Folder tab "
-    ActionInfo_Arr["<VisXPThemeBackground>"] :=" display / hide : XP  Theme background "
-    ActionInfo_Arr["<SwitchOverlayIcons>"] :=" Open / Close :  Overlay icon display "
-    ActionInfo_Arr["<VisHistHotButtons>"] :=" display / hide :  Folder history and frequently used folder buttons "
+    ActionInfo_Arr["<VisDirTabs>"] :=" Toggle visibility :  Folder tab "
+    ActionInfo_Arr["<VisXPThemeBackground>"] :=" Toggle : XP  Theme background "
+    ActionInfo_Arr["<SwitchOverlayIcons>"] :=" Toggle :  Overlay icon display "
+    ActionInfo_Arr["<VisHistHotButtons>"] :=" Toggle visibility :  Folder history and frequently used folder buttons "
     ActionInfo_Arr["<SwitchWatchDirs>"] :=" Enable / Disable :  The folder is automatically refreshed "
     ActionInfo_Arr["<SwitchIgnoreList>"] :=" Enable / Disable :  Customize hidden files "
-    ActionInfo_Arr["<SwitchX64Redirection>"] :=" Open / Close : 32  Bit system32  Directory redirect (64 Bit  Windows)"
+    ActionInfo_Arr["<SwitchX64Redirection>"] :=" Toggle : 32  Bit system32  Directory redirect (64 Bit  Windows)"
     ActionInfo_Arr["<SeparateTreeOff>"] :=" Close the separate folder tree panel "
     ActionInfo_Arr["<SeparateTree1>"] :=" A separate folder tree panel "
     ActionInfo_Arr["<SeparateTree2>"] :=" Two separate folder tree panels "
     ActionInfo_Arr["<SwitchSeparateTree>"] :=" Toggle the independent folder tree panel status "
-    ActionInfo_Arr["<ToggleSeparateTree1>"] :=" Open / Close :  A separate folder tree panel "
-    ActionInfo_Arr["<ToggleSeparateTree2>"] :=" Open / Close :  Two separate folder tree panels "
+    ActionInfo_Arr["<ToggleSeparateTree1>"] :=" Toggle visibility :  A separate folder tree panel "
+    ActionInfo_Arr["<ToggleSeparateTree2>"] :=" Toggle visibility :  Two separate folder tree panels "
     ActionInfo_Arr["<UserMenu1>"] :=" User menu  1"
     ActionInfo_Arr["<UserMenu2>"] :=" User menu  2"
     ActionInfo_Arr["<UserMenu3>"] :=" User menu  3"
