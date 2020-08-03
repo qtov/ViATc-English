@@ -65,7 +65,7 @@ Capslock = Esc
 
 Author
 ======
-- Author of the original Chinese :cn:  version is linxinhong https://github.com/linxinhong
-- Translator and maintainer of the English :uk: version is magicstep https://github.com/magicstep  
-  Alternatively you can contact me with the same nickname @gmail.com  :email:
+- Author of the original Chinese version is linxinhong https://github.com/linxinhong
+- Translator and maintainer of the English version is magicstep https://github.com/magicstep  
+  Alternatively you can contact me with the same nickname @gmail.com
 
