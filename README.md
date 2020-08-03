@@ -15,8 +15,7 @@ What ViATc does to Total Commander (called later TC):
 ![mage credit: https://www.itqiyi.com/archives/2073](https://magicstep.github.io/viatc/viatc=Vim(AHK)TC.png?raw=true "viatc_logo")  
   
 <small>image credit: https://www.itqiyi.com/archives/2073</small><br><br>  
-`image credit: https://www.itqiyi.com/archives/2073`  
- > image credit: https://www.itqiyi.com/archives/2073  
+ <sub> image credit: https://www.itqiyi.com/archives/2073  </sub>
 
 Installation
 ============
