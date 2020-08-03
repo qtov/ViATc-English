@@ -4,7 +4,7 @@ ViATc - Vim mode at Total Commander.
 2020/08/03  version 0.5.5en beta 10  
 ![viatc_logo credit: https://github.com/linxinhong](https://magicstep.github.io/viatc/viatc_logo.jpg?raw=true "viatc_logo")  
 <sub>image credit: <A href="https://github.com/linxinhong" target="_blank">https://github.com/linxinhong</a></sub><br>  
-This software works on Windows and only as an addition to "Total Commander" - the greatest file manager (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
+This software works on Windows and only as an addition to "Total Commander"  :floppy_disk: - the greatest file manager :100: (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
 ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium or better yet SurfingKeys.
 
 What ViATc does to Total Commander (called later TC):
@@ -65,7 +65,7 @@ Capslock = Esc
 
 Author
 ======
-- Author of the original Chinese version is linxinhong https://github.com/linxinhong
-- Translator and maintainer of the English version is magicstep https://github.com/magicstep  
-  Alternatively you can contact me with the same nickname @gmail.com
+- Author of the original Chinese :cn:  version is linxinhong https://github.com/linxinhong
+- Translator and maintainer of the English :uk: version is magicstep https://github.com/magicstep  
+  Alternatively you can contact me with the same nickname @gmail.com  :email:
 
