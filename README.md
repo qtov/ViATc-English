@@ -1,7 +1,7 @@
 ViATc
 =====
 ViATc - Vim mode at Total Commander.  
-2020/07/31  version 0.5.5en beta 9  
+2020/08/03  version 0.5.5en beta 10  
 This software works on Windows and only as an addition to "Total Commander" - the greatest file manager (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
 ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium or better yet SurfingKeys.
 
@@ -14,11 +14,13 @@ What ViATc does to Total Commander (called later TC):
 
 Installation
 ============
-- You can download a compiled executable from https://magicstep.github.io/viatc/  
+- After downloading ViATc, put it in any location and use it. There are two choices to download: executable and script. The script choice is recommended.
+- You can download a compiled executable from https://magicstep.github.io/viatc/ 
   A compiled executable most likely will be older than the current script version. 
 - You can run the script if you have Autohotkey installed. Download and install Autohotkey, it is powerful for many purposes. https://autohotkey.com  
   To get the script download zip file from https://github.com/magicstep/ViATc-English/archive/master.zip, extract and you will see the ahk script. To run it double-click file with .ahk extension like viatc-0.5.5en.ahk
 - Look for a new icon in the tray, right-click on it and choose Help or Settings to get accustomed to the shortcuts.
+
 
 Settings
 ========
