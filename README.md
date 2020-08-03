@@ -10,7 +10,7 @@ What ViATc does to Total Commander (called later TC):
 - adds more functionality - supports all that AutoHotkey does, not just TC
 - adds more shortcuts, user can add and reconfigure them
 
-
+![viatc_logo credit: https://github.com/linxinhong](https://magicstep.github.io/viatc/viatc_logo.jpg?raw=true "viatc_logo")
 
 Installation
 ============
