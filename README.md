@@ -1,7 +1,8 @@
 ViATc
 =====
-ViATc - Vim mode at Total Commander.  
+ViATc - Vim mode at Total Commander  
 2020/08/03  version 0.5.5en beta 10  
+The same info as a nice website https://magicstep.github.io/viatc/ 
 ![viatc_logo credit: https://github.com/linxinhong](https://magicstep.github.io/viatc/viatc_logo.jpg?raw=true "viatc_logo")  
 <sub>image credit: <A href="https://github.com/linxinhong" target="_blank">https://github.com/linxinhong</a></sub><br>  
 This software works on Windows and only as an addition to "Total Commander"  :floppy_disk: - the greatest file manager :100: (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
@@ -15,15 +16,21 @@ What ViATc does to Total Commander (called later TC):
 ![mage credit: https://www.itqiyi.com/archives/2073](https://magicstep.github.io/viatc/viatc=Vim(AHK)TC.png?raw=true "viatc_logo")  
 <sub> image credit: https://www.itqiyi.com/archives/2073  </sub>
 
+Download
+========
+2020/08/03  version 0.5.5en beta 10  
+<a href="ViATc-0.5.5en_beta10_executable.zip">ViATc-0.5.5en_beta10_executable.zip</a><br>
+The zip file contains a script and exe file. I promise that the exe file is clean, however compiled AHK scripts trigger antiviruses so you might have to add an exception. The script choice is recommended anyway.   
+
+To get the most recent script (without exe), download https://github.com/magicstep/ViATc-English/archive/master.zip
+
+Old versions at https://magicstep.github.io/viatc/old.html
+
 Installation
 ============
-- After downloading ViATc, put it in any location and use it. There are two choices to download: executable and script. The script choice is recommended.
-- You can download a compiled executable from https://magicstep.github.io/viatc/ 
-  A compiled executable most likely will be older than the current script version. 
+- After downloading ViATc, extract, put it in any location and use it.  
 - You can run the script if you have Autohotkey installed. Download and install Autohotkey, it is powerful for many purposes. https://autohotkey.com  
-  To get the script download zip file from https://github.com/magicstep/ViATc-English/archive/master.zip, extract and you will see the ahk script. To run it double-click file with .ahk extension like viatc-0.5.5en.ahk
-- Look for a new icon in the tray, right-click on it and choose Help or Settings to get accustomed to the shortcuts.
-
+- Run ViATc and look for a new icon in the tray, right-click on it and choose Help or Settings to get accustomed to the shortcuts.
 
 Settings
 ========
@@ -31,9 +38,7 @@ You can add and remove shortcuts via the ViATc Settings window. After changes yo
 You can also add and remove shortcuts directly in the ini file. Reload ViATc manually after any changes made directly in the ini file to take effect.
 In the ini file all lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
 
-CapsLock is hardcoded as Escape. To bypass this try ctrl+CapsLock  
-Known issues:  
-- enabling CapsLock doesn't produce uppercase in fancy vim rename
+CapsLock is mapped as Escape. To bypass this try ctrl+CapsLock  
 
 Usage
 =====
@@ -68,4 +73,4 @@ Author
 - Author of the original Chinese version is linxinhong https://github.com/linxinhong
 - Translator and maintainer of the English version is magicstep https://github.com/magicstep  
   Alternatively you can contact me with the same nickname @gmail.com
-
+- More info about the project at https://github.com/magicstep/ViATc-English
