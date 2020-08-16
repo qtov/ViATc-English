@@ -17,8 +17,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/08/03"
-Global Version := "0.5.5en beta 10"
+Global Date := "2020/08/16"
+Global Version := "0.5.5en beta 11"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global VimPath := "gvim.exe"  ; it is overwritten later
@@ -182,6 +182,8 @@ Else
 GroupWarn := GetConfig("Configuration","GroupWarn")
 GlobalSusp := GetConfig("Configuration","GlobalSusp")
 HistoryOfRename := GetConfig("Configuration","HistoryOfRename")
+;FancyVimRename := GetConfig("Configuration","FancyVimRename")
+FancyVimRename := GetConfig("VimRename","Enabled")
 TranspHelp := GetConfig("Configuration","TranspHelp")
 MaxCount := GetConfig("Configuration","MaxCount")
 TranspVar := GetConfig("Configuration","TranspVar")
@@ -3272,15 +3274,17 @@ Diff(String1,String2)
 
 Setting() ; --- {{{1
 {
-	Global StartUp,Service,TrayIcon,Vim,GlobalTogg,Toggle,GlobalSusp,Susp,GroupWarn,TranspHelp,Transparent,SearchEng,DefaultSE,ViATcIni,TCExe,TCINI,NeedReload,LnkToDesktop,HistoryOfRename,VimRenameEnabled
+	Global StartUp,Service,TrayIcon,Vim,GlobalTogg,Toggle,GlobalSusp,Susp,GroupWarn,TranspHelp,Transparent,SearchEng,DefaultSE,ViATcIni,TCExe,TCINI,NeedReload,LnkToDesktop,HistoryOfRename,FancyVimRename
 	NeedReload := 1
 	Global ListView
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
 	Vim := GetConfig("Configuration","Vim")
 	Gui,Destroy
 	Gui,+Theme +hwndviatcsetting
-    Gui,Add,Button,x10 y535 w100 Center g<BackupIniFile>, &Backup viatc.ini file
-	Gui,Add,Button,x120 y535 w100 g<EditViATCIni>, &Edit viatc.ini file 
+	Gui,Add,GroupBox,x10 y525 h37 w170, ; viatc.ini file
+    Gui,Add,Text,x14 y539 w60, viatc.ini file:
+    Gui,Add,Button,x70 y535 w54 Center g<BackupIniFile>, &Backup
+	Gui,Add,Button,x130 y535 w40 g<EditViATCIni>, &Edit
 	Gui,Add,Button,x240 y535 w80 center Default g<GuiEnter>, &OK 
 	Gui,Add,Button,x330 y535 w80 center g<GuiCancel>, &Cancel 
 	;Gui,Add,Tab2,x10 y6 +theme h520 w405 center choose2, &General (&G) | Hotkeys (&H) | Paths (&P)
@@ -3330,8 +3334,15 @@ Setting() ; --- {{{1
 	Gui,Add,CheckBox,x25 y309 h20 checked%transpHelp% vTranspHelp, &Transparent help interface
 	Gui,Add,Button,x270 y305 h30 w120 Center g<Help>, Open VIATC Help (&?)
     Gui,Add,CheckBox,x25 y340 h20 checked%HistoryOfRename% vHistoryOfRename, HistoryOf&Rename ; - see history_of_rename.txt
-    Gui,Add,Link,x135 y343 h20, - see <a href="history_of_rename.txt">history_of_rename.txt</a>
-	;Gui,Add,Button,x270 y405 h30 w120 Center g<BackupIniFile>, &Backup viatc.ini file
+    Gui,Add,Link,x135 y343 h20, - see <a href="%A_ScriptDir%\history_of_rename.txt">history_of_rename.txt</a>
+    ;Gui,Add,Link,x135 y363 h20, - see <a href="%VimPath% -p --remote-tab-silent %HistoryOfRenamePath%">%HistoryOfRenamePath%</a>
+    Gui,Add,CheckBox,x25 y370 h20 checked%FancyVimRename% vFancyVimRename, FancyVimRename
+    ;Gui,Add,Button,x270 y405 h30 w120 Center g<BackupIniFile>, &Backup viatc.ini file
+    ;  (this checkbox not working yet)
+    Gui, Add, Picture, x170 y420 w60 h-1, %A_ScriptDir%\viatc.ico
+    ;Gui, Add, Picture, x180 y480, %A_ScriptDir%\viatc.ico 
+    ;Gui, Add, Picture, x180 y530, c:\Progs\ViATc\viatc.ico 
+    ;Gui, Add, Picture, x20 y400 w100 h-1, C:\tmp\a.jpg
 
 	Gui,Tab,2
 	Gui,Add,ListView,x16 y32 h300 w390 count20 sortdesc  -Multi vListView g<ListViewDK>,*| Hotkey | Command | Description
@@ -3436,8 +3447,18 @@ Return
 BackupIniFile()
 {
     FormatTime, CurrentDateTime,, yyyy-MM-dd_hh;mm.ss
-    FileCopy, %VIATCINI%, %VIATCINI%_%CurrentDateTime%_backup.ini
-    ;FileCopy, %VIATCINI%, %VIATCINI%_%CurrentDateTime%.bkp
+    NewFile=%VIATCINI%_%CurrentDateTime%_backup.ini
+    FileCopy,%VIATCINI%,%NewFile%
+    If Fileexist(NewFile)
+        Tooltip Backup succesfull
+    Else
+        Tooltip Backup failed
+    
+    Sleep,1400
+    Tooltip
+    Return
+    ;GuiControlGet,VarPos,Pos,Edit4
+    ;Tooltip, The mapping failed ,%VarPosX%,%VarPosY%
 }
 
 <AddSearchEng>:
@@ -3496,6 +3517,8 @@ IniWrite,%Toggle%,%ViATcIni%,Configuration,Toggle
 IniWrite,%Susp%,%ViATcIni%,Configuration,Suspend
 IniWrite,%GlobalTogg%,%ViATcIni%,Configuration,GlobalTogg
 IniWrite,%HistoryOfRename%,%ViATcIni%,Configuration,HistoryOfRename
+;IniWrite,%FancyVimRename%,%ViATcIni%,Configuration,FancyVimRename
+IniWrite,%FancyVimRename%,%ViATcIni%,VimRename,Enabled
 IniWrite,%GlobalSusp%,%ViATcIni%,Configuration,GlobalSusp
 IniWrite,%StartUp%,%ViATcIni%,Configuration,StartUp
 IniWrite,%Service%,%ViATcIni%,Configuration,Service
