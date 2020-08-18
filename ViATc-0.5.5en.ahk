@@ -25,6 +25,7 @@ Global VimPath := "gvim.exe"  ; it is overwritten later
 Global IconPath := A_ScriptDir . "\viatc.ico"
 Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
 Global HistoryOfRenamePath := A_ScriptDir . "\history_of_rename.txt"
+Global MarksPath := A_ScriptDir . "\marks.ini"
 KeyTemp :=
 Repeat :=
 VimAction :=
@@ -183,14 +184,14 @@ GroupWarn := GetConfig("Configuration","GroupWarn")
 GlobalSusp := GetConfig("Configuration","GlobalSusp")
 HistoryOfRename := GetConfig("Configuration","HistoryOfRename")
 ;FancyVimRename := GetConfig("Configuration","FancyVimRename")
-FancyVimRename := GetConfig("VimRename","Enabled")
+FancyVimRename := GetConfig("FancyVimRename","Enabled")
 TranspHelp := GetConfig("Configuration","TranspHelp")
 MaxCount := GetConfig("Configuration","MaxCount")
 TranspVar := GetConfig("Configuration","TranspVar")
 DefaultSE := GetConfig("SearchEngine","Default")
 SearchEng := GetConfig("SearchEngine",DefaultSE)
 LnkToDesktop := GetConfig("Other","LnkToDesktop")
-VimRN  := GetConfig("VimRename","Enabled")
+VimRN  := GetConfig("FancyVimRename","Enabled")
 Return
 ;}}}
 
@@ -1261,8 +1262,8 @@ VimRNCreateGui()
         file.close()
     }
 
-    ;Abort if VimRename is not enabled
-    IniRead,Enabled,%ViatcIni%,VimRename,Enabled
+    ;Abort if FancyVimRename is not enabled
+    IniRead,Enabled,%ViatcIni%,FancyVimRename,Enabled
 	If Enabled = ERROR
         return
 	If Enabled = 0
@@ -1301,7 +1302,7 @@ VimRNCreateGui()
 	Gui,Show,h400,ViATc Fancy Rename
     PostMessage,0x00C5,256,,%ThisControl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 256
 
-	VimRN := GetConfig("VimRename","Mode")
+	VimRN := GetConfig("FancyVimRename","Mode")
 	If VimRN
 	{
 		Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
@@ -1310,7 +1311,7 @@ VimRNCreateGui()
 	Else
 		Status := "  mode : Insert                                 "
 	ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
-	If GetConfig("VimRename","UnselectExt")
+	If GetConfig("FancyVimRename","UnselectExt")
 	{
 		SplitPath,GetName,,,Ext
 		Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
@@ -1574,15 +1575,15 @@ VimRN_Edit:
 VimRN_Edit()
 Return
 VimRN_SelMode:
-SetConfig("VimRename","Mode",!GetConfig("VimRename","Mode"))
-If GetConfig("VimRename","Mode")
+SetConfig("FancyVimRename","Mode",!GetConfig("FancyVimRename","Mode"))
+If GetConfig("FancyVimRename","Mode")
 	Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
 Else
 	Menu,VimRN_Set,UnCheck, Vim mode at start `tAlt+V
 Return
 VimRN_SelExt:
-SetConfig("VimRename","UnselectExt",!GetConfig("VimRename","UnselectExt"))
-If GetConfig("VimRename","UnselectExt")
+SetConfig("FancyVimRename","UnselectExt",!GetConfig("FancyVimRename","UnselectExt"))
+If GetConfig("FancyVimRename","UnselectExt")
 	Menu,VimRN_Set,Check, Unselect extension at start `tAlt+E
 Else
 	Menu,VimRN_Set,UnCheck, Unselect extension at start `tAlt+E
@@ -2669,17 +2670,17 @@ CreateConfig(Section,Key)
 	If Key = 1
 		SetVar := "http://www.google.com/search?q={%1}"
 	If Key = 2
-		SetVar := "http://www.bing.com/search?q={%1}"
-	If Section = VimRename
+		SetVar := "https://duckduckgo.com/html?q={%1}"
+	If Section = FancyVimRename
+		If Key = Enabled
+			SetVar := 1
+	If Section = FancyVimRename
 		If Key = Mode
 			SetVar := 1
 	If Key = UnselectExt
 		SetVar := 1
 	If Section = Other
 		If Key = LnkToDesktop
-			SetVar := 1
-	If Section = VimRename
-		If Key = Enabled
 			SetVar := 1
     
 	IniRead,GetVar,%ViatcIni%,%Section%,%Key%
@@ -3280,10 +3281,18 @@ Setting() ; --- {{{1
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
 	Vim := GetConfig("Configuration","Vim")
 	Gui,Destroy
-	Gui,+Theme +hwndviatcsetting
-	Gui,Add,GroupBox,x10 y525 h37 w170, ; viatc.ini file
+	Gui,+Theme +hwndviatcsetting 
+    ;Gui,+SBARS_SIZEGRIP
+    Gui,+0x100A +0x40000
+    WinSet, Style, +Resize, A
+    WinSet, Style, +WS_SIZEBOX, A
+    WinSet, Style, +0x40000, A
+
+    ;Gui, Color, 0xA0A0F0
+	Gui,Add,GroupBox,x10 y526 h37 w170 cFF0000, ; viatc.ini file
+    ;Gui, Add, Progress, x10 y529 h37 w170 BackgroundSilver Disabled
     Gui,Add,Text,x14 y539 w60, viatc.ini file:
-    Gui,Add,Button,x70 y535 w54 Center g<BackupIniFile>, &Backup
+    Gui,Add,Button,x70 y535 w54 center g<BackupIniFile>, &Backup
 	Gui,Add,Button,x130 y535 w40 g<EditViATCIni>, &Edit
 	Gui,Add,Button,x240 y535 w80 center Default g<GuiEnter>, &OK 
 	Gui,Add,Button,x330 y535 w80 center g<GuiCancel>, &Cancel 
@@ -3301,7 +3310,7 @@ Setting() ; --- {{{1
 	Gui,Add,Edit,x25 y170 h20 w140 vSusp ,%Susp%
 	Gui,Add,CheckBox,x180 y170 h20 checked%GlobalSusp% vGlobalSusp, Global hotkey (&L)
 	Gui,Add,GroupBox,x16 y210 H310 w390, Other settings
-	Gui,Add,Text,x25 y228 h20, Search for the selected file name or folder (&Q)
+	Gui,Add,Text,x25 y228 h20, &Website used to search for the selected file name or folder:
 	D := 1
 	Loop,15
 	{
@@ -3327,9 +3336,9 @@ Setting() ; --- {{{1
 		DefaultSE := D
 		IniWrite,%D%,%ViATcIni%,SearchEngine,Default
 	}
-	Gui,Add,ComboBox,x25 y246 h20 w226 choose%DefaultSE% AltSubmit vDefaultSE R5 hwndaa g<SetDefaultSE>,%SE_Arr%
-	Gui,Add,Button,x256 y246 h20 w22 g<AddSearchEng>,&+
-	Gui,Add,Button,x280 y246 h20 w22 g<DelSearchEng>,&-
+	Gui,Add,ComboBox,x25 y246 h20 w326 choose%DefaultSE% AltSubmit vDefaultSE R5 hwndaa g<SetDefaultSE>,%SE_Arr%
+	Gui,Add,Button,x356 y246 h20 w22 g<AddSearchEng>,&+
+	Gui,Add,Button,x380 y246 h20 w22 g<DelSearchEng>,&-
 	Gui,Add,CheckBox,x25 y280 h20 checked%GroupWarn% vGroupWarn, Show tooltips after a first key of Group Key aka Combo Hotkey (&K)
 	Gui,Add,CheckBox,x25 y309 h20 checked%transpHelp% vTranspHelp, &Transparent help interface
 	Gui,Add,Button,x270 y305 h30 w120 Center g<Help>, Open VIATC Help (&?)
@@ -3345,7 +3354,33 @@ Setting() ; --- {{{1
     ;Gui, Add, Picture, x20 y400 w100 h-1, C:\tmp\a.jpg
 
 	Gui,Tab,2
-	Gui,Add,ListView,x16 y32 h300 w390 count20 sortdesc  -Multi vListView g<ListViewDK>,*| Hotkey | Command | Description
+
+	Gui,Add,text,x20 y340 h50, * column legend:`n  S - Global`n  H - Hotkey`n  G - GroupKey
+	Gui,Add,text,x130 y340 h50, Right-click any item on the list to edit or delete, `nor select any item and press ---> ;the Delete button
+    Gui,Add,Button,x285 y354 h20 w65 g<DeleItem>, &Delete
+    ;Gui,Add,Button,x350 y370 h40 w65 g<DeleItem>, Delete (&D)
+	Gui,Add,text,x130 y375 h20, Add items below. How? open the help window 
+    Gui,Add,Button,x130 y390 h20 w50 Center g<Help>, &Help
+	Gui,Add,text,x180 y390 h20,      and choose the fifth tab: Commands
+	;Gui,Add,Button,x350 y420 h20 w50 Center g<Help>, (&Help)
+	;Gui,Add,text,x330 y450 h20, choose the fifth `ntab: Commands
+	Gui,Add,GroupBox,x16 y410 h110 w390, ; Adding commands
+	Gui,Add,Text,x35 y423 h20, Hotkey (&K)
+	Gui,Add,Edit,x88 y420 h20 w90 g<CheckGorH>
+	Gui,Add,CheckBox,x183 y421 h20, Global (&L)
+	Gui,Add,Button,x250 y420 w70 g<TestTH>, &Analysis
+    Gui,Add,Button,x340 y420 h40 w60 g<CheckKey>, &Save
+	Gui,Add,text,x20 y449 h20, Command (&M)
+	Gui,Add,Edit,x88 y446 h20 w230
+	Gui,Add,Button,x20 y470 h20 w80 g<VimCMD> ,    &1  ViATc ...
+	Gui,Add,Button,x120 y470 h20 w80 g<TCCMD> ,    &2  TC ...
+	Gui,Add,Button,x220 y470 h20 w80 g<RunFile>,   &3  Run  ...
+	Gui,Add,Button,x320 y470 h20 w80 g<SendString>,&4  Send text ...
+	Gui,Add,text,x70 y495 h20, Buttons 1,2,3,4 will fill-in the Command text-box.
+
+	;Gui,Add,ListView,x16 y32 h300 w390 count20 sortdesc  -Multi vListView g<ListViewDK>,*| Hotkey | Command | Description
+    ;the +0x40000 adds resizing
+	Gui,Add,ListView,x16 y32 h300 w390 count20 sortdesc  -Multi vListView g<ListViewDK> +0x40000,*| Hotkey | Command | Description
 	Lv_modifycol(2,60)
 	Lv_modifycol(3,100)
 	Lv_modifycol(4,300)
@@ -3375,28 +3410,7 @@ Setting() ; --- {{{1
 			LV_Add(vis,Scope,Key,Action,Info)
 		}
 	}
-	Gui,Add,text,x20 y340 h50, * column legend:`n  S - Global`n  H - Hotkey`n  G - GroupKey
-	Gui,Add,text,x130 y340 h50, Right-click any item on the list to edit or delete, `nor select any item and press ---> ;the Delete button
-    Gui,Add,Button,x285 y354 h20 w65 g<DeleItem>, &Delete
-    ;Gui,Add,Button,x350 y370 h40 w65 g<DeleItem>, Delete (&D)
-	Gui,Add,text,x130 y375 h20, Add items below. How? open the help window 
-    Gui,Add,Button,x130 y390 h20 w50 Center g<Help>, &Help
-	Gui,Add,text,x180 y390 h20,      and choose the fifth tab: Commands
-	;Gui,Add,Button,x350 y420 h20 w50 Center g<Help>, (&Help)
-	;Gui,Add,text,x330 y450 h20, choose the fifth `ntab: Commands
-	Gui,Add,GroupBox,x16 y410 h110 w390, ; Adding commands
-	Gui,Add,Text,x35 y423 h20, Hotkey (&K)
-	Gui,Add,Edit,x88 y420 h20 w90 g<CheckGorH>
-	Gui,Add,CheckBox,x183 y421 h20, Global (&L)
-	Gui,Add,Button,x250 y420 w70 g<TestTH>, &Analysis
-    Gui,Add,Button,x340 y420 h40 w60 g<CheckKey>, &Save
-	Gui,Add,text,x20 y449 h20, Command (&M)
-	Gui,Add,Edit,x88 y446 h20 w230
-	Gui,Add,Button,x20 y470 h20 w80 g<VimCMD> ,    &1  ViATc ...
-	Gui,Add,Button,x120 y470 h20 w80 g<TCCMD> ,    &2  TC ...
-	Gui,Add,Button,x220 y470 h20 w80 g<RunFile>,   &3  Run  ...
-	Gui,Add,Button,x320 y470 h20 w80 g<SendString>,&4  Send text ...
-	Gui,Add,text,x70 y495 h20, Buttons 1,2,3,4 will fill-in the Command text-box.
+
 	Gui,Tab,3
 	Gui,Add,Text,x18 y35 h16 center,TC executable "TOTALCMD64.EXE" or "TOTALCMD.EXE" location :
 	Gui,Add,Edit,x18 y55 h20 +ReadOnly w350,%TCEXE%
@@ -3418,7 +3432,7 @@ Setting() ; --- {{{1
 	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&G
 	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&H
 	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&P
-	GUi,Show,h570 w420,Settings   VIATC %Version% 
+	Gui,Show,h570 w420,Settings   VIATC %Version% 
 }
 GuiContextMenu:
 If A_GuiControl <> ListView
@@ -3518,7 +3532,7 @@ IniWrite,%Susp%,%ViATcIni%,Configuration,Suspend
 IniWrite,%GlobalTogg%,%ViATcIni%,Configuration,GlobalTogg
 IniWrite,%HistoryOfRename%,%ViATcIni%,Configuration,HistoryOfRename
 ;IniWrite,%FancyVimRename%,%ViATcIni%,Configuration,FancyVimRename
-IniWrite,%FancyVimRename%,%ViATcIni%,VimRename,Enabled
+IniWrite,%FancyVimRename%,%ViATcIni%,FancyVimRename,Enabled
 IniWrite,%GlobalSusp%,%ViATcIni%,Configuration,GlobalSusp
 IniWrite,%StartUp%,%ViATcIni%,Configuration,StartUp
 IniWrite,%Service%,%ViATcIni%,Configuration,Service
@@ -3553,10 +3567,11 @@ EditItem()
 		LV_GetText(Key,EventInfo,2)
 		LV_GetText(Action,EventInfo,3)
 		LV_GetText(Info,EventInfo,4)
+        ; Button24 is the Global chexkbox
 		If RegExMatch(Scope,"S")
-			GuiControl,,Button21,1
+			GuiControl,,Button24,1
 		If RegExMatch(Scope,"[G|H]")
-			GuiControl,,Button21,0
+			GuiControl,,Button24,0
 		If Key
 			GuiControl,,Edit4,%Key%
 		If Action =  run
@@ -3776,11 +3791,11 @@ CheckGorH()
 	GuiControlGet,Key,,Edit4,AHK_CLASS %ViATcSetting%
 	If Key
 		If RegExMatch(CheckScope(key),"G")
-			GuiControl,Disable,Button21
+			GuiControl,Disable,Button24
 	Else
-		GuiControl,Enable,Button21
+		GuiControl,Enable,Button24
 	Else
-		GuiControl,Enable,Button21
+		GuiControl,Enable,Button24
 }
 <CheckKey>:
 CheckKey()
@@ -3788,7 +3803,7 @@ Return
 CheckKey()
 {
 	Global VIATCSetting,ViATcIni,MapKey_Arr,ExecFile_Arr,SendText_Arr,ActionInfo_Arr,NeedReload
-	GuiControlGet,Scope,,Button21,AHK_CLASS %ViATcSetting%
+	GuiControlGet,Scope,,Button24,AHK_CLASS %ViATcSetting%
 	GuiControlGet,Key,,Edit4,AHK_CLASS %ViATcSetting%
 	GuiControlGet,Action,,Edit5,AHK_CLASS %ViATcSetting%
 	If Scope
@@ -3798,7 +3813,7 @@ CheckKey()
 	If RegExMatch(CheckScope(key),"G")
 	{
 		Scope := "G"
-		GuiControl,,Button21,0
+		GuiControl,,Button24,0
 	}
 	If Action And Key
 	{
@@ -3918,7 +3933,7 @@ TH()
 Return
 TH()
 {
-	GuiControlGet,Scope,,Button21,AHK_CLASS %ViATcSetting%
+	GuiControlGet,Scope,,Button24,AHK_CLASS %ViATcSetting%
 	GuiControlGet,Key,,Edit4,AHK_CLASS %ViATcSetting%
 	if key
 	{
@@ -4183,7 +4198,7 @@ HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `
     HelpInfo_arr["Funct"] :="Single key press to operate. `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: ctrl, alt, shift or LWin (must be LWin not Win).`nAll how the hotkey is written is case insensitive.`n`nExamples:`n<LWin>g          - this works as intended`n<ctrl><shift>a  - invalid, more than one modifier`n<ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >`n`nPlease click on the keyboard above to get details of each key.`nAlso in the TC window press sm = show mappings from the ini file."
     HelpInfo_arr["GroupK"] :="Also known as Combo Hotkeys. They take multiple keys to operate. `nGroup Keys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with eight Groups Keys z,c,V,g,s,a,l,e. Click the keyboard above for details of what they do. For actual mappings open the Settings window where you can remap everything, you can even remap single Hotkeys into Groups Keys and vice versa."
     HelpInfo_arr["cmdl"] :="The command line in VIATC supports abbreviations :h :s :r :m :sm :e :q, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys. If you type :map in the command line then all custom hotkeys (all ini file mappings, but not built-in) will be displayed in a tooltip`n If the input is :map key command, where key represents the hotkey to map (it can be a Group Key or a Hotkey). This feature is suitable for the scenario where there is a temporary need for a mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file.`n:smap and :map are the same except map is a global hotkey and does not support mapping Group Keys `n:edit  Directly edit ViATc.ini file `n:q quit TC`n`nAll mappings added using the command line are temporary (one session, not saved into the ini file). Examples `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Group Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Group Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be interpreted by VIATC as pressing the Enter key."
-    HelpInfo_arr["command"] :="All commands can be found in the Settings window on the 'Hotkeys' tab. Commands are divided into 4 categories, there are 4 buttons there that will help you to fill-in the 'Command' textbox:`n`n1.ViATc command `n`n2.TC internal command, they begin with the 'cm_' such as cm_PackFiles but will be input as <PackFiles>.`n`n3. Run a program or open a file. TC has similar functions built-in but ViATc way might be more convenient`n`n4. Send a string of text. If you want to input a text into the command line then you can use the Group Key to map the command of sending a text string.`n`nThe above four commands, 1 and 2 must be surrounded by <  > , 3 needs to be surrounded with (  ) , 4 with {  }`n`nRight-click any item on the list to edit or delete. Double-click to edit, or select any item and press Delete `nPress the Analysis button anytime to get tooltip info about the Hotkey`nUse the Global option only when you want Hotkey to work everywhere outside TC. The Global option is not available for GroupKey aka ComboKey`nSave to take effect, OK will save and reload. Cancel if you mess-up. Please make backups of the ini file before any changes."
+    HelpInfo_arr["command"] :="All commands can be found in the Settings window on the 'Hotkeys' tab. Commands are divided into 4 categories, there are 4 buttons there that will help you to fill-in the 'Command' textbox:`n`n1.ViATc command `n`n2.TC internal command, they begin with the 'cm_' such as cm_PackFiles but will be input as <PackFiles>.`n`n3. Run a program or open a file. TC has similar functions built-in but ViATc way might be more convenient`n`n4. Send a string of text. If you want to input a text into the command line then you can use the Group Key to map the command of sending a text string.`n`nThe above commands, 1 and 2 must be surrounded with <  > , 3 needs to be surrounded with (  ) , and 4 with {  }`n`nIn Options right-click any item on the list to edit or delete. Double-click to edit, or select any item and press Delete `nPress the Analysis button anytime to get a tooltip info about the Hotkey`nUse the Global option only when you want Hotkey to work everywhere outside TC. The Global option is not available for GroupKey aka ComboKey`nSave to take effect, OK will save and reload. Cancel if you mess-up. Please make backups of the ini file before any changes, there is a button for it in the bottom-left corner of Settings window"
     HelpInfo_arr["About"] :="Author of the original Chinese version is Linxinhong `nhttps://github.com/linxinhong`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname @gmail.com    I don't speak Chinese, I've used Google translate initially and then rephrased and modified this software. I'm not proficient in AHK.`n`nYou can download a compiled executable on https://magicstep.github.io/viatc/ `nHowever the script version is most likely ahead of the compiled one."
 } ;}}}2
 

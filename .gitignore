@@ -5,6 +5,10 @@ history_of_rename.txt
 history_of_rename*
 history_of_rename\[01\].txt
 
+# ignore marks
+marks.ini
+marks\[01\].ini
+
 # ignore binary files
 *.exe
 *.rar
@@ -15,3 +19,4 @@ history_of_rename\[01\].txt
 ~*
 *.bkp
 *_backup.ini
+

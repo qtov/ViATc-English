@@ -1,8 +1,7 @@
 ViATc
 =====
 ViATc - Vim mode at Total Commander  
-2020/08/16  version 0.5.5en beta 11  
-The same info as a nice website https://magicstep.github.io/viatc/  
+2020/08/18  version 0.5.5en beta 12  
 ![viatc_logo credit: https://github.com/linxinhong](https://magicstep.github.io/viatc/viatc_logo.jpg?raw=true "viatc_logo")  
 <sub>image credit: <A href="https://github.com/linxinhong" target="_blank">https://github.com/linxinhong</a></sub><br>  
 This software works on Windows and only as an addition to "Total Commander"  :floppy_disk: - the greatest file manager :100: (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
@@ -10,21 +9,20 @@ ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium
 
 What ViATc does to Total Commander (called later TC):
 - it's only a separate addition, easily disabled, it doesn't modify TC
+- adds more shortcuts, you can add and reconfigure them
 - adds more functionality - supports all that AutoHotkey does, not just TC
-- adds more shortcuts, user can add and reconfigure them
 
 ![mage credit: https://www.itqiyi.com/archives/2073](https://magicstep.github.io/viatc/viatc=Vim(AHK)TC.png?raw=true "viatc_logo")  
 <sub> image credit: https://www.itqiyi.com/archives/2073  </sub>
 
 Download
 ========
-2020/08/03  version 0.5.5en beta 10  
-<a href="ViATc-0.5.5en_beta10_executable.zip">ViATc-0.5.5en_beta10_executable.zip</a><br>
-The zip file contains a script and exe file. I promise that the exe file is clean, however compiled AHK scripts trigger antiviruses so you might have to add an exception. The script choice is recommended anyway.   
-
 To get the most recent script (without exe), download https://github.com/magicstep/ViATc-English/archive/master.zip
 
-Old versions at https://magicstep.github.io/viatc/old.html
+The below zip file contains an exe file, very likely it is older than the above script. I promise that the exe file is clean, however compiled AHK scripts trigger antiviruses so you might have to add an exception. The script choice is recommended anyway.   
+<a href="ViATc-0.5.5en_beta10_executable.zip">ViATc-0.5.5en_beta10_executable.zip</a><br>
+
+Yet older versions at https://magicstep.github.io/viatc/old.html
 
 Installation
 ============
@@ -38,7 +36,7 @@ You can add and remove shortcuts via the ViATc Settings window. After changes yo
 You can also add and remove shortcuts directly in the ini file. Reload ViATc manually after any changes made directly in the ini file to take effect.
 In the ini file all lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
 
-CapsLock is mapped as Escape. To bypass this try ctrl+CapsLock  
+CapsLock is mapped as Escape. To bypass this use Ctrl+CapsLock  
 
 Usage
 =====
@@ -72,5 +70,6 @@ Author
 ======
 - Author of the original Chinese version is linxinhong https://github.com/linxinhong
 - Translator and maintainer of the English version is magicstep https://github.com/magicstep  
-  Alternatively you can contact me with the same nickname @gmail.com
-- More info about the project at https://github.com/magicstep/ViATc-English
+  You can contact me with the same nickname @gmail.com
+- Project's easy website https://magicstep.github.io/viatc  
+- Full project at https://github.com/magicstep/ViATc-English
