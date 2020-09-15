@@ -6,9 +6,9 @@ history_of_rename*
 history_of_rename\[01\].txt
 
 # ignore marks
-marks.ini
-marks*.ini
-marks\[01\].ini
+#marks.ini
+#marks*.ini
+#marks\[01\].ini
 
 # ignore binary files
 *.exe
