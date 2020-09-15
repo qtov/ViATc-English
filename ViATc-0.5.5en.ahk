@@ -43,6 +43,7 @@ Global VimRN_IsReplace := False
 Global VimRN_IsMultiReplace := False
 Global VimRN_IsFind := False
 Global ViatcIni
+Global GlobalCheckbox
 GroupKey_Arr := object()
 MapKey_Arr := object()
 ExecFile_Arr := object()
@@ -3461,10 +3462,7 @@ Setting() ; --- {{{1
     Gui,Add,CheckBox,x25 y370 h20 checked%FancyVimRename% vFancyVimRename, FancyVimRename
     ;Gui,Add,Button,x270 y405 h30 w120 Center g<BackupIniFile>, &Backup viatc.ini file
     ;  (this checkbox not working yet)
-    Gui, Add, Picture, x170 y420 w60 h-1, %A_ScriptDir%\viatc.ico
-    ;Gui, Add, Picture, x180 y480, %A_ScriptDir%\viatc.ico 
-    ;Gui, Add, Picture, x180 y530, c:\Progs\ViATc\viatc.ico 
-    ;Gui, Add, Picture, x20 y400 w100 h-1, C:\tmp\a.jpg
+    ;Gui, Add, Picture, x170 y420 w60 h-1, %A_ScriptDir%\viatc.ico
 
 	Gui,Tab,2
 
@@ -3481,7 +3479,7 @@ Setting() ; --- {{{1
 	Gui,Add,GroupBox,x16 y410 h110 w390, ; Adding commands
 	Gui,Add,Text,x35 y423 h20, Hotkey (&K)
 	Gui,Add,Edit,x88 y420 h20 w90 g<CheckGorH>
-	Gui,Add,CheckBox,x183 y421 h20, Global (&L)
+	Gui,Add,CheckBox,x183 y421 h20 vGlobalCheckbox , Global (&L)
 	Gui,Add,Button,x250 y420 w70 g<TestTH>, &Analysis
     Gui,Add,Button,x340 y420 h40 w60 g<CheckKey>, &Save
 	Gui,Add,text,x20 y449 h20, Command (&N)
@@ -3550,8 +3548,7 @@ Setting() ; --- {{{1
     Gui,Add,Text,x23 y69 w60, marks.ini file:
     Gui,Add,Button,x90 y65 w54 center g<BackupMarksFile>, B&ackup
 	Gui,Add,Button,x150 y65 w40 g<EditMarks>, E&dit
-    ;Gui,Add,Button,x90 y65 w54 center g<BackupMarksFile>, &Backup
-	;Gui,Add,Button,x150 y65 w40 g<EditMarks>, &Edit
+    Gui,Add, Picture, gGreet x170 y320 w60 h-1, %A_ScriptDir%\viatc.ico
 
 	Gui,Tab
 	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&G
@@ -3560,6 +3557,19 @@ Setting() ; --- {{{1
 	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&M
 	Gui,Show,h570 w420,Settings   VIATC %Version% 
 }
+
+;gGreet
+Greet:
+msgbox,Greetings
+return
+
+;OnMessage(0x201, "ImgClic")
+;ImgClic(wParam, lParam, msg, hwnd) {
+;global MyImageHwnd   ; for HwndMyImageHwnd 
+;If (hwnd := MyImageHwnd)
+	;Msgbox Congrats
+;}
+
 GuiContextMenu:
 If A_GuiControl <> ListView
 	Return
@@ -3711,11 +3721,12 @@ EditItem()
 		LV_GetText(Key,EventInfo,2)
 		LV_GetText(Action,EventInfo,3)
 		LV_GetText(Info,EventInfo,4)
-        ; Button24 is the Global chexkbox
+        ; Button25 is the Global chexkbox, (it changes if elements are added to Settings window)
+        ;GuiControl,,Button25,1
 		If RegExMatch(Scope,"S")
-			GuiControl,,Button24,1
+            Guicontrol,,GlobalCheckbox, 1
 		If RegExMatch(Scope,"[G|H]")
-			GuiControl,,Button24,0
+			GuiControl,,GlobalCheckbox,0
 		If Key
 			GuiControl,,Edit4,%Key%
 		If Action =  run
@@ -3935,11 +3946,11 @@ CheckGorH()
 	GuiControlGet,Key,,Edit4,AHK_CLASS %ViATcSetting%
 	If Key
 		If RegExMatch(CheckScope(key),"G")
-			GuiControl,Disable,Button24
+			GuiControl,Disable,GlobalCheckbox
 	Else
-		GuiControl,Enable,Button24
+		GuiControl,Enable,GlobalCheckbox
 	Else
-		GuiControl,Enable,Button24
+		GuiControl,Enable,GlobalCheckbox
 }
 <CheckKey>:
 CheckKey()
@@ -3947,7 +3958,7 @@ Return
 CheckKey()
 {
 	Global VIATCSetting,ViATcIni,MapKey_Arr,ExecFile_Arr,SendText_Arr,ActionInfo_Arr,NeedReload
-	GuiControlGet,Scope,,Button24,AHK_CLASS %ViATcSetting%
+	GuiControlGet,Scope,,GlobalCheckbox,AHK_CLASS %ViATcSetting%
 	GuiControlGet,Key,,Edit4,AHK_CLASS %ViATcSetting%
 	GuiControlGet,Action,,Edit5,AHK_CLASS %ViATcSetting%
 	If Scope
@@ -3957,7 +3968,7 @@ CheckKey()
 	If RegExMatch(CheckScope(key),"G")
 	{
 		Scope := "G"
-		GuiControl,,Button24,0
+		GuiControl,,GlobalCheckbox,0
 	}
 	If Action And Key
 	{
@@ -4079,7 +4090,11 @@ TH()
 Return
 TH()
 {
-	GuiControlGet,Scope,,Button24,AHK_CLASS %ViATcSetting%
+	;GuiControlGet,Scope,,Button25,AHK_CLASS %ViATcSetting%
+    GuiControlGet,Scope,,GlobalCheckbox,AHK_CLASS %ViATcSetting%
+    ;Gui, Submit, NoHide ;this command submits the guis' datas' state
+    ;Scope = GlobalCheckbox 
+
 	GuiControlGet,Key,,Edit4,AHK_CLASS %ViATcSetting%
 	if key
 	{
