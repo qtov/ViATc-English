@@ -1,12 +1,13 @@
 ; Author of the original Chinese version is linxinhong https://github.com/linxinhong
 ; Translator and maintainer of the English version is magicstep https://github.com/magicstep  
 ; Alternatively you can contact me with the same nickname @gmail.com
-; This script works on Windows with AutoHotkey installed only as an addition to ...
-;        ... "Total Commander" - the file manager from www.ghisler.com  
-; ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium or better yet SurfingKeys.
+; This script works on Windows with AutoHotkey installed only as an addition to 
+;   "Total Commander" - the file manager from www.ghisler.com  
+; ViATc tries to resemble the work-flow of Vim and web browser plugins
+;   like Vimium or better yet SurfingKeys.
 
-;tripple underscores ___ question ??? and exclamations !!! are markers for debugging
-;tripple curly braces are for line folding in vim
+; tripple underscores ___ question ??? and exclamations !!! are markers for debugging
+; tripple curly braces are for line folding in vim
 
 ; --- the main script {{{1
 #SingleInstance Force
@@ -17,8 +18,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/08/16"
-Global Version := "0.5.5en beta 11"
+Global Date := "2020/09/16"
+Global Version := "0.5.5en beta 14"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global VimPath := "gvim.exe"  ; it is overwritten later
@@ -480,8 +481,8 @@ If SendPos(4003)
         }
         Sleep,50
     }
-	ControlSetText,Edit1,m,AHK_CLASS TTOTAL_CMD
-	ControlSetText,Edit2,m,AHK_CLASS TTOTAL_CMD
+	;ControlSetText,Edit1,m,AHK_CLASS TTOTAL_CMD
+	;ControlSetText,Edit2,m,AHK_CLASS TTOTAL_CMD
 	ControlSetText,%TCEditMarks%,m,AHK_CLASS TTOTAL_CMD
     Send {right}
 	Postmessage,0xB1,2,2,%TCEditMarks%,AHK_CLASS TTOTAL_CMD
@@ -510,7 +511,7 @@ MarkTimer()
 
 	ControlGetText,OutVar,%TCEditMarks%,AHK_CLASS TTOTAL_CMD
 	Match_TCEditMarks := "i)^" . TCEditMarks . "$"
-	If Not RegExMatch(ThisControl,Match_TCEditMarks) OR Not RegExMatch(Outvar,"i)^m.?")
+	If Not RegExMatch(TCEditMarks,Match_TCEditMarks) OR Not RegExMatch(Outvar,"i)^m.?")
 	{
 		Settimer,<MarkTimer>,Off
 		Return
@@ -533,27 +534,52 @@ MarkTimer()
 			Path2 := SubStr(Path,RegExMatch(Path,"\\[^\\]*$")-Strlen(Path))
 			Path := Path1 . "..." . SubStr(Path2,1,65) "..."
 		}
-		M := SubStr(OutVar,2,1)
+		m := SubStr(OutVar,2,1)
 		mPath := "&" . m . ">>" . Path
-		If RegExMatch(Mark_Arr["ms"],m)
+
+        ;save mark to memory
+		If RegExMatch(Mark_Arr["active_marks"],m)
 		{
 			DelM := Mark_Arr[m]
 			Menu,MarkMenu,Delete,%DelM%
-			Menu,MarkMenu,Add,%mPath%,<AddMark>
-			Mark_Arr["ms"] := Mark_Arr["ms"] . m
-			Mark_Arr[m] := mPath
 		}
-		Else
-		{
-			Menu,MarkMenu,Add,%mPath%,<AddMark>
-			Mark_Arr["ms"] := Mark_Arr["ms"] . m
-			Mark_Arr[m] := mPath
-		}
+        Menu,MarkMenu,Add,%mPath%,<AddMark>
+        Mark_Arr["active_marks"] := Mark_Arr["active_marks"] . m
+        Mark_Arr[m] := mPath
+
+        ;saving mark to ini file
+        IniWrite,%Path%,%MarksPath%,MarkList,%m%
+        ; active_marks is a string containing a comma separated list of marks
+		IniRead,active_marks,%MarksPath%,MarkSettings,active_marks
+        ;if active_marks not found
+        if active_marks = ERROR
+            new_active_marks = %m%
+        ;if active_marks empty
+        else if active_marks =
+            new_active_marks = %m%
+        ;if mark is already on the list
+        else if RegExMatch(active_marks,m)
+        {
+            tooltip This mark is already on the list
+            tooltip mark %m% updated
+            Settimer,<RemoveHelpTip>,2000
+            new_active_marks = %active_marks%
+        }
+        else
+        {
+            new_active_marks = %active_marks%,%m%
+        }
+        ;update the list of active_marks
+        IniWrite,%new_active_marks%,%MarksPath%,MarkSettings,active_marks
 	}
 }
+
+;Execute mark, the name AddMark is misleading
 <AddMark>:
 AddMark()
 Return
+;		Iniread,Location,%A_WorkingDir%viatc.ini,mark,%p%
+
 AddMark()
 {
 	ThisMenuItem := SubStr(A_ThisMenuItem,5,StrLen(A_ThisMenuItem))
@@ -599,16 +625,21 @@ AddMark()
 	}
 	ControlSetText, %TCEditMarks%, cd %ThisMenuItem%, ahk_class TTOTAL_CMD
 	ControlSend, %TCEditMarks%, {Enter}, ahk_class TTOTAL_CMD
+    ;Msgbox  Debugging TCEditMarks = [%TCEditMarks%]  on line %A_LineNumber% ;!!!
+    ;Msgbox  Debugging ThisMenuItem = [%ThisMenuItem%]  on line %A_LineNumber% ;!!!
 	Return
 }
 <ListMark>:
 If SendPos(0)
-	ListMark()
+	;ListMark()
+	;ListMarkFromMemory()
+    ListMarkFromIni()
 Return
-ListMark()
+;ListMark()
+ListMarkFromMemory()
 {
 	Global Mark_Arr,VIATCINI
-    If Not Mark_Arr["ms"]
+    If Not Mark_Arr["active_marks"]
     {
         Tooltip No marks to show
         Settimer,<RemoveHelpTip>,950
@@ -620,7 +651,60 @@ ListMark()
     ;MarkMenu = InfoMark . MarkMenu
 	Menu,MarkMenu,Show,%xn%,%yn%
 	;Menu,%InfoMark%.%MarkMenu%,Show,%xn%,%yn%
-} ;end of marks }}}2
+} 
+
+ListMarkFromIni()
+{
+		Tooltiplm :=
+		IniRead,active_marks,%MarksPath%,MarkSettings,active_marks
+        ;Msgbox  Debugging active_marks = [%active_marks%]  on line %A_LineNumber% ;!!!
+        ; active_marks is a mark string containing a comma separated list of marks
+        if active_marks =
+        {
+            Tooltip No marks to show. The active_marks variable is empty
+            Settimer,<RemoveHelpTip>,2000
+            Return
+        }
+        ;if (%active_marks% = "ERROR")
+        if active_marks = ERROR
+        {
+            Tooltip No marks to show. The active_marks variable was not found in the marks.ini file
+            Settimer,<RemoveHelpTip>,2000
+            Return
+        }
+		h := 0
+        ;Loop, Parse, InputVar , Delimiters           , [OmitChars]
+		loop, Parse , active_marks , `,
+		{
+            if A_LoopField =
+                continue
+			h++
+			Iniread,Path,%MarksPath%,MarkList,%A_LoopField%
+			if Path != ERROR
+            {
+                mPath := "&" . A_LoopField . ">>" . Path
+                Menu,MarkMenu,Add,%mPath%,<AddMark>
+            }
+		}	
+
+		IniRead,menu_color,%MarksPath%,MarkSettings,menu_color
+        if menu_color != ERROR
+            Menu, MarkMenu, Color, %menu_color%
+		Controlgetpos,xe,ye,we,he,%TCEdit%,ahk_class TTOTAL_CMD
+        ControlGetFocus,TLB,ahk_class TTOTAL_CMD
+        ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
+        if h = 0
+        {
+            Tooltip No marks to show. Nothing was on the active_marks list
+            Settimer,<RemoveHelpTip>,2000
+            ;Return
+        }
+        else
+            Menu,MarkMenu,Show,%xn%,%yn%
+            ;Menu,MarkMenu,Show,xe,ye-h*16-5
+		return
+}
+; ----- end of marks ----- }}}2
 
 <azHistory>:
 If SendPos(572)
@@ -665,6 +749,8 @@ GetMenuString(hMenu, nPos)
 , "UInt", 0x0400)
 	return lpString
 }
+
+
 azSelect:
 azSelect()
 Return
@@ -791,6 +877,11 @@ Return
 If SendPos(0)
 	Editviatcini()
 Return
+<EditMarks>:
+If SendPos(0)
+    EditMarks()
+Return
+
 <GOLastTab>:
 if SendPos(0)
 {
@@ -3254,6 +3345,28 @@ Editviatcini()
 	Run,%editini%,,UseErrorLevel
 	Return
 }
+M_EditMarks:
+EditMarks()
+Return
+
+;<EditMarks>
+;EditMarks()
+;Return
+
+EditMarks()
+{
+	Global MarksPath
+	match = `"$0
+	INI := Regexreplace(MarksPath,".*",match)
+	If Fileexist(VimPath)
+		;editini := VimPath . a_space . ini                 ;open in a new Vim instance
+		editini := VimPath . " -p --remote-tab-silent " . ini  ;open in a new Vim tab
+	Else
+		editini := "notepad.exe" . a_space . ini
+	Run,%editini%,,UseErrorLevel
+	Return
+}
+
 <Cancel>:
 Gui,Cancel
 Return
@@ -3297,7 +3410,7 @@ Setting() ; --- {{{1
 	Gui,Add,Button,x240 y535 w80 center Default g<GuiEnter>, &OK 
 	Gui,Add,Button,x330 y535 w80 center g<GuiCancel>, &Cancel 
 	;Gui,Add,Tab2,x10 y6 +theme h520 w405 center choose2, &General (&G) | Hotkeys (&H) | Paths (&P)
-	Gui,Add,Tab2,x10 y6 +theme h520 w405 center choose2, &General  | &Hotkeys  | &Paths 
+	Gui,Add,Tab2,x10 y6 +theme h520 w405 center choose2, &General  | &Hotkeys  | &Paths  | &Misc
 	Gui,Add,GroupBox,x16 y32 H170 w390, Global Settings
 	Gui,Add,CheckBox,x25 y50 h20 checked%startup% vStartup, &Startup VIATC
 	Gui,Add,CheckBox,x180 y50 h20 checked%Service% vService, &Background process
@@ -3355,6 +3468,7 @@ Setting() ; --- {{{1
 
 	Gui,Tab,2
 
+	Gui,Add,GroupBox,x16 y32 h488 w390, 
 	Gui,Add,text,x20 y340 h50, * column legend:`n  S - Global`n  H - Hotkey`n  G - GroupKey
 	Gui,Add,text,x130 y340 h50, Right-click any item on the list to edit or delete, `nor select any item and press ---> ;the Delete button
     Gui,Add,Button,x285 y354 h20 w65 g<DeleItem>, &Delete
@@ -3370,7 +3484,7 @@ Setting() ; --- {{{1
 	Gui,Add,CheckBox,x183 y421 h20, Global (&L)
 	Gui,Add,Button,x250 y420 w70 g<TestTH>, &Analysis
     Gui,Add,Button,x340 y420 h40 w60 g<CheckKey>, &Save
-	Gui,Add,text,x20 y449 h20, Command (&M)
+	Gui,Add,text,x20 y449 h20, Command (&N)
 	Gui,Add,Edit,x88 y446 h20 w230
 	Gui,Add,Button,x20 y470 h20 w80 g<VimCMD> ,    &1  ViATc ...
 	Gui,Add,Button,x120 y470 h20 w80 g<TCCMD> ,    &2  TC ...
@@ -3412,6 +3526,7 @@ Setting() ; --- {{{1
 	}
 
 	Gui,Tab,3
+	Gui,Add,GroupBox,x16 y32 h480 w390, 
 	Gui,Add,Text,x18 y35 h16 center,TC executable "TOTALCMD64.EXE" or "TOTALCMD.EXE" location :
 	Gui,Add,Edit,x18 y55 h20 +ReadOnly w350,%TCEXE%
 	Gui,Add,Button,x375 y53 w30 g<GuiTCEXE>,... &1
@@ -3428,10 +3543,21 @@ Setting() ; --- {{{1
     Gui,Add,Link,x218 y330 h20, - open <a href="C:\Windows\regedit.exe"> &regedit.exe </a>
 	Gui,Add,Edit,x18 y350 h20 +ReadOnly w350,Computer\HKEY_CURRENT_USER\Software\VIATC
     ;Gui,Add,Link,x18 y370 h20, - open <a href="C:\Windows\regedit.exe"> &regedit.exe </a>
+
+	Gui,Tab,4
+	Gui,Add,GroupBox,x16 y32 h170 w390, Marks
+    Gui,Add,GroupBox,x20 y56 h37 w180 , ; marks.ini file
+    Gui,Add,Text,x23 y69 w60, marks.ini file:
+    Gui,Add,Button,x90 y65 w54 center g<BackupMarksFile>, B&ackup
+	Gui,Add,Button,x150 y65 w40 g<EditMarks>, E&dit
+    ;Gui,Add,Button,x90 y65 w54 center g<BackupMarksFile>, &Backup
+	;Gui,Add,Button,x150 y65 w40 g<EditMarks>, &Edit
+
 	Gui,Tab
 	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&G
 	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&H
 	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&P
+	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&M
 	Gui,Show,h570 w420,Settings   VIATC %Version% 
 }
 GuiContextMenu:
@@ -3464,7 +3590,7 @@ BackupIniFile()
     NewFile=%VIATCINI%_%CurrentDateTime%_backup.ini
     FileCopy,%VIATCINI%,%NewFile%
     If Fileexist(NewFile)
-        Tooltip Backup succesfull
+        Tooltip Backup of settings succesfull
     Else
         Tooltip Backup failed
     
@@ -3473,6 +3599,24 @@ BackupIniFile()
     Return
     ;GuiControlGet,VarPos,Pos,Edit4
     ;Tooltip, The mapping failed ,%VarPosX%,%VarPosY%
+}
+
+<BackupMarksFile>:
+BackupMarksFile()
+Return
+BackupMarksFile()
+{
+    FormatTime, CurrentDateTime,, yyyy-MM-dd_hh;mm.ss
+    NewFile=%MarksPath%_%CurrentDateTime%_backup.ini
+    FileCopy,%MarksPath%,%NewFile%
+    If Fileexist(NewFile)
+        Tooltip Backup of marks succesfull
+    Else
+        Tooltip Backup of marks failed
+    
+    Sleep,1400
+    Tooltip
+    Return
 }
 
 <AddSearchEng>:
@@ -3926,6 +4070,8 @@ ChangeTab()
 		GuiControl,choose,SysTabControl321,2
 	If RegExMatch(A_GuiControl,"P")
 		GuiControl,choose,SysTabControl321,3
+	If RegExMatch(A_GuiControl,"M")
+		GuiControl,choose,SysTabControl321,4
 }
 ; --- analysis {{{2
 <TestTH>:
