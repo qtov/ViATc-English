@@ -18,7 +18,7 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/09/27"
+Global Date := "2020/10/20"
 Global Version := "0.5.5en beta 15"
 If A_IsCompiled
     Version .= " Compiled Executable"
@@ -275,6 +275,18 @@ WinClose,ViATc_TabList
 Gui,Destroy
 Return
 
+<CapsLock>:
+    ;Send,{CapsLock}
+    SetCapsLockState, % GetKeyState("CapsLock", "T")? "Off":"On"
+Return
+
+<CapsLockOn>:
+    SetCapsLockState, % "On"
+Return
+
+<CapsLockOff>:
+    SetCapsLockState, % "Off"
+Return
 
 <ToggleTC>:
 Ifwinexist,AHK_CLASS TTOTAL_CMD
@@ -371,11 +383,11 @@ Return
 <Enter>:
 Enter()
 Return
-<Hint>:
+<ToggleViatcVim>:
 If SendPos(0)
 	Vim := !Vim
 Return
-<ViATcOff>:
+<ViATcVimOff>:
 	Vim := false
 Return
 <Setting>:
@@ -1697,7 +1709,7 @@ i :  Insert mode
 v :  Visual select mode (v again to toggle to Vim Normal mode)
 Esc :  Vim's Normal mode
 ^[  :  same as Esc
-Capslock : same as Esc
+Capslock : same as Esc (only if this is enabled in ini file)
 Enter :  Save rename
 
 h :  Move to the left N characters
@@ -1904,11 +1916,11 @@ SetDefaultKey()
 	HotKey,+a,<SelectAllBoth>,on,UseErrorLevel
 	Hotkey,b,<PageUp>,On,UseErrorLevel
 	Hotkey,+b,<azTab>,On,UseErrorLevel
-	HotKey,c,<CloseCurrentTab>,on,UseErrorLevel
+	;HotKey,c,<CloseCurrentTab>,on,UseErrorLevel
     HotKey,+c,<ExecuteDOS>,on,UseErrorLevel
 	HotKey,d,<DirectoryHotlist>,on,UseErrorLevel
 	HotKey,+d,<GoDesktop>,on,UseErrorLevel
-	HotKey,e,<ContextMenu>,on,UseErrorLevel
+	;HotKey,e,<ContextMenu>,on,UseErrorLevel
 	HotKey,+e,<Edit>,on,UseErrorLevel
 	Hotkey,f,<PageDown>,On,UseErrorLevel
 	Hotkey,+g,<End>,On,UseErrorLevel
@@ -1959,7 +1971,8 @@ SetDefaultKey()
 	Hotkey,\,<ExchangeSelection>,On,UseErrorLevel
 	Hotkey,+\,<ClearAll>,On,UseErrorLevel
 	Hotkey,=,<MatchSrc>,On,UseErrorLevel
-	Hotkey,-,<SwitchSeparateTree>,On,UseErrorLevelHotkey,\,<ExchangeSelection>,On,UseErrorLevel
+	Hotkey,-,<SwitchSeparateTree>,On,UseErrorLevel
+    Hotkey,\,<ExchangeSelection>,On,UseErrorLevel
 	Hotkey,',<ListMark>,On,UseErrorLevel
 	;Hotkey,`,,<None>,On,UseErrorLevel
 	Hotkey,$Enter,<Enter>,On,UseErrorLevel
@@ -2070,9 +2083,11 @@ SetDefaultKey()
 	Hotkey,p,VimRN_Paste,on,UseErrorLevel
 	Hotkey,Esc,VimRN_Esc,on,UseErrorLevel
 	Hotkey,^[,VimRN_Esc,on,UseErrorLevel
-	Hotkey,Capslock,VimRN_Esc,on,UseErrorLevel
+
+    IniRead,IsCapslockAsEscape,%ViatcIni%,FancyVimRename,IsCapslockAsEscape
+    if IsCapslockAsEscape
+    	Hotkey,Capslock,VimRN_Esc,on,UseErrorLevel
 	;Hotkey,^Capslock,Capslock,on,UseErrorLevel
-    ;SetCapsLockState, % GetKeyState("CapsLock", "T")? "Off":"On"
 	Hotkey,1,VimRN_Num,on,UseErrorLevel
 	Hotkey,2,VimRN_Num,on,UseErrorLevel
 	Hotkey,3,VimRN_Num,on,UseErrorLevel
@@ -3071,7 +3086,7 @@ CreateNewFile()
 		Index := 0
 		Loop,23
 		{
-			IniRead,file,%ViatcIni%,ShellNew,%A_Index%
+			IniRead,file,%ViatcIni%,TemplateList,%A_Index%
 			If file <> ERROR
 			{
 				Splitpath,file,,,ext
@@ -3169,9 +3184,9 @@ template()
 	WinGet,hwndtc,id,AHK_CLASS TTOTAL_CMD
 	Gui,new,+Theme +Owner%hwndtc% +HwndCNF
 	Gui,Add,Text,x10 y10, Template name
-	Gui,Add,Edit,x50 y8 w205,%ext%
-	Gui,Add,Text,x10 y42, Template source
-	Gui,Add,Edit,x50 y40 w205 h20 +ReadOnly,%temp_File%
+	Gui,Add,Edit,x90 y8 w275,%ext%
+	Gui,Add,Text,x10 y42, Template file
+	Gui,Add,Edit,x90 y40 w275 h20 +ReadOnly,%temp_File%
 	Gui,Add,button,x140 y68 default gTemp_save, OK (&O)
 	Gui,Add,button,x200 y68 g<Cancel>, Cancel (&C)
 	Gui,Show,, Create a new template
@@ -3186,20 +3201,21 @@ Temp_save()
 	Global CNF,TCDir,ViatcIni
 	ControlGettext,tempName,edit1,ahk_id %cnf%
 	ControlGettext,tempPath,edit2,ahk_id %cnf%
-	ShellNew := TCDir . "\ShellNew"
+	ShellNew := A_ScriptDir . "\Templates"
+	;ShellNew := TCDir . "\ShellNew"
 	If Not InStr(Fileexist(ShellNew),"D")
 		FileCreateDir,%ShellNew%
-	Filecopy,%tempPath%,%TCDir%\ShellNew,1
+	Filecopy,%tempPath%,%ShellNew%,1
 	Splitpath,tempPath,FileName
 	New := 1
 	Loop,23
 	{
-		IniRead,file,%ViatcIni%,ShellNew,%A_Index%
+		IniRead,file,%ViatcIni%,TemplateList,%A_Index%
 		If file = ERROR
 			Break
 		New++
 	}
-	IniWrite,(%tempName%)\%FileName%,%ViatcIni%,ShellNew,%New%
+	IniWrite,(%tempName%)\%FileName%,%ViatcIni%,TemplateList,%New%
 	Gui,Destroy
 	EmptyMem()
 }
@@ -3232,19 +3248,21 @@ CreateFile(item)
 		Return
 	Loop,23
 	{
-		IniRead,file,%ViatcIni%,ShellNew,%A_Index%
+		IniRead,file,%ViatcIni%,TemplateList,%A_Index%
 		Match := Substr(file,2,RegExMatch(file,"\)")-2)
 		if RegExMatch(Match,item) Or RegExMatch(Item,"\(&V\)$")
 		{
 			If RegExMatch(Item,"\(&V\)$")
 			{
 				File := A_Temp . "\viatcTemp"
+                Msgbox  Debugging File = [%File%]  on line %A_LineNumber% ;!!!
 				If Fileexist(file)
 					Filedelete,%File%
 				FileAppend,,%File%,UTF-8
 			}
 			Else
-				file := TCDir . "\ShellNew" . Substr(file,RegExMatch(file,"\)")+1,Strlen(file))
+				file := A_ScriptDir . "\Templates" . Substr(file,RegExMatch(file,"\)")+1,Strlen(file))
+				;file := TCDir . "\ShellNew" . Substr(file,RegExMatch(file,"\)")+1,Strlen(file))
 			If Fileexist(file)
 			{
 				Splitpath,file,filename,,fileext
@@ -3262,8 +3280,8 @@ CreateFile(item)
 			}
 			Else
 			{
-				Msgbox  The template source has been moved or deleted
-				IniDelete,%ViatcIni%,ShellNew,%A_Index%
+				Msgbox  The template file has been moved or deleted
+				IniDelete,%ViatcIni%,TemplateList,%A_Index%
 			}
 			Break
 		}
@@ -3783,10 +3801,10 @@ VimCMD()
 	Stringsplit,kk,VimAction,%A_Space%
 	Gui,New
 	Gui,+HwndVIMCMDHwnd
-	Gui,Add,ListView,w700 h600 -Multi g<GetVIMCMD>, # | Command | Description
+	Gui,Add,ListView,w740 h700 -Multi g<GetVIMCMD>, # | Command | Description
 	Lv_delete()
 	Lv_modifycol(1,40)
-	Lv_modifycol(2,110)
+	Lv_modifycol(2,155)
 	Lv_modifycol(3,520)
 	Loop,%kk0%
 	{
@@ -3796,8 +3814,8 @@ VimCMD()
 	}
 	kk := kk%0% - 1
 	lv_delete(1)
-	Gui, Add, Button, x280 y620 w60 h24 Default g<VIMCMDB1>, &OK
-	Gui, Add, Button, x350 y620 w60 h24 g<Cancel>, &Cancel
+	Gui, Add, Button, x280 y720 w60 h24 Default g<VIMCMDB1>, &OK
+	Gui, Add, Button, x350 y720 w60 h24 g<Cancel>, &Cancel
 	Gui,Show,,VIATC Command
 }
 <VIMCMDB1>:
@@ -3875,10 +3893,11 @@ GetSendString()
 	Global VIATCSetting,VIATCSettingString
 	Gui,New
 	Gui,+Owner%VIATCSetting%
-	Gui,Add,Edit,w500 h20
+	Gui,Add,Edit,w550 h20
 	Gui,Add,Button,x390 y30 h20 g<GetSendStringEnter> Default, OK (&O)
 	Gui,Add,Button,x457 y30 h20 g<GetSendStringCancel>, Cancel (&C)
-	Gui,Show,,VIATC. Enter some text to be sent as an input into a command line.
+	Gui,Add,Text,x11 y30 h20, Enter some text to be later placed on demand into a TC command line.
+	Gui,Show,,VIATC. text
 }
 <GetSendStringEnter>:
 GuiControlGet,txt4,,Edit1
@@ -4174,7 +4193,7 @@ TH()
 		GuiControlGet,VarPos,Pos,Edit4
 		VarPosY := VarPosY - VarPosH + 17
 		Tooltip,%Msg%,%VarPosX%,%VarPosY%
-		Settimer,<RemoveTTEx>,1500
+		Settimer,<RemoveTTEx>,2500
 	}
 }
 return
@@ -4286,7 +4305,6 @@ Help() ; --- Help {{{1
     Gui,Show,w600 h500,Help   VIATC %Version% 
     If TranspHelp
         WinSet,Transparent,220,ahk_id %VIATCHELP%
-        ;"Help   VIATC " . %version%
     Return
 	}
 	Intro:
@@ -4425,7 +4443,8 @@ SetGroupInfo() ; combo keys help {{{2
 SetVimAction()  ; --- internal ViATc commands
 {
     Global VimAction
-    VimAction := " <Help> <Setting> <ToggleTC> <ToggleViATc> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <singleRepeat> <Esc> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <up> <Left> <Right> <DownSelect> <PageUp> <PageDown> <Hint> <ViATcOff> <Home> <Half> <End> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <ListMapKey> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <EditViATCIni> <azTab>"
+    VimAction := " <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <singleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <ListMapKey> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <EditViATCIni> <ExReName> <azTab> <none>"
+    ; unavailable: <azCmdHistory>
 }
 
 SetActionInfo()  ; --- command's descriptions
@@ -4437,22 +4456,22 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<QuitTC>"] :=" Exit TC"
     ActionInfo_Arr["<QuitViATc>"] :=" Exit ViATc"
     ActionInfo_Arr["<None>"] :=" do nothing "
-    ActionInfo_Arr["<Setting>"] :=" Settings interface "
+    ActionInfo_Arr["<Setting>"] :=" Settings window "
     ActionInfo_Arr["<FocusCmdLine:>"] := " Command line mode. Focus on the command line with : at the beginning"
-    ActionInfo_Arr["<CreateNewFile>"] := " File template function, Create a new file or a new directory "
-    ActionInfo_Arr["<TCLite>"] := " The simplest TC"
-    ActionInfo_Arr["<ExReName>"] := " Rename, Do not select an extension "
+    ActionInfo_Arr["<CreateNewFile>"] := " Menu to create a new file (can be from a template) or a new directory "
+    ActionInfo_Arr["<ExReName>"] := " Rename, Do not select the extension "
     ActionInfo_Arr["<Help>"] :=  "ViATc Help"
     ActionInfo_Arr["<Setting>"] := "VIATC Settings"
     ActionInfo_Arr["<ToggleTC>"] :=" Show / Hide TC"
-    ActionInfo_Arr["<ToggleViATc>"] :=" Enable / Disable most of ViATc, global shortcuts will still work. For disabling all use <ViATcOff> "
-    ActionInfo_Arr["<ViATcOff>"] :=" Switch-off all ViATc functionality till Esc will switch on. This is more than <ToggleViATc>"
+    ActionInfo_Arr["<ToggleViATc>"] :=" Enable / Disable most of ViATc, global shortcuts will still work. For disabling all use <ViATcVimOff> "
+    ActionInfo_Arr["<ViATcVimOff>"] :=" Switch-off all ViATc functionality till Esc will switch on. This is more than <ToggleViATc>"
     ActionInfo_Arr["<Enter>"] :="Enter does a lot of advanced checks,  use <Return> for simplicity"
     ActionInfo_Arr["<Return>"] :="just sends an Enter key"
     ActionInfo_Arr["<SingleRepeat>"] :=" Repeat the last action "
     ActionInfo_Arr["<Esc>"] :=" Reset and send ESC"
+    ActionInfo_Arr["<CapsLock>"] :=" Toggle CapsLock"
     ActionInfo_Arr["<EditViATCIni>"] :=" Directly edit ViATc.ini file "
-    ActionInfo_Arr["<Num0>"] :=" numerical 0"
+    ActionInfo_Arr["<Num0>"] :=" numerical 0, can be used for repeats in 10j "
     ActionInfo_Arr["<Num1>"] :=" numerical 1"
     ActionInfo_Arr["<Num2>"] :=" numerical 2"
     ActionInfo_Arr["<Num3>"] :=" numerical 3"
@@ -4463,7 +4482,7 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<Num8>"] :=" numerical 8"
     ActionInfo_Arr["<Num9>"] :=" numerical 9"
     ActionInfo_Arr["<Down>"] :=" Down "
-    ActionInfo_Arr["<up>"] :=" Up "
+    ActionInfo_Arr["<Up>"] :=" Up "
     ActionInfo_Arr["<Left>"] :=" Left"
     ActionInfo_Arr["<Right>"] :=" Right"
     ActionInfo_Arr["<DownSelect>"] :=" Select Down "
@@ -4477,7 +4496,7 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<Mark>"] :=" Marks like in Vim, Mark the current folder with ma, use 'a to go to the corresponding mark "
     ActionInfo_Arr["<ListMark>"] :=" Show all marks ( Mark by m like in Vim) "
     ActionInfo_Arr["<Internetsearch>"] :=" Use the default internet browser to search for the current file "
-    ActionInfo_Arr["<azHistory>"] :=" Prefix the history of the folder, Easy to use a-z navigation "
+    ActionInfo_Arr["<azHistory>"] :=" Folder history menu, A-Z selection "
     ActionInfo_Arr["<azCmdHistory>"] :=" View the command history "
     ActionInfo_Arr["<ListMapKey>"] :=" Show custom mapping keys "
     ActionInfo_Arr["<WinMaxLeft>"] :=" Maximize left panel "
@@ -4779,6 +4798,7 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<VisStatusbar>"] :=" Toggle visibility :  Status Bar "
     ActionInfo_Arr["<VisCmdLine>"] :=" Toggle visibility :  Command Line "
     ActionInfo_Arr["<VisKeyButtons>"] :=" Toggle visibility :  Function button "
+    ActionInfo_Arr["<ToggleViatcVim>"] :=" Toggle Viatc Vim Mode "
     ActionInfo_Arr["<ShowHint>"] :=" Show file prompts "
     ActionInfo_Arr["<ShowQuickSearch>"] :=" Show the quick search window "
     ActionInfo_Arr["<SwitchLongNames>"] :=" Toggle visibility :  Long file name display "

@@ -1,14 +1,14 @@
 # do not track the folder below
 /ignored
+
 # ignore the history_of_rename.txt and history_of_rename[01].txt
 history_of_rename.txt
 history_of_rename*
 history_of_rename\[01\].txt
 
 # ignore marks
-marks.ini
-marks*.ini
-marks\[01\].ini
+#marks.ini
+#marks*.ini
 
 # ignore binary files
 *.exe
