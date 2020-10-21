@@ -18,8 +18,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/10/20"
-Global Version := "0.5.5en beta 15"
+Global Date := "2020/10/21"
+Global Version := "0.5.5en beta 16"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global VimPath := "gvim.exe"  ; it is overwritten later
@@ -98,7 +98,7 @@ Menu,Tray,Add, Reload (&R),<ReLoadVIATC>
 If Not A_IsCompiled
 {
     Menu,Tray,Add, Edit Script (&E),<EditScript>
-    Menu,Tray,Add, Edit with Vim (&V),<EditScriptWithVim>
+    Menu,Tray,Add, Edit Script with Vim (&V),<EditScriptWithVim>
 }
 Menu,Tray,Add
 Menu,Tray,Add, Settings (&S),<Setting>
@@ -184,15 +184,16 @@ Else
 	Regdelete,HKEY_CURRENT_USER,SOFTWARE\Microsoft\Windows\CurrentVersion\Run,ViATc
 GroupWarn := GetConfig("Configuration","GroupWarn")
 GlobalSusp := GetConfig("Configuration","GlobalSusp")
-HistoryOfRename := GetConfig("Configuration","HistoryOfRename")
-;FancyVimRename := GetConfig("Configuration","FancyVimRename")
-FancyVimRename := GetConfig("FancyVimRename","Enabled")
+IsCapslockAsEscape := GetConfig("Configuration","IsCapslockAsEscape")
 TranspHelp := GetConfig("Configuration","TranspHelp")
 MaxCount := GetConfig("Configuration","MaxCount")
 TranspVar := GetConfig("Configuration","TranspVar")
 DefaultSE := GetConfig("SearchEngine","Default")
 SearchEng := GetConfig("SearchEngine",DefaultSE)
 LnkToDesktop := GetConfig("Other","LnkToDesktop")
+HistoryOfRename := GetConfig("Configuration","HistoryOfRename")
+IsCapslockAsEscape := GetConfig("Configuration","IsCapslockAsEscape")
+FancyVimRename := GetConfig("FancyVimRename","Enabled")
 VimRN  := GetConfig("FancyVimRename","Enabled")
 Return
 ;}}}
@@ -1974,11 +1975,14 @@ SetDefaultKey()
 	Hotkey,-,<SwitchSeparateTree>,On,UseErrorLevel
     Hotkey,\,<ExchangeSelection>,On,UseErrorLevel
 	Hotkey,',<ListMark>,On,UseErrorLevel
+    Hotkey,+',<ListMark>,On,UseErrorLevel
 	;Hotkey,`,,<None>,On,UseErrorLevel
 	Hotkey,$Enter,<Enter>,On,UseErrorLevel
 	Hotkey,Esc,<Esc>,On,UseErrorLevel
-	;Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
-    ;Hotkey,+',<None>,On,UseErrorLevel
+
+    IniRead,IsCapslockAsEscape,%ViatcIni%,Configuration,IsCapslockAsEscape
+    if IsCapslockAsEscape
+	    Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
 
     ; ------ combo keys:
     GroupKeyAdd("ca","<SetAttrib>")
@@ -2084,9 +2088,11 @@ SetDefaultKey()
 	Hotkey,Esc,VimRN_Esc,on,UseErrorLevel
 	Hotkey,^[,VimRN_Esc,on,UseErrorLevel
 
-    IniRead,IsCapslockAsEscape,%ViatcIni%,FancyVimRename,IsCapslockAsEscape
+    ;IniRead,IsCapslockAsEscape,%ViatcIni%,FancyVimRename,IsCapslockAsEscape
+    IniRead,IsCapslockAsEscape,%ViatcIni%,Configuration,IsCapslockAsEscape
     if IsCapslockAsEscape
     	Hotkey,Capslock,VimRN_Esc,on,UseErrorLevel
+    
 	;Hotkey,^Capslock,Capslock,on,UseErrorLevel
 	Hotkey,1,VimRN_Num,on,UseErrorLevel
 	Hotkey,2,VimRN_Num,on,UseErrorLevel
@@ -2570,7 +2576,7 @@ FindPath(File)
             ;Return GetPath
         }
         else
-            MsgBox, "Could not find the wincmd.ini file from the registry"            
+            MsgBox, "Could not find the wincmd.ini file in the typical place"            
 		FileSF_Option := 3
 		FileSF_FileName:= "C:\Users\" . A_UserName . "\AppData\Roaming\GHISLER\"
 		FileSF_Prompt := " Select the wincmd.ini file "
@@ -2743,49 +2749,60 @@ CreateConfig(Section,Key)
 {
 	Global ViatcIni
 	If Section = Configuration
-		If Key = TrayIcon
-			SetVar := 1
-	If Key = Vim
-		SetVar := 1
-	If Key = Toggle
-		SetVar := "<lwin>F"
-	If Key = GlobalTogg
-		SetVar := 1
-	If Key = Suspend
-		SetVar := "<alt>``"
-	If Key = HistoryOfRename 
-		SetVar := 1
-	If Key = GlobalSusp
-		SetVar := 0
-	If Key = Startup
-		SetVar := 0
-	If Key = Service
-		SetVar := 1
-	If Key = GroupWarn
-		SetVar := 1
-	If Key = TranspHelp
-		SetVar := 0
-	If Key = Transparent
-		SetVar := 0
-	If Key = TranspVar
-		SetVar := 220
-	If Key = MaxCount
-		SetVar := 99
+    {
+        If Key = TrayIcon
+            SetVar := 1
+        If Key = Vim
+            SetVar := 1
+        If Key = Toggle
+            SetVar := "<lwin>F"
+        If Key = GlobalTogg
+            SetVar := 1
+        If Key = Suspend
+            SetVar := "<alt>``"
+        If Key = HistoryOfRename 
+            SetVar := 1
+        If Key = GlobalSusp
+            SetVar := 0
+        If Key = Startup
+            SetVar := 0
+        If Key = Service
+            SetVar := 1
+    	If Key = GroupWarn
+    		SetVar := 1
+    	If Key = TranspHelp
+    		SetVar := 0
+    	If Key = Transparent
+    		SetVar := 0
+    	If Key = TranspVar
+    		SetVar := 220
+    	If Key = MaxCount
+    		SetVar := 99
+        If Key = HistoryOfRename
+            SetVar := 0
+        If Key = IsCapslockAsEscape
+            SetVar := 0
+    }
+
 	If Section = SearchEngine
+    {
 		If Key = Default
 			SetVar := 1
-	If Key = 1
-		SetVar := "http://www.google.com/search?q={%1}"
-	If Key = 2
-		SetVar := "https://duckduckgo.com/html?q={%1}"
+        If Key = 1
+            SetVar := "http://www.google.com/search?q={%1}"
+        If Key = 2
+            SetVar := "https://duckduckgo.com/html?q={%1}"
+    }
 	If Section = FancyVimRename
+    {
 		If Key = Enabled
 			SetVar := 1
-	If Section = FancyVimRename
-		If Key = Mode
-			SetVar := 1
-	If Key = UnselectExt
-		SetVar := 1
+        If Section = FancyVimRename
+            If Key = Mode
+                SetVar := 1
+        If Key = UnselectExt
+            SetVar := 1
+    }
 	If Section = Other
 		If Key = LnkToDesktop
 			SetVar := 1
@@ -3407,7 +3424,7 @@ Diff(String1,String2)
 
 Setting() ; --- {{{1
 {
-	Global StartUp,Service,TrayIcon,Vim,GlobalTogg,Toggle,GlobalSusp,Susp,GroupWarn,TranspHelp,Transparent,SearchEng,DefaultSE,ViATcIni,TCExe,TCINI,NeedReload,LnkToDesktop,HistoryOfRename,FancyVimRename
+	Global StartUp,Service,TrayIcon,Vim,GlobalTogg,Toggle,GlobalSusp,Susp,GroupWarn,TranspHelp,Transparent,SearchEng,DefaultSE,ViATcIni,TCExe,TCINI,NeedReload,LnkToDesktop,HistoryOfRename,FancyVimRename, IsCapslockAsEscape
 	NeedReload := 1
 	Global ListView
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
@@ -3432,7 +3449,7 @@ Setting() ; --- {{{1
 	Gui,Add,Tab2,x10 y6 +theme h520 w405 center choose2, &General  | &Hotkeys  | &Paths  | &Misc
 	Gui,Add,GroupBox,x16 y32 H170 w390, Global Settings
 	Gui,Add,CheckBox,x25 y50 h20 checked%startup% vStartup, &Startup VIATC
-	Gui,Add,CheckBox,x180 y50 h20 checked%Service% vService, &Background process
+	Gui,Add,CheckBox,x180 y50 h20 checked%Service% vService, Background process (&1)  
 	Gui,Add,CheckBox,x25 y70 h20 checked%TrayIcon% vTrayIcon, System-tray &icon
 	Gui,Add,CheckBox,x180 y70 h40 checked%Vim% vVim, Enable &ViATc mode at start, `nif unchecked, all is disabled till first Esc
 	Gui,Add,Text,x25 y100 h20, Hotkey to &Activate/Minimize TC
@@ -3472,12 +3489,15 @@ Setting() ; --- {{{1
 	Gui,Add,Button,x356 y246 h20 w22 g<AddSearchEng>,&+
 	Gui,Add,Button,x380 y246 h20 w22 g<DelSearchEng>,&-
 	Gui,Add,CheckBox,x25 y280 h20 checked%GroupWarn% vGroupWarn, Show tooltips after the first key of Group Key aka Combo Hotkey (&K)
-	Gui,Add,CheckBox,x25 y309 h20 checked%transpHelp% vTranspHelp, &Transparent help interface
+	Gui,Add,CheckBox,x25 y309 h20 checked%transpHelp% vTranspHelp, &Transparent help interface (needs reload as all)
 	Gui,Add,Button,x270 y305 h30 w120 Center g<Help>, Open VIATC Help (&?)
     Gui,Add,CheckBox,x25 y340 h20 checked%HistoryOfRename% vHistoryOfRename, HistoryOf&Rename ; - see history_of_rename.txt
     Gui,Add,Link,x135 y343 h20, - see <a href="%A_ScriptDir%\history_of_rename.txt">history_of_rename.txt</a>
     ;Gui,Add,Link,x135 y363 h20, - see <a href="%VimPath% -p --remote-tab-silent %HistoryOfRenamePath%">%HistoryOfRenamePath%</a>
-    Gui,Add,CheckBox,x25 y370 h20 checked%FancyVimRename% vFancyVimRename, FancyVimRename
+    Gui,Add,CheckBox,x25 y370 h20 checked%FancyVimRename% vFancyVimRename, &Fancy Vim Rename
+
+    Gui,Add,CheckBox,x25 y400 h20 checked%IsCapslockAsEscape% vIsCapslockAsEscape, Capslock as Escape (&2)
+
     ;Gui,Add,Button,x270 y405 h30 w120 Center g<BackupIniFile>, &Backup viatc.ini file
     ;  (this checkbox not working yet)
     ;Gui, Add, Picture, x170 y420 w60 h-1, %A_ScriptDir%\viatc.ico
@@ -3715,14 +3735,14 @@ IniWrite,%Vim%,%ViATcIni%,Configuration,Vim
 IniWrite,%Toggle%,%ViATcIni%,Configuration,Toggle
 IniWrite,%Susp%,%ViATcIni%,Configuration,Suspend
 IniWrite,%GlobalTogg%,%ViATcIni%,Configuration,GlobalTogg
-IniWrite,%HistoryOfRename%,%ViATcIni%,Configuration,HistoryOfRename
-;IniWrite,%FancyVimRename%,%ViATcIni%,Configuration,FancyVimRename
-IniWrite,%FancyVimRename%,%ViATcIni%,FancyVimRename,Enabled
 IniWrite,%GlobalSusp%,%ViATcIni%,Configuration,GlobalSusp
 IniWrite,%StartUp%,%ViATcIni%,Configuration,StartUp
 IniWrite,%Service%,%ViATcIni%,Configuration,Service
 IniWrite,%GroupWarn%,%ViATcIni%,Configuration,GroupWarn
 IniWrite,%TranspHelp%,%ViATcIni%,Configuration,TranspHelp
+IniWrite,%HistoryOfRename%,%ViATcIni%,Configuration,HistoryOfRename
+IniWrite,%IsCapslockAsEscape%,%ViATcIni%,Configuration,IsCapslockAsEscape
+IniWrite,%FancyVimRename%,%ViATcIni%,FancyVimRename,Enabled
 If NeedReload
 	GoSub,<ReloadVIATC>
 Else
@@ -4401,7 +4421,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["'"""] :="' >> Marks. `n Go to mark by single quote (Create mark by m) `n"" >> No mapping "
     HelpInfo_arr["Enter"] :="Enter >> Enter "
     HelpInfo_arr["LShift"] :="Lshift >> Left shift key, can also be accessed in hotkeys by Shift "
-    HelpInfo_arr["Z"] :="z >> Various TC window settings (Group Key, requires another key) zz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzi >> Maximize the left panel `nzo >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzr >> Return to normal size, Restore `nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent `nzf >> The simplest TC`nzq >> Exit TC`nza >> Reload TC`n`n`nZ >> No mapping `n"
+    HelpInfo_arr["Z"] :="z >> Various TC window settings (Group Key, requires another key) zz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzi >> Maximize the left panel `nzo >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzr >> Return to normal size, Restore `nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent `nzf >> The simplest TC`nzq >> Exit TC`nza >> Reload TC`n`n`nZ >> Tooltip by mouse-over`n"
     ;HelpInfo_arr["X"] :="x >> Delete Files\folders`nX >> Force Delete, like shift+delete ignores recycle bin"
     HelpInfo_arr["X"] :="x >> Close tab`nX >> Enter or Run file under cursor"
     HelpInfo_arr["C"] :="c >> (Group Key, requires another key) `ncc >> Delete `ncf >> Force Delete, like shift+delete ignores recycle bin`nC  >> Console. Run cmd.exe in the current directory"
@@ -4409,7 +4429,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["B"] :="b >> Move up a page, Equivalent to PageUp`nB >> Open the tabbed browsing window, works in 32bit TConly"
     HelpInfo_arr["N"] :="n >> Show the folder history ( band a-z navigation )`nN >> No mapping "
     HelpInfo_arr["M"] :="m >> Marking function like in Vim. Create mark by m then go to mark by single quote. For example ma will make mark a then press 'a to go to mark a `n When m is pressed the command line displays m and prompts to enter the mark letter, when this letter is entered command line closes and the current folder-path is stored as the mark. You can browse away to a different folder, and when you press ' it will show all the marks, press a and you will go to the folder where you were before.`n`n`nM >> Move to the middle of the list (the position is often not accurate, and if there are few lines the cursor might stay the same) Alternatively you can just use 11j"
-    HelpInfo_arr[",<"] :=", >> Display command history ( band a-z navigation )`n< >> No mapping "
+    HelpInfo_arr[",<"] :=", >> Drives and locations `n< >> No mapping "
     HelpInfo_arr[".>"] :=". >> Repeat the last command. For example: `n   when you enter 10j (go down 10 lines) then to repeat just press the dot .`n   when you enter gt (switch to the next tab) then to repeat you only need to press .`n`n`n> >> No mapping "
     HelpInfo_arr["/?"] :="/ >> Use quick search `n? >> Use the file search function ( advanced )"
     HelpInfo_arr["RShift"] :="Rshift >> right shift key, can also be Shift instead "
@@ -4421,11 +4441,11 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["Apps"] :="Apps >> Open the context menu ( Right-click menu )"
     HelpInfo_arr["RCtrl"] :="Rctrl >> right ctrl key, can also be control or ctrl instead "
 HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts to TC trying to resemble the work-flow of Vim and web browser plugins like Vimium or better yet SurfingKeys.`nTo disable the ViATc press alt+`` (alt+backtick which is next to the 1 key) (this shortcut can be modifed), or simply quit ViATc, TC won't be affected.`nTo show/hide TC window: double-click the tray icon, or press Win+F (modifiable)`n")
-    HelpInfo_arr["Funct"] :="Single key press to operate. `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: ctrl, alt, shift or LWin (must be LWin not Win).`nAll how the hotkey is written is case insensitive.`n`nExamples:`n<LWin>g          - this works as intended`n<ctrl><shift>a  - invalid, more than one modifier`n<ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >`n`nPlease click on the keyboard above to get details of each key.`nAlso in the TC window press sm = show mappings from the ini file."
-    HelpInfo_arr["GroupK"] :="Also known as Combo Hotkeys. They take multiple keys to operate. `nGroup Keys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with seven Groups Keys e,a,s,g,z,c,V. Click the keyboard above for details of what they do. For actual mappings open the Settings window where you can remap everything, you can even remap single Hotkeys into Groups Keys and vice versa."
+    HelpInfo_arr["Funct"] :="Single key press to operate. `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: Ctrl, Alt, Shift or LWin (must be LWin not Win).`nAll how the hotkey is written is case insensitive co <ctrl>a is same as <Ctrl>A - it will treated as lowercase. `n`nExamples of mappings:`n<LWin>g          - this works as intended`n<Ctrl><Shift>a  - invalid, more than one modifier`n<Ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >  Besides F keys are not allowed only <Ctrl><Shift><Alt><LWin> `n`nPlease click on the keyboard above to get details of each key.`nAlso in the TC window press sm = show mappings from the ini file."
+    HelpInfo_arr["GroupK"] :="Also known as Combo Hotkeys. They take multiple keys to operate. `nGroup Keys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with eight Groups Keys e,a,s,g,z,c,V and a comma. Click the keyboard above for details of what they do. For actual mappings open the Settings window where you can remap everything, you can even remap single Hotkeys into Groups Keys and vice versa."
     HelpInfo_arr["cmdl"] :="The command line in VIATC supports abbreviations :h :s :r :m :sm :e :q, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys. If you type :map in the command line then all custom hotkeys (all ini file mappings, but not built-in) will be displayed in a tooltip`n If the input is :map key command, where key represents the hotkey to map (it can be a Group Key or a Hotkey). This feature is suitable for the scenario where there is a temporary need for a mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file.`n:smap and :map are the same except map is a global hotkey and does not support mapping Group Keys `n:edit  Directly edit ViATc.ini file `n:q quit TC`n`nAll mappings added using the command line are temporary (one session, not saved into the ini file). Examples `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Group Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Group Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be interpreted by VIATC as pressing the Enter key."
     HelpInfo_arr["command"] :="All commands can be found in the Settings window on the 'Hotkeys' tab. Commands are divided into 4 categories, there are 4 buttons there that will help you to fill-in the 'Command' textbox:`n`n1.ViATc command `n`n2.TC internal command, they begin with the 'cm_' such as cm_PackFiles but will be input as <PackFiles>.`nDon't panick when the Settings window disappears, it will reappear after double-click, OK or Cancel`n`n3. Run a program or open a file. TC has similar functions built-in but ViATc way might be more convenient`n`n4. Send a string of text. If you want to input a text into the command line then you can use the Group Key to map the command of sending a text string.`n`nThe above commands, 1 and 2 must be surrounded with <  > , 3 needs to be surrounded with (  ) , and 4 with {  }`n`n`nRight-click any item on the list to edit or delete. Double-click to edit, or select any item and press Delete `nPress the Analysis button anytime to get a tooltip info about the Hotkey`nUse the Global option only when you want Hotkey to work everywhere outside TC. The Global option is not available for GroupKey aka ComboKey`nSave to take effect, OK will save and reload. Cancel if you mess-up. Please make backups of the ini file before any changes, there is a button for it in the bottom-left corner of Settings window"
-    HelpInfo_arr["About"] :="Author of the original Chinese version is Linxinhong `nhttps://github.com/linxinhong`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname @gmail.com    I don't speak Chinese, I've used Google translate initially and then rephrased and modified this software. I'm not proficient in AHK.`n`nYou can download a compiled executable on https://magicstep.github.io/viatc/ `nHowever the script version is most likely ahead of the compiled one."
+    HelpInfo_arr["About"] :="Author of the original Chinese version is Linxinhong `nhttps://github.com/linxinhong`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname @gmail.com    I don't speak Chinese, I've used Google translate initially and then rephrased and modified this software. `n`nYou can download a compiled executable on https://magicstep.github.io/viatc `nThe compiled version is most likely older than the current script. If you want the most recent script version then download `n https://github.com/magicstep/ViATc-English/archive/master.zip"
 } ;}}}2
 
 SetGroupInfo() ; combo keys help {{{2
