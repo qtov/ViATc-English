@@ -20,7 +20,7 @@ Download
 To get the most recent script (without exe), download https://github.com/magicstep/ViATc-English/archive/master.zip  
 
 The below zip file contains an exe file, very likely it is older than the above script. I promise that the exe file is clean, however compiled AHK scripts trigger antiviruses so you might have to add an exception. The script choice is recommended anyway.   
-<a href="https://magicstep.github.io/viatc/ViATc-0.5.5en_beta15_executable.zip">ViATc-0.5.5en_beta15_executable.zip</a><br>
+<a href="https://magicstep.github.io/viatc/ViATc-0.5.5en_beta17_executable.zip">ViATc-0.5.5en_beta17_executable.zip</a><br>
 
 Yet older versions at https://magicstep.github.io/viatc/old.html  
 
