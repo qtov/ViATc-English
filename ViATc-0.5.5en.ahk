@@ -14,6 +14,7 @@
 #Persistent
 #NoEnv
 #NoTrayIcon
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
@@ -22,7 +23,9 @@ Global Date := "2020/10/21"
 Global Version := "0.5.5en beta 16"
 If A_IsCompiled
     Version .= " Compiled Executable"
-Global VimPath := "gvim.exe"  ; it is overwritten later
+Global EditorPath :=            ; it is read from ini later
+Global EditorArguments :=       ; it is read from ini later
+Global ExecuteInHeader :=       ; it is read from marks.ini later
 Global IconPath := A_ScriptDir . "\viatc.ico"
 Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
 Global HistoryOfRenamePath := A_ScriptDir . "\history_of_rename.txt"
@@ -78,14 +81,14 @@ Else
 }
 Global TCEditMarks := "Edit1"
 RegRead,ViATcIni,HKEY_CURRENT_USER,Software\VIATC,ViATcINI
-If Not FileExist(ViATcINI)
-	ViatcIni :=  A_ScriptDir . "\viatc.ini"
-RegRead,VimPath,HKEY_LOCAL_MACHINE,Software\vim\gvim,path
-If Not FileExist(VimPath)   ;fallback to the user setting
-    RegRead,VimPath,HKEY_CURRENT_USER,Software\VIATC,VimPathReg
-    ;MsgBox, "No vim path in registry"
-If Not FileExist(VimPath) ;fallback to the last resort
-    VimPath := "notepad.exe"  
+If Not FileExist(ViATcIni)
+	ViATcIni :=  A_ScriptDir . "\viatc.ini"
+If FileExist(ViATcIni)
+    Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,ViATcIni,%ViATcIni%
+else
+{
+    ;msgbox no ViATcIni
+}
 GoSub,<ConfigVar>
 Menu,VimRN_Set,Add, Vim mode at start `tAlt+V,VimRN_SelMode
 Menu,VimRN_Set,Add, Unselect extension at start `tAlt+E,VimRN_SelExt
@@ -195,6 +198,24 @@ HistoryOfRename := GetConfig("Configuration","HistoryOfRename")
 IsCapslockAsEscape := GetConfig("Configuration","IsCapslockAsEscape")
 FancyVimRename := GetConfig("FancyVimRename","Enabled")
 VimRN  := GetConfig("FancyVimRename","Enabled")
+EditorPath := GetConfig("Paths","EditorPath")
+If Not FileExist(EditorPath)   
+{
+    ;fallback to the system vim path
+    RegRead,VimPath,HKEY_LOCAL_MACHINE,Software\vim\gvim,path
+    EditorPath := VimPath
+    If Not FileExist(EditorPath)   ;fallback to notepad++
+        EditorPath := "c:\Program Files (x86)\Notepad++\notepad++.exe" 
+    If Not FileExist(EditorPath) ;fallback to the last resort
+        EditorPath := "C:\Windows\notepad.exe"  
+    SetConfig("Paths","EditorPath",EditorPath)
+    ;msgbox EditorPath in the ini file was not found, it is now updated to %EditorPath%
+}
+EditorArguments := GetConfig("Paths","EditorArguments")
+;Trimming leading and trailing white space is automatic when assigning a variable with only = 
+EditorArguments = %EditorArguments% 
+EditorArguments :=A_space . EditorArguments . A_space
+IniRead,ExecuteInHeader,%MarksPath%,MarkSettings,ExecuteInHeader
 Return
 ;}}}
 
@@ -377,8 +398,7 @@ ReloadVIATC()
 Return
 
 <EditScriptWithVim>:
-    run, %VimPath% -p --remote-tab-silent `"%a_scriptFullPath%`"    ; open in existing vim in a new tab
-    ;run, %VimPath% `"%a_scriptFullPath%`"      ; open in vim (new instance even if vim already opened)
+    run, %EditorPath% . %EditorArguments% . `"%a_scriptFullPath%`" 
 Return
 
 <Enter>:
@@ -574,7 +594,7 @@ MarkTimer()
         ;if mark is already on the list
         else if RegExMatch(active_marks,m)
         {
-            tooltip This mark is already on the list
+            ;tooltip This mark is already on the list
             tooltip mark %m% updated
             Settimer,<RemoveHelpTip>,2000
             new_active_marks = %active_marks%
@@ -587,6 +607,28 @@ MarkTimer()
         IniWrite,%new_active_marks%,%MarksPath%,MarkSettings,active_marks
 	}
 }
+
+<ListMarksTooltip>:
+ListMarksTooltip()
+Return
+
+ListMarksTooltip()
+{
+		Tooltiplm :=
+		IniRead,active_marks,%MarksPath%,MarkSettings,active_marks
+		h := 0
+		loop, Parse , active_marks , `,
+		{
+			h++
+			Iniread,Path,%MarksPath%,MarkList,%A_LoopField%
+			if Path != ERROR
+				tooltiplm = %tooltiplm%%A_LoopField% `= %Path%`n
+		}
+		Controlgetpos,xe,ye,we,he,edit1,ahk_class TTOTAL_CMD
+		tooltip,%Tooltiplm%,xe,ye-h*16-5
+		return
+}
+
 
 ;Execute mark, the name AddMark is misleading
 <AddMark>:
@@ -637,10 +679,24 @@ AddMark()
 		Postmessage 1075, 2127, 0,, ahk_class TTOTAL_CMD
 		Return
 	}
-	ControlSetText, %TCEditMarks%, cd %ThisMenuItem%, ahk_class TTOTAL_CMD
-	ControlSend, %TCEditMarks%, {Enter}, ahk_class TTOTAL_CMD
-    ;Msgbox  Debugging TCEditMarks = [%TCEditMarks%]  on line %A_LineNumber% ;!!!
-    ;Msgbox  Debugging ThisMenuItem = [%ThisMenuItem%]  on line %A_LineNumber% ;!!!
+
+    Global ExecuteInHeader
+    If ExecuteInHeader
+    {
+        ; execute mark in the panel header, the tabstop above the file list
+        SendPos(2912)  ;<EditPath> this opens the tabstop above the file list
+        TCEditMarks2 = Edit2
+        Sleep 100
+        ControlSetText, %TCEditMarks2%, %ThisMenuItem%, ahk_class TTOTAL_CMD
+        ControlSend, %TCEditMarks2%, {Enter}, ahk_class TTOTAL_CMD
+    }
+    else
+    {
+        ; execute mark in the command line
+        ControlSetText, %TCEditMarks%, cd %ThisMenuItem%, ahk_class TTOTAL_CMD
+        ControlSend, %TCEditMarks%, {Enter}, ahk_class TTOTAL_CMD
+    }
+
 	Return
 }
 <ListMark>:
@@ -719,6 +775,88 @@ ListMarkFromIni()
 		return
 }
 ; ----- end of marks ----- }}}2
+
+
+<azCmdHistory>:
+	azCmdHistory()
+Return
+azCmdHistory()
+{
+    Global TCINI
+    Menu,SH,add
+    Menu,SH,deleteall
+    info := "Commands from previously saved TC session. Reload TC for current history."
+    Menu,SH,add,%info%,azSelectCmdHistory
+    Menu,SH,Disable,%info%
+    n := 0
+    TempField :=
+    item :=
+    Loop
+    {
+        IniRead,TempField,%TCINI%,Command line history,%n%
+        If TempField = ERROR
+            Break
+        n++
+        item := chr(A_Index+64) . ">>" . TempField 
+        Menu,SH,add,%item%,azSelectCmdHistory
+    }
+    ;Send {Esc}
+    ControlGetFocus,TLB,ahk_class TTOTAL_CMD
+    ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
+    Menu,SH,show,%xn%,%yn%
+}
+
+azSelectCmdHistory:
+azSelectCmdHistory()
+Return
+azSelectCmdHistory()
+{
+	nPos := A_ThisMenuItem
+	nPos := Asc(Substr(nPos,1,1)) - 64 -1
+    Global TCINI
+    IniRead,cmd,%TCINI%,Command line history,%nPos%
+    Send {left}         ;get into command line
+    sleep 50
+    delay := A_KeyDelay
+    SetKeyDelay, -1   ;no delay 
+    SendInput {Raw} %cmd%
+    ;SendRaw %cmd%
+    SetKeyDelay, %delay%
+    Send {enter}
+
+    ; if {enter} was missed then try again
+    sleep 400
+    ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+    If ThisControl = Edit1
+    {
+        Send {enter}
+        ;tooltip enter was doubled
+    }
+
+	;;WinKill,AHK_CLASS TTOTAL_CMD
+	;Sleep,1000
+	;Run,%TcExe%,,UseErrorLevel
+    ;sleep 500
+       ;Winactivate,AHK_CLASS TTOTAL_CMD
+    ;sleep 500
+	;If Transparent
+		;WinSet,Transparent,220,ahk_class TTOTAL_CMD
+	;Winactivate,ahk_class TTOTAL_CMD
+	;if WinActive("ahk_class TTOTAL_CMD")
+	;{
+        ;Send {left}         ;get into command line
+        ;SendInput ^{Down}   ;open menu
+		;Loop %nPos%
+        ;{
+           ;Sleep,900            
+		   ;SendInput {Down}
+        ;}
+        ;;SendInput ^v
+		;Send {enter}
+	;}
+}
+
+
 
 <azHistory>:
 If SendPos(572)
@@ -939,7 +1077,8 @@ DeleteHistory(A)
 		}
 		Run,%TCEXE%,,UseErrorLevel
 		If ErrorLevel = ERROR
-			TCEXE := findpath(1)
+            TcExe := FindPath("exe")
+			;TCEXE := findpath(1)
 		WinWait,AHK_CLASS TTOTAL_CMD,3
 		Winactivate,AHK_CLASS TTOTAL_CMD
 	}
@@ -970,7 +1109,8 @@ DeleteCMD()
 		}
 		Run,%TCEXE%,,UseErrorLevel
 		If ErrorLevel = ERROR
-			TCEXE := findpath(1)
+            TcExe := FindPath("exe")
+			;TCEXE := findpath(1)
 		WinWait,AHK_CLASS TTOTAL_CMD,3
 		Winactivate,AHK_CLASS TTOTAL_CMD
 	}
@@ -1652,8 +1792,7 @@ If VimRN_SendKey("")
 	VimRN_Undo()
 Return
 VimRN_history:
-    Run, %VimPath% -p --remote-tab-silent `"%HistoryOfRenamePath%`"
-    ;Run, `"%HistoryOfRenamePath%`"
+    Run, %EditorPath% . %EditorArguments% . `"%HistoryOfRenamePath%`"
 Return
 
 VimRN_Enter:
@@ -2552,10 +2691,11 @@ TransSendKey(hotkey)
 ; --- configuration {{{1
 FindPath(File)
 {
+    Global TCEXE
     FileSF_FileName:= "C:\"
 	If RegExMatch(File,"exe")
 	{
-		GetPath := "C:\Program Files (x86)\totalcmd\totalcmd.exe"
+		GetPath32 := "C:\Program Files (x86)\totalcmd\totalcmd.exe"
 		GetPath64 := "C:\Program Files\totalcmd\totalcmd64.exe"
 		Reg := "InstallDir"
 		FileSF_Option := 3
@@ -2563,17 +2703,22 @@ FindPath(File)
 		FileSF_Prompt := "TOTALCMD.EXE"
 		FileSF_Filter := "*.EXE"
 		FileSF_Error := "Could not find TOTALCMD.EXE nor TOTALCMD64.EXE"
+        TCEXE = GetConfig("Paths","TCPath")
+        If TCEXE = ERROR
+            TCEXE = %GetPath64%
+        GetPath = %TCEXE%
 	}
 	If RegExMatch(File,"ini")
 	{
-        Reg := "IniFileName"
+        Reg := "TCIni"
 		;GetPath := A_workingDir . "\wincmd.ini"
 		GetPath := "C:\Users\" . A_UserName . "\AppData\Roaming\GHISLER\wincmd.ini"
         If FileExist(GetPath)
         {
             Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            ;SetConfig("Paths","TCIni",GetPath)
             ;MsgBox, "Found the wincmd.ini file"
-            ;Return GetPath
+            Return GetPath
         }
         else
             MsgBox, "Could not find the wincmd.ini file in the typical place"            
@@ -2582,8 +2727,9 @@ FindPath(File)
 		FileSF_Prompt := " Select the wincmd.ini file "
 		FileSF_Filter := "*.INI"
 		FileSF_Error := "Could not find wincmd.ini"
+        RegRead,GetPath,HKEY_CURRENT_USER,Software\VIATC,%Reg%
 	}
-	RegRead,GetPath,HKEY_CURRENT_USER,Software\VIATC,%Reg%
+
 	If FileExist(GetPath)
 	{
 		FilegetAttrib,Attrib,%GetPath%
@@ -2594,13 +2740,17 @@ FindPath(File)
 	}
 	If FileExist(GetPath64)
 	{
-		Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath64%
+		;Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath64%
+        TCEXE = %GetPath64%
+        SetConfig("Paths","TCPath",TCEXE)
 		Return GetPath64
 	}
-	If FileExist(GetPath)
+	If FileExist(GetPath32)
 	{
-		Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
-		Return GetPath
+		;Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath32%
+        TCEXE = %GetPath32%
+        SetConfig("Paths","TCPath",TCEXE)
+		Return GetPath32
 	}
 	FileSelectFile,GetPath,%FileSF_Option%,%FileSF_FileName%,%FileSF_Prompt%,%FileSF_Filter%
 	If ErrorLevel
@@ -2609,7 +2759,15 @@ FindPath(File)
 		Return
 	}
 	Else
-		Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+    {
+        If RegExMatch(File,"exe")
+        {
+            TCEXE = %GetPath%
+            SetConfig("Paths","TCPath",TCEXE)
+        }
+        If RegExMatch(File,"ini")
+            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+    }
 	Return GetPath
 }
 ReadKeyFromIni()
@@ -2748,6 +2906,18 @@ SetConfig(Section,Key,Var)
 CreateConfig(Section,Key)
 {
 	Global ViatcIni
+    If Not FileExist(ViATcIni)
+    {
+        ViATcIni :=  A_ScriptDir . "\viatc.ini"
+        Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,ViATcIni,%ViATcIni%
+        MsgBox, 
+        (
+A new, limited viatc.ini file was just created because the real file
+was not found. You can search for the real one and put it into place. 
+You can also download a default one. 
+        )
+    }
+
 	If Section = Configuration
     {
         If Key = TrayIcon
@@ -2777,11 +2947,21 @@ CreateConfig(Section,Key)
     	If Key = TranspVar
     		SetVar := 220
     	If Key = MaxCount
-    		SetVar := 99
+    		SetVar := 999
         If Key = HistoryOfRename
             SetVar := 0
         If Key = IsCapslockAsEscape
             SetVar := 0
+    }
+
+	If Section = Paths
+    {
+        If Key = TCEXE
+            SetVar := "C:\Program Files\totalcmd\TOTALCMD64.EXE"
+        If Key = TCINI
+            SetVar := "C:\Users\" . %A_UserName% . "\AppData\Roaming\GHISLER\wincmd.ini"
+        If Key = EditorArguments 
+            SetVar := " -p --remote-tab-silent "
     }
 
 	If Section = SearchEngine
@@ -2796,10 +2976,9 @@ CreateConfig(Section,Key)
 	If Section = FancyVimRename
     {
 		If Key = Enabled
-			SetVar := 1
-        If Section = FancyVimRename
-            If Key = Mode
-                SetVar := 1
+			SetVar := 0
+        If Key = Mode
+            SetVar := 1
         If Key = UnselectExt
             SetVar := 1
     }
@@ -3145,8 +3324,8 @@ CreateNewFile()
 		Menu,CreateNewFile,Add
 		Menu,CreateNewFile,Add, Add to new template (&X),template
 		Menu,CreateNewFile,Icon, Add to new template (&X),%A_WinDir%\system32\Shell32.dll,-155
-		Menu,CreateNewFile,Add, Configuration (&Z),M_EVI
-		Menu,CreateNewFile,Icon, Configuration (&Z),%A_WinDir%\system32\Shell32.dll,-151
+		Menu,CreateNewFile,Add, Configuration: edit viatc.ini at the bottom (&Z),M_EVI
+		Menu,CreateNewFile,Icon, Configuration: edit viatc.ini at the bottom (&Z),%A_WinDir%\system32\Shell32.dll,-151
 		ControlGetFocus,TLB,ahk_class TTOTAL_CMD
 		ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
 		Menu,CreateNewFile,show,%xn%,%yn%
@@ -3370,12 +3549,10 @@ Return
 Editviatcini()
 {
 	Global viatcini
-	;RegRead,path,HKEY_LOCAL_MACHINE,Software\vim\gvim,path
 	match = `"$0
 	INI := Regexreplace(viatcini,".*",match)
-	If Fileexist(VimPath)
-		;editini := VimPath . a_space . ini                 ;open in a new Vim instance
-		editini := VimPath . " -p --remote-tab-silent " . ini  ;open in a new Vim tab
+	If Fileexist(EditorPath)
+		editini := EditorPath . EditorArguments . ini 
 	Else
 		editini := "notepad.exe" . a_space . ini
 	Run,%editini%,,UseErrorLevel
@@ -3393,13 +3570,12 @@ EditMarks()
 {
 	Global MarksPath
 	match = `"$0
-	INI := Regexreplace(MarksPath,".*",match)
-	If Fileexist(VimPath)
-		;editini := VimPath . a_space . ini                 ;open in a new Vim instance
-		editini := VimPath . " -p --remote-tab-silent " . ini  ;open in a new Vim tab
+	file := Regexreplace(MarksPath,".*",match)
+	If Fileexist(EditorPath)
+		editfile := EditorPath . EditorArguments . file
 	Else
-		editini := "notepad.exe" . a_space . ini
-	Run,%editini%,,UseErrorLevel
+		editfile := "notepad.exe" . a_space . file
+	Run,%editfile%,,UseErrorLevel
 	Return
 }
 
@@ -3449,7 +3625,7 @@ Setting() ; --- {{{1
 	Gui,Add,Tab2,x10 y6 +theme h520 w405 center choose2, &General  | &Hotkeys  | &Paths  | &Misc
 	Gui,Add,GroupBox,x16 y32 H170 w390, Global Settings
 	Gui,Add,CheckBox,x25 y50 h20 checked%startup% vStartup, &Startup VIATC
-	Gui,Add,CheckBox,x180 y50 h20 checked%Service% vService, Background process (&1)  
+	Gui,Add,CheckBox,x180 y50 h20 checked%Service% vService, Background process  &1  
 	Gui,Add,CheckBox,x25 y70 h20 checked%TrayIcon% vTrayIcon, System-tray &icon
 	Gui,Add,CheckBox,x180 y70 h40 checked%Vim% vVim, Enable &ViATc mode at start, `nif unchecked, all is disabled till first Esc
 	Gui,Add,Text,x25 y100 h20, Hotkey to &Activate/Minimize TC
@@ -3457,7 +3633,7 @@ Setting() ; --- {{{1
 	Gui,Add,CheckBox,x180 y120 h20 checked%GlobalTogg% vGlobalTogg, &Global hotkey, so it will work outside TC too
 	Gui,Add,Text,x25 y150 h20, Hotkey to &Enable/Disable ViATc
 	Gui,Add,Edit,x25 y170 h20 w140 vSusp ,%Susp%
-	Gui,Add,CheckBox,x180 y170 h20 checked%GlobalSusp% vGlobalSusp, Global hotkey (&L)
+	Gui,Add,CheckBox,x180 y170 h20 checked%GlobalSusp% vGlobalSusp, Global hotkey &2
 	Gui,Add,GroupBox,x16 y210 H310 w390, Other settings
 	Gui,Add,Text,x25 y228 h20, &Website used to search for the selected file name or folder:
 	D := 1
@@ -3488,15 +3664,15 @@ Setting() ; --- {{{1
 	Gui,Add,ComboBox,x25 y246 h20 w326 choose%DefaultSE% AltSubmit vDefaultSE R5 hwndaa g<SetDefaultSE>,%SE_Arr%
 	Gui,Add,Button,x356 y246 h20 w22 g<AddSearchEng>,&+
 	Gui,Add,Button,x380 y246 h20 w22 g<DelSearchEng>,&-
-	Gui,Add,CheckBox,x25 y280 h20 checked%GroupWarn% vGroupWarn, Show tooltips after the first key of Group Key aka Combo Hotkey (&K)
+	Gui,Add,CheckBox,x25 y280 h20 checked%GroupWarn% vGroupWarn, Show tooltips after the first key of Group Key aka Combo Hotkey  &3
 	Gui,Add,CheckBox,x25 y309 h20 checked%transpHelp% vTranspHelp, &Transparent help interface (needs reload as all)
-	Gui,Add,Button,x270 y305 h30 w120 Center g<Help>, Open VIATC Help (&?)
+	Gui,Add,Button,x270 y305 h30 w120 Center g<Help>, Open VIATC Help   &4
     Gui,Add,CheckBox,x25 y340 h20 checked%HistoryOfRename% vHistoryOfRename, HistoryOf&Rename ; - see history_of_rename.txt
     Gui,Add,Link,x135 y343 h20, - see <a href="%A_ScriptDir%\history_of_rename.txt">history_of_rename.txt</a>
-    ;Gui,Add,Link,x135 y363 h20, - see <a href="%VimPath% -p --remote-tab-silent %HistoryOfRenamePath%">%HistoryOfRenamePath%</a>
+    ;Gui,Add,Link,x135 y363 h20, - see <a href="%EditorPath% . %EditorArguments% . %HistoryOfRenamePath%">%HistoryOfRenamePath%</a>
     Gui,Add,CheckBox,x25 y370 h20 checked%FancyVimRename% vFancyVimRename, &Fancy Vim Rename
 
-    Gui,Add,CheckBox,x25 y400 h20 checked%IsCapslockAsEscape% vIsCapslockAsEscape, Capslock as Escape (&2)
+    Gui,Add,CheckBox,x25 y400 h20 checked%IsCapslockAsEscape% vIsCapslockAsEscape, Capslock as Escape   &5
 
     ;Gui,Add,Button,x270 y405 h30 w120 Center g<BackupIniFile>, &Backup viatc.ini file
     ;  (this checkbox not working yet)
@@ -3570,30 +3746,41 @@ Setting() ; --- {{{1
 	Gui,Add,GroupBox,x16 y32 h480 w390, 
 	Gui,Add,Text,x18 y35 h16 center,TC executable "TOTALCMD64.EXE" or "TOTALCMD.EXE" location :
 	Gui,Add,Edit,x18 y55 h20 +ReadOnly w350,%TCEXE%
-	Gui,Add,Button,x375 y53 w30 g<GuiTCEXE>,... &1
+	Gui,Add,Button,x375 y53 w30 g<GuiTCEXE>, &1 ...
 	Gui,Add,Text,x18 y100 h16 center,TC "wincmd.ini" file location :
 	Gui,Add,Edit,x18 y120 h20 +ReadOnly w350,%TCINI%
-	Gui,Add,Button,x375 y120 w30 g<GuiTCINI> ,... &2
+	Gui,Add,Button,x375 y120 w30 g<GuiTCINI> , &2 ...
 	Gui,Add,Text,x18 y165 h16 center,ViATc "viatc.ini" location (changing will move the current file) :
 	Gui,Add,Edit,x18 y185 h20 +ReadOnly w350,%ViATcIni%
-	Gui,Add,Button,x375 y185 w30 g<GuiViATcINI> ,... &3
-	Gui,Add,Text,x18 y230 h16 center,Vim "gvim.exe" location (or any other editor) :
-	Gui,Add,Edit,x18 y250 h20 +ReadOnly w350,%VimPath%
-	Gui,Add,Button,x375 y250 w30 g<GuiVimPath> ,... &4
-	Gui,Add,Text,x18 y330 h20 w200, &Paths are saved to registry ;`n  Computer\HKEY_CURRENT_USER\Software\VIATC
-	Gui,Add,Edit,x18 y350 h20 +ReadOnly w350,Computer\HKEY_CURRENT_USER\Software\VIATC
-    Gui,Add,Link,x218 y330 h20, <a href="C:\Windows\regedit.exe">&regedit.exe</a> 
-    ;Gui,Add,Link,x218 y330 h20, alt+&r to open <a href="C:\Windows\regedit.exe"> regedit.exe </a>
-    ;Gui,Add,Link,x18 y370 h20, - open <a href="C:\Windows\regedit.exe"> &regedit.exe </a>
-    ;Gui,Add,Link,x218 y330 h20, &r <a href="C:\Windows\regedit.exe"> regedit.exe </a> 
+	Gui,Add,Button,x375 y185 w30 g<GuiViATcINI> , &3 ...
+	Gui,Add,Text,x18 y230 h16 center,Editor's location. For vim find "gvim.exe" :
+	Gui,Add,Edit,x18 y250 h20 vGuiEditorPath +ReadOnly w350,%EditorPath%
+    Gui,Add,Button,x375 y250 w30 g<GuiEditorPath> , &4 ...
+    Gui,Add,Text,x140 y280 h16 center, for a new tab in vim use:
+    Gui,Add,Text,x381 y278 h16 center,  &5 
+    Gui,Add,Edit,x262 y278 h18 +ReadOnly w105, -p --remote-tab-silent 
+	Gui,Add,Text,x18 y280 h16 center,Editor's arguments :
+	Gui,Add,Text,x381 y300 h16 center,  &6 
+	Gui,Add,Edit,x18 y300 h20 w350 vGuiEditorArguments,%EditorArguments%
+	Gui,Add,Text,x381 y350 h16 center,  &7 
+    Gui,Add,Link,x315 y350 h20, <a href="C:\Windows\regedit.exe">regedit.exe</a> 
+	Gui,Add,Text,x18 y350 h20 , Paths of ini files 2 and 3 are saved to the registry ;if changed 
+	Gui,Add,Text,x381 y370 h16 center,  &8 
+	Gui,Add,Edit,x18 y370 h20 +ReadOnly w350,Computer\HKEY_CURRENT_USER\Software\VIATC
 
 	Gui,Tab,4
-	Gui,Add,GroupBox,x16 y32 h170 w390, Marks
+	;Gui,Add,GroupBox,x16 y32 h170 w390, Marks
+	Gui,Add,GroupBox,x16 y32 h480 w390, Marks
     Gui,Add,GroupBox,x20 y56 h37 w180 , ; marks.ini file
     Gui,Add,Text,x23 y69 w60, marks.ini file:
     Gui,Add,Button,x90 y65 w54 center g<BackupMarksFile>, B&ackup
 	Gui,Add,Button,x150 y65 w40 g<EditMarks>, E&dit
+	;Gui,Add,Text,x185 y300 h16 center,  &V 
     Gui,Add, Picture, gGreet x170 y320 w60 h-1, %A_ScriptDir%\viatc.ico
+	Gui,Add,Button,x170 y400 w60 gWisdom, &Wisdom
+	Gui,Add,Text,x95 y450 h16 center,  &Website: 
+    Gui,Add,Link,x145 y450 h20, <a href="https://magicstep.github.io/viatc/">magicstep.github.io/viatc</a> 
+    
 
 	Gui,Tab
 	Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&G
@@ -3605,8 +3792,21 @@ Setting() ; --- {{{1
 
 ;gGreet
 Greet:
-msgbox, If you had a fortune cookie what would you like it to say?
-return
+KeyWait, LButton, Up
+Msgbox Thank you for using ViATc.
+Return
+
+;gWisdom
+Wisdom:
+Array := ["If you had a fortune cookie what would you like it to say?"
+         ,"If you could speak for 1 minute and be heard by everybody in the world, what would you say?"
+         ,"If you could make one thing come true for all the souls on the planet what would it be?" 
+         ,"What is the ultimate goal of a human being?"
+         ,"What website doesn't exist but should?"
+         ,"Remember to take breaks." ]
+Random, rand, 1,Array.Length()
+Msgbox  % Array[rand] %rand%
+Return
 
 ;OnMessage(0x201, "ImgClic")
 ;ImgClic(wParam, lParam, msg, hwnd) {
@@ -3730,6 +3930,10 @@ SetDefaultSE()
 <GuiEnter>:
 CheckKey()  ;this is what Save button does on the Settings middle tab
 Gui,Submit
+Global EditorPath, EditorArguments
+EditorPath := GuiEditorPath
+;Trimming leading and trailing white space is automatic when assigning a variable with only = 
+EditorArguments = GuiEditorArguments
 IniWrite,%TrayIcon%,%ViATcIni%,Configuration,TrayIcon
 IniWrite,%Vim%,%ViATcIni%,Configuration,Vim
 IniWrite,%Toggle%,%ViATcIni%,Configuration,Toggle
@@ -3741,8 +3945,12 @@ IniWrite,%Service%,%ViATcIni%,Configuration,Service
 IniWrite,%GroupWarn%,%ViATcIni%,Configuration,GroupWarn
 IniWrite,%TranspHelp%,%ViATcIni%,Configuration,TranspHelp
 IniWrite,%HistoryOfRename%,%ViATcIni%,Configuration,HistoryOfRename
-IniWrite,%IsCapslockAsEscape%,%ViATcIni%,Configuration,IsCapslockAsEscape
 IniWrite,%FancyVimRename%,%ViATcIni%,FancyVimRename,Enabled
+IniWrite,%IsCapslockAsEscape%,%ViATcIni%,Configuration,IsCapslockAsEscape
+IniWrite,%GuiEditorPath%,%ViATcIni%,Paths,EditorPath
+IniWrite,%GuiEditorArguments%,%ViATcIni%,Paths,EditorArguments
+EditorArguments :=A_space . EditorArguments . A_space
+
 If NeedReload
 	GoSub,<ReloadVIATC>
 Else
@@ -3853,6 +4061,7 @@ Gui,Destroy
 EmptyMem()
 Winactivate,AHK_ID %VIATCSetting%
 Return
+;selecting internal TC command for Settings button 2
 <TCCMD>:
 tccmd()
 Return
@@ -3941,6 +4150,7 @@ GuiTCExe()
 	Fileselectfile,TCEXE,3,C:\Program Files\totalcmd\, Select "TOTALCMD64.EXE" or "TOTALCMD.EXE",*.exe
 	If ErrorLevel
 		Return
+    SetConfig("Paths","TCPath",TCEXE)
 	Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,InstallDir,%TCEXE%
 	GuiControl,text,Edit6,%TCEXE%
 }
@@ -3953,7 +4163,7 @@ GuiTCIni()
 	Fileselectfile,TCINI,3,C:\Users\%A_UserName%\AppData\Roaming\GHISLER\, Select the "wincmd.ini" file,*.ini
 	If ErrorLevel
 		Return
-	Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,IniFileName,%TCINI%
+	Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,TCIni,%TCINI%
 	GuiControl,text,Edit7,%TCINI%
 }
 <GuiViATcIni>:
@@ -3975,17 +4185,17 @@ GuiViATcIni()
 	GoSub,<ReloadVIATC>
 }
 
-<GuiVimPath>:
-GuiVimPath()
+<GuiEditorPath>:
+GuiEditorPath()
 return
-GuiVimPath()
+GuiEditorPath()
 {
-	Global VimPath,VIATCSetting
-	Fileselectfile,VimPath,3,C:\Program Files (x86)\Vim\vim82\, Select the gvim.exe file or any other editor,*.exe
+	Global EditorPath,VIATCSetting
+	Fileselectfile,EditorPath,3,C:\Program Files (x86)\Vim\, Select the gvim.exe file or any other editor,*.exe
 	If ErrorLevel
 		Return
-	Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,VimPathReg,%VimPath%
-	GuiControl,text,Edit9,%VimPath%
+    SetConfig("Paths","EditorPath",EditorPath)
+	GuiControl,text,Edit9,%EditorPath%
 }
 
 <CheckGorH>:
@@ -4463,8 +4673,7 @@ SetGroupInfo() ; combo keys help {{{2
 SetVimAction()  ; --- internal ViATc commands
 {
     Global VimAction
-    VimAction := " <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <singleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <ListMapKey> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <EditViATCIni> <ExReName> <azTab> <none>"
-    ; unavailable: <azCmdHistory>
+    VimAction := " <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <singleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <EditViATCIni> <ExReName> <azTab> <none>"
 }
 
 SetActionInfo()  ; --- command's descriptions
@@ -6398,4 +6607,5 @@ Return
 SendPos(5514)
 Return
 ;}}}
-; vim: fdm=marker set foldlevel=2
+; vim: fdm=marker set foldlevel=3
+;very simple1234------.txt
