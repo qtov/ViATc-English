@@ -1,7 +1,7 @@
 ViATc
 =====
 ViATc - Vim mode at Total Commander  
-2020/10/24  version 0.5.5en beta 17  
+2020/10/27  version 0.5.5en beta 18  
 ![viatc_logo credit: https://github.com/linxinhong](https://magicstep.github.io/viatc/viatc_logo.jpg?raw=true "viatc_logo")  
 <sub>image credit: <A href="https://github.com/linxinhong" target="_blank">https://github.com/linxinhong</a></sub><br>  
 This software works on Windows and only as an addition to "Total Commander"  :floppy_disk: - the greatest file manager :100: (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
@@ -20,7 +20,7 @@ Download
 To get the most recent script (without exe), download https://github.com/magicstep/ViATc-English/archive/master.zip  
 
 The below zip file contains an exe file, very likely it is older than the above script. I promise that the exe file is clean, however compiled AHK scripts trigger antiviruses so you might have to add an exception. The script choice is recommended anyway.   
-<a href="https://magicstep.github.io/viatc/ViATc-0.5.5en_beta17_executable.zip">ViATc-0.5.5en_beta17_executable.zip</a><br>
+<a href="https://magicstep.github.io/viatc/ViATc-0.5.5en_beta15_executable.zip">ViATc-0.5.5en_beta15_executable.zip</a><br>
 
 Yet older versions at https://magicstep.github.io/viatc/old.html  
 
@@ -35,7 +35,7 @@ Settings
 You can add and remove shortcuts via the ViATc Settings window. After changes you must click Save or OK (OK will save and reload ViaTC).  
 You can also add and remove shortcuts directly in the ini file. Reload ViATc manually after any changes made directly in the ini file to take effect.  
 In the ini file all lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
-When CapsLock is mapped as Escape in the settings, you can bypass this using Ctrl+CapsLock  
+CapsLock is mapped as Escape. To bypass this use Ctrl+CapsLock  
 
 Usage
 =====
