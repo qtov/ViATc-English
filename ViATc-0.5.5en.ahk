@@ -282,7 +282,7 @@ StringSplit,Len,Msg,`n
 ControlGetPos,xn,yn,,hn,%TCEdit%,AHK_CLASS TTOTAL_CMD
 yn := yn - hn  - ( Len0 - 1 ) * 17
 Tooltip,%Msg%,%xn%,%yn%
-SetTimer,<RemoveTooltipEx>,500   ; !!!!! was 50
+SetTimer,<RemoveTooltipEx>,50   ; 50 is a delay
 settimer,<ComboWarnAction>,off
 return
 <Esc>:
@@ -2411,7 +2411,7 @@ Combokey(Hotkey)  ; {{{1
 {
 	Global ComboKey_Arr,KeyTemp,KeyCount,ComboInfo_arr,ComboTooltips,Repeat,SendText_Arr,ExecFile_Arr,GoExec,GoText
 	If ComboTooltips And ( Not KeyTemp ) And CheckMode() And ComboInfo_Arr[A_ThisHotkey]
-		Settimer,<ComboWarnAction>,500   ;!!!!! was 50
+		Settimer,<ComboWarnAction>,50   ; 50 is a delay
 	If checkMode()
 	{
 		KeyCount := 0
