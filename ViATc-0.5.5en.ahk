@@ -19,8 +19,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/10/27"
-Global Version := "0.5.5en beta 18"
+Global Date := "2020/10/30"
+Global Version := "0.5.5en beta 19"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -74,22 +74,25 @@ If Not FileExist(ViATcIni)
 TcExe := FindPath("exe")
 TcIni := FindPath("ini")
 Splitpath,TcExe,,TcDir
+;Global TCBit:=
 If RegExMatch(TcExe,"i)totalcmd64\.exe")
 {
+    Global TCBit := 64
 	Global TCListBox := "LCLListBox"
-	Global TCEdit := "Edit1"  
+	Global TCEdit := "Edit1"  ;was Edit2, later both are considered when used
     ; sometimes TC changes "Edit1" to "Edit2" when you open any of it's windows containing an edit-box
 	GLobal TCPanel1 := "Window1"
 	Global TCPanel2 := "Window11"
 }
 Else
 {
+    Global TCBit := 32
 	Global TCListBox := "TMyListBox"
 	Global TCEdit := "Edit1"
 	Global TCPanel1 := "TPanel1"
 	Global TCPanel2 := "TMyPanel8"
 }
-Global TCEditMarks := "Edit1"
+Global TCEditMarks := TCEdit  ;"Edit1"
 
 GoSub,<ConfigVar>
 Menu,VimRN_Set,Add, Vim mode at start `tAlt+V,VimRN_SelMode
@@ -543,7 +546,6 @@ MarkTimer()
 
     TCEditMarks =  %ThisControl%
     ;Msgbox  Debugging ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!! 
-    ;Msgbox  Debugging TCEditMarks = [%TCEditMarks%]  on line %A_LineNumber% ;!!!
 
 	ControlGetText,OutVar,%TCEditMarks%,AHK_CLASS TTOTAL_CMD
 	Match_TCEditMarks := "i)^" . TCEditMarks . "$"
@@ -729,15 +731,13 @@ ListMarkFromIni()
 {
 		Tooltiplm :=
 		IniRead,active_marks,%MarksPath%,MarkSettings,active_marks
-        ;Msgbox  Debugging active_marks = [%active_marks%]  on line %A_LineNumber% ;!!!
-        ; active_marks is a mark string containing a comma separated list of marks
+        ; active_marks is a string containing a comma separated list of marks
         if active_marks =
         {
-            Tooltip No marks to show. The active_marks variable is empty
+            Tooltip No marks to show. The active_marks variable in the marks.ini file is empty
             Settimer,<RemoveHelpTip>,2000
             Return
         }
-        ;if (%active_marks% = "ERROR")
         if active_marks = ERROR
         {
             Tooltip No marks to show. The active_marks variable was not found in the marks.ini file
@@ -829,35 +829,12 @@ azSelectCmdHistory()
     ; if {enter} was missed then try again
     sleep 400
     ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-    If ThisControl = Edit1
+    If ThisControl = %TCEdit%  ;Edit1
     {
         Send {enter}
         ;tooltip enter was doubled
     }
-
-	;;WinKill,AHK_CLASS TTOTAL_CMD
-	;Sleep,1000
-	;Run,%TcExe%,,UseErrorLevel
-    ;sleep 500
-       ;Winactivate,AHK_CLASS TTOTAL_CMD
-    ;sleep 500
-	;If Transparent
-		;WinSet,Transparent,220,ahk_class TTOTAL_CMD
-	;Winactivate,ahk_class TTOTAL_CMD
-	;if WinActive("ahk_class TTOTAL_CMD")
-	;{
-        ;Send {left}         ;get into command line
-        ;SendInput ^{Down}   ;open menu
-		;Loop %nPos%
-        ;{
-           ;Sleep,900            
-		   ;SendInput {Down}
-        ;}
-        ;;SendInput ^v
-		;Send {enter}
-	;}
 }
-
 
 
 <azHistory>:
@@ -997,6 +974,24 @@ If SendPos(0)
 	Send,{Esc}
 }
 Return
+
+<TCFullScreenWithExePlugin>:
+If SendPos(0)
+{
+    ; an external exe program is required
+    program = %A_ScriptDir%\TcFullScreen.exe
+    if FileExist(program)
+        Run %program% 
+    else
+    {
+        link = https://magicstep.github.io/viatc/TcFullScreen/
+        MsgBox, 4, , %program% is required. You can download it from %link% `nOpen link?
+        IfMsgBox Yes
+            Run %link% 
+    }
+}
+Return
+
 <TCFullScreen>:
 If SendPos(0)
 {
@@ -1150,7 +1145,19 @@ ListMapKeyMultiColumn()
 				TX := SubStr(ListMap%A_Index%,1,1) . TransHotkey(SubStr(ListMap%A_Index%,2))
 				Action := "{" . SendText_Arr[TX] . "}"
 			}
-			LM .= SubStr(ListMap%A_Index%,1,1) . "  " . SubStr(ListMap%A_Index%,2) . "  " . Action  . "`t`t"
+            line := SubStr(ListMap%A_Index%,1,1) . "  " . SubStr(ListMap%A_Index%,2) . "  " . Action
+            loop 20
+            {
+                if StrLen(line) < 70
+                    line .= " " ;"`t"
+                else
+                    break
+            }
+
+
+			;LM .= %line%
+			LM .= line
+			;LM .= SubStr(ListMap%A_Index%,1,1) . "  " . SubStr(ListMap%A_Index%,2) . "  " . Action  . "`t`t"
             ItemCount ++
             if Mod(ItemCount, ColumnCount) = 0
                 LM .= "`n"
@@ -1330,7 +1337,10 @@ azTab()
 {
 	Global TabsBreak,TcExe
 	If RegExMatch(TcExe,"i)totalcmd64\.exe")
-		Return
+    {
+       Msgbox This doesn't work with totalcmd64, 64bit not supported. Not that useful anyway.
+	   Return 
+    }
 	TCid := WinExist("AHK_CLASS TTOTAL_CMD")
 	WinClose,ViATc_TabList
 	ControlGetPos,xe,ye,we,he,Edit1,AHK_CLASS TTOTAL_CMD
@@ -1537,21 +1547,34 @@ VimRNCreateGui()
 	Gui,+Owner%TCID%
 	Gui,Menu,VimRN_MENU
     ;Gui, Add, Text, x9 y9 w800 h23, Edit this filename:
-    Gui,Font,s16,Arial  ;font for the rename window
+    ;Gui, Color, AABB99  ;LightGreen
+/*
+    Gui,Font,s14,Arial  ;font for the rename window
 	Gui,Add,Edit,r5 x9  w800 -WantReturn gVimRN_Edit,%GetName%
 	;Gui,Add,Edit,r1 w800 -WantReturn gVimRN_Edit,%GetName%  ;original
     Gui,Font,s12
     Gui, Add, Text, x9 y177 w800 h23, Original filename (saved to history_of_rename.txt):
     Gui, Add, Edit, x9 y202 w800 r5 ReadOnly, %GetName%  ;original 
+*/
+
+    Gui,Font,s12,Arial  ;font for the rename window
+	Gui,Add,Edit,r4 x9 y147  w820 -WantReturn gVimRN_Edit,%GetName%
+	;Gui,Add,Edit,r1 w800 -WantReturn gVimRN_Edit,%GetName%  ;original
+    Gui,Font,s9
+    Gui, Add, Text, x9 y10 w800 h23, Original filename saved to 
+    Gui, Add, Button, x180 y6 w210 h21 gVimRN_history, history_of_rename.txt - &Browse
+    Gui,Font,s12
+    Gui, Add, Edit, x9 y30 w820 r4 ReadOnly, %GetName%  ;original 
+
 
     Gui,Font,s18
 	Gui,Add,StatusBar
 	;Gui,Add,Button,Default Hidden gVimRN_Enter
-    Gui,Font,s11,Arial  ;font for the rename window
-    Gui, Add, Button, x22 y340 w140 h30 gCancel, &Cancel ; = q
-    Gui, Add, Button, x200 y340 w140 h30 Default gVimRN_Enter, &OK ;= Enter
-    Gui, Add, Button, x380 y340 w210 h30 gVimRN_history, &Browse history_of_rename.txt 
-	Gui,Show,h400,ViATc Fancy Rename
+    Gui,Font,s9,Arial  ;font for the rename window
+    Gui, Add, Button, x455 y240 w140 h22 gCancel, &Cancel ; = q
+    Gui, Add, Button, x640 y240 w140 h22 Default gVimRN_Enter, &OK ;= Enter
+	;Gui,Show,h400,ViATc Fancy Rename
+	Gui,Show,,ViATc Fancy Rename
     PostMessage,0x00C5,256,,%ThisControl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 256
 
 	VimRN := GetConfig("FancyVimRename","Mode")
@@ -1766,9 +1789,26 @@ If VimRN_SendKey("")
 	{
 		Status := "  mode : Visual                                 "
 		ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
+        ;!!!!!!!!!!!!!!!!!!!!! experimental below
+        ;Gui, HwndVimRN_ID:Color, red , ahk_id %VimRN_ID% 
+        Gui, Edit1:Color, cRed 
+        ;Gui, Color, %CustomColor%
+        RGB := 0xFF66AA
+        ;GuiControl, %VimRN_ID%: +c%RGB%, ahk_id %VimRN_ID% 
+        Gui, Edit1:Font, cBlue Bold
+        Gui, Font, s18 cRed Bold, Verdana
+        GuiControl, Font, msctls_statusbar321
+        GuiControl, Font, Edit1
+        GuiControl, HwndVimRN_ID: +c%RGB%, Edit1, color red ;ahk_id %VimRN_ID% 
+        Gui, msctls_statusbar321:Font, cBlue Bold
+        Gui, Hotstring:Color, Red, Green
+        Gui, HwndVimRN_ID:Color, Red, Green
+        ;Tooltip v 
 	}
 	Else
 	{
+        WinSet, Region,, ahk_id %VimRN_ID% ; Restore the window to its original/default display area. !!!!
+
 		Status := "  mode : Vim                                    "
 		ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
 	}
@@ -2717,13 +2757,27 @@ FindPath(File)
         If TCEXE = ERROR
             TCEXE = %GetPath64%
         GetPath = %TCEXE%
-        ;Msgbox  Debugging GetPath = [%GetPath%]  on line %A_LineNumber% ;!!!
-        ;Return GetPath   ;!!!!!! added
+        If FileExist(GetPath)
+            Return GetPath
+        GetPath := "C:\totalcmd\TOTALCMD64.EXE"
+        If FileExist(GetPath)
+        {
+            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            Return GetPath
+        }
+        GetPath := "C:\totalcmd\TOTALCMD.EXE"
+        If FileExist(GetPath)
+        {
+            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            Return GetPath
+        }
 	}
 	If RegExMatch(File,"ini")
 	{
         Reg := "TCIni"
-		;GetPath := A_workingDir . "\wincmd.ini"
+        RegRead,GetPath,HKEY_CURRENT_USER,Software\VIATC,%Reg%
+        If FileExist(GetPath)
+            Return GetPath
 		GetPath := "C:\Users\" . A_UserName . "\AppData\Roaming\GHISLER\wincmd.ini"
         If FileExist(GetPath)
         {
@@ -2732,14 +2786,26 @@ FindPath(File)
             ;MsgBox, "Found the wincmd.ini file"
             Return GetPath
         }
-        else
-            MsgBox, "Could not find the wincmd.ini file in the typical place"            
-		FileSF_Option := 3
-		FileSF_FileName:= "C:\Users\" . A_UserName . "\AppData\Roaming\GHISLER\"
-		FileSF_Prompt := " Select the wincmd.ini file "
-		FileSF_Filter := "*.INI"
-		FileSF_Error := "Could not find wincmd.ini"
-        RegRead,GetPath,HKEY_CURRENT_USER,Software\VIATC,%Reg%
+        GetPath := "C:\Users\" . A_UserName . "\Documents\wincmd.ini"
+        If FileExist(GetPath)
+        {
+            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            Return GetPath
+        }
+        Splitpath,TcExe,,TcDir
+        GetPath = %TcDir%\wincmd.ini
+        If FileExist(GetPath)
+        {
+            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            Return GetPath
+        }
+        ;MsgBox, "Could not find the wincmd.ini file in the typical places"            
+        FileSF_Option := 3
+        FileSF_FileName:= "C:\Users\" . A_UserName . "\AppData\Roaming\GHISLER\"
+        FileSF_Prompt := " Select the wincmd.ini file "
+        FileSF_Filter := "*.INI"
+        FileSF_Error := "Could not find wincmd.ini"
+        
 	}
 
 	If FileExist(GetPath)
@@ -3162,11 +3228,6 @@ Enter() ;  on Enter pressed {{{2
         Sleep,50
     }
 
-    ;Msgbox  ThisControl %ThisControl% ;!!!
-    ;ThisControl = "Edit1"
-
-    ;Msgbox  ThisControl %ThisControl% ;!!!
-	;If ((%ThisControl%=Edit1) or (%ThisControl%=Edit2) or (%ThisControl%=Window17))  ;!!!
     ;Match_TCEdit := "^" . TCEdit . "$"   ;<-------good working
 	;If RegExMatch(ThisControl,Match_TCEdit)
     If (( %ThisControl% = Edit1) or ( %ThisControl% = Edit2) or ( %ThisControl% = Window17))  ;!!!
@@ -3463,7 +3524,6 @@ CreateFile(item)
 			If RegExMatch(Item,"\(&V\)$")
 			{
 				File := A_Temp . "\viatcTemp"
-                Msgbox  Debugging File = [%File%]  on line %A_LineNumber% ;!!!
 				If Fileexist(file)
 					Filedelete,%File%
 				FileAppend,,%File%,UTF-8
@@ -3621,6 +3681,7 @@ Setting() ; --- {{{1
 	Gui,+Theme +hwndviatcsetting 
     ;Gui,+SBARS_SIZEGRIP
     Gui,+0x100A +0x40000
+    Gui, +Resize  ; Make the window resizable.
     WinSet, Style, +Resize, A
     WinSet, Style, +WS_SIZEBOX, A
     WinSet, Style, +0x40000, A
@@ -3693,7 +3754,7 @@ Setting() ; --- {{{1
 	Gui,Tab,2
 
 	Gui,Add,GroupBox,x16 y32 h488 w390, 
-	Gui,Add,text,x20 y340 h50, * column legend:`n  G - Global`n  H - Hotkey`n  C - ComboKey
+	Gui,Add,text,x20 y340 h50, * column legend:`n  G - Global Key`n  H - Hotkey`n  C - Combo Key
 	Gui,Add,text,x130 y336 h50, Right-click any item on the list to edit or delete, `nor select any item and press ---> ;the Delete button
     Gui,Add,Button,x285 y350 h20 w65 g<DeleItem>, &Delete
     Gui,Add,text,x130 y361 h20,      Double-click to edit.
@@ -4690,7 +4751,7 @@ SetComboInfo() ; combo keys help {{{2
 SetVimAction()  ; --- internal ViATc commands
 {
     Global VimAction
-    VimAction := " <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <singleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <EditViATCIni> <ExReName> <azTab> <none>"
+    VimAction := " <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <singleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen>  <TCFullScreenWithExePlugin> <EditViATCIni> <ExReName> <azTab> <none>"
 }
 
 SetActionInfo()  ; --- command's descriptions
@@ -4755,7 +4816,8 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<DelCmdHistory>"] :=" Delete command-line history "
     ActionInfo_Arr["<GoLastTab>"] :=" Go to the last tab "
     ActionInfo_Arr["<TCLite>"] :=" Minimalistic TC"
-    ActionInfo_Arr["<TCFullScreen>"] :="TC full screen "
+    ActionInfo_Arr["<TCFullScreen>"] :="TC full screen. "
+    ActionInfo_Arr["<TCFullScreenWithExePlugin>"] :="TC full screen. An external exe program is required, You'll be asked to download. "
     ActionInfo_Arr["<SrcComments>"] :=" Source window :  Show file comments "
     ActionInfo_Arr["<SrcShort>"] :=" Source window :  List "
     ActionInfo_Arr["<SrcLong>"] :=" Source window :  Details "
@@ -6625,5 +6687,99 @@ Return
 SendPos(5514)
 Return
 ;}}}
+
+
+;----------------- Aux ----------
+
+
+If GetConfig("Configuration","Aux")
+{
+
+
+; $ prefix in the hotkey (or #UseHook earlier in the script) will prevent the script from being triggered if the script uses the Send command to send the keys that comprise the hotkey itself
+$F11::
+    If WinActive("ahk_exe totalcmd64.exe")
+    {
+        program = %A_ScriptDir%\TcFullScreen.exe
+        if FileExist(program)
+            Run %program% 
+        else
+        {
+            link = https://magicstep.github.io/viatc/TcFullScreen/
+            MsgBox, 4, , %program% is required. Download it from %link% `nOpen link?
+            IfMsgBox Yes
+                Run %link% 
+        }
+
+    }
+    else send, {F11}
+    return   
+
+
+;IrfanView map  j = next
+#If (WinActive("ahk_exe i_view32.exe") or WinActive("ahk_exe i_view64.exe") )
+j::Send {Right}
+#If
+
+;IrfanView map  k = prev
+#If (WinActive("ahk_exe i_view32.exe") or WinActive("ahk_exe i_view64.exe") )
+k:: Send {Left}
+#If
+
+
+;IrfanView autoadvance folder in TotalCommander
+ScrollLock::
+    If (WinActive("ahk_exe i_view32.exe") or WinActive("ahk_exe i_view64.exe") or WinActive("ahk_exe TOTALCMD64.EXE"))
+    {
+        Send {Esc}
+        Sleep ,200
+        If WinActive("ahk_exe totalcmd64.exe")
+        {
+            Send {BackSpace}
+            Sleep , 30
+            Send {Down}
+            Send {Space}
+            Sleep ,900
+            Send {Enter}
+            Sleep ,600
+            ;if some files were let loose outside directories then they will be opened by now
+            ;so here check
+            if WinActive("ahk_exe TOTALCMD64.EXE")
+            {   
+                Send {Down}
+                Sleep ,30
+                Send {Enter} 
+                
+                Sleep ,600
+                ;if there was a subfolder then we are still in totalcmd
+                if WinActive("ahk_exe TOTALCMD64.EXE")
+                {   
+                    Send {Down}
+                    Sleep ,30
+                    Send {Enter} 
+                    
+                    Sleep ,600
+                    ;second time the same, if there was a sub-subfolder then we are still in totalcmd
+                    if WinActive("ahk_exe TOTALCMD64.EXE")
+                    {   
+                        Send {Down}
+                        Sleep ,30
+                        Send {Enter} 
+                    }                    
+                }
+                Sleep ,600
+            }
+            Sleep ,1900
+            ;hide cursor in IrfanView by F11
+            ;Send {F11} 
+        }
+        ; A is an autoadvance in Irfanview
+        Send +a
+    }
+    else ;irfan not active
+        send, {ScrollLock}
+return
+}
+
 ; vim: fdm=marker set foldlevel=2
 ;-----------------------------
