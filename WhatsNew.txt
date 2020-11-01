@@ -1,0 +1,7 @@
+ 
+
+2020/11/01  version 0.5.5en beta 20
+- Fixed the "Fancy Rename" look and "history_of_rename.txt" Browse button
+- Smarter search for the TC executable and wincmd.ini
+- Started this "Whatsnew.txt" file
+

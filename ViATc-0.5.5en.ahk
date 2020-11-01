@@ -19,8 +19,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/10/30"
-Global Version := "0.5.5en beta 19"
+Global Date := "2020/11/01"
+Global Version := "0.5.5en beta 20"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -1148,7 +1148,7 @@ ListMapKeyMultiColumn()
             line := SubStr(ListMap%A_Index%,1,1) . "  " . SubStr(ListMap%A_Index%,2) . "  " . Action
             loop 20
             {
-                if StrLen(line) < 70
+                if StrLen(line) < 60
                     line .= " " ;"`t"
                 else
                     break
@@ -1558,11 +1558,11 @@ VimRNCreateGui()
 */
 
     Gui,Font,s12,Arial  ;font for the rename window
-	Gui,Add,Edit,r4 x9 y147  w820 -WantReturn gVimRN_Edit,%GetName%
+	Gui,Add,Edit,r4 x9 y123  w820 -WantReturn gVimRN_Edit,%GetName%
 	;Gui,Add,Edit,r1 w800 -WantReturn gVimRN_Edit,%GetName%  ;original
     Gui,Font,s9
-    Gui, Add, Text, x9 y10 w800 h23, Original filename saved to 
-    Gui, Add, Button, x180 y6 w210 h21 gVimRN_history, history_of_rename.txt - &Browse
+    Gui, Add, Text, x9 y10 w800 h23, Original filename saved to "history_of_rename.txt"  
+    Gui, Add, Button, x290 y6 w70 h21 gVimRN_history,  &Browse it
     Gui,Font,s12
     Gui, Add, Edit, x9 y30 w820 r4 ReadOnly, %GetName%  ;original 
 
@@ -1571,8 +1571,8 @@ VimRNCreateGui()
 	Gui,Add,StatusBar
 	;Gui,Add,Button,Default Hidden gVimRN_Enter
     Gui,Font,s9,Arial  ;font for the rename window
-    Gui, Add, Button, x455 y240 w140 h22 gCancel, &Cancel ; = q
-    Gui, Add, Button, x640 y240 w140 h22 Default gVimRN_Enter, &OK ;= Enter
+    Gui, Add, Button, x515 y4 w140 h22 gCancel, &Cancel ; = q
+    Gui, Add, Button, x690 y4 w140 h22 Default gVimRN_Enter, &OK ;= Enter
 	;Gui,Show,h400,ViATc Fancy Rename
 	Gui,Show,,ViATc Fancy Rename
     PostMessage,0x00C5,256,,%ThisControl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 256
@@ -1841,7 +1841,14 @@ If VimRN_SendKey("")
 	VimRN_Undo()
 Return
 VimRN_history:
-    Run, %EditorPath% . %EditorArguments% . `"%HistoryOfRenamePath%`"
+	Global HistoryOfRenamePath
+	match = `"$0
+	file := Regexreplace(HistoryOfRenamePath,".*",match)
+	If Fileexist(EditorPath)
+		editfile := EditorPath . EditorArguments . file
+	Else
+		editfile := "notepad.exe" . a_space . file
+	Run,%editfile%,,UseErrorLevel
 Return
 
 VimRN_Enter:
@@ -1898,7 +1905,7 @@ i :  Insert mode
 v :  Visual select mode (v again to toggle to Vim Normal mode)
 Esc :  Vim's Normal mode
 ^[  :  same as Esc
-Capslock : same as Esc (only if this is enabled in ini file)
+Capslock : same as Esc (only if this is enabled in the settings)
 Enter :  Save rename
 
 h :  Move to the left N characters
@@ -2759,18 +2766,36 @@ FindPath(File)
         GetPath = %TCEXE%
         If FileExist(GetPath)
             Return GetPath
+        RegRead,Dir,HKEY_CURRENT_USER,Software\Ghisler\Total Commander,%Reg%
+        StringRight, LastChar, Dir, 1
+        if !(LastChar="\")
+            Dir := Dir . "\"
+        GetPath := Dir . "TOTALCMD64.EXE"
+        If FileExist(GetPath)
+        {
+            ;Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            SetConfig("Paths","TCPath",GetPath)
+            Return GetPath
+        } 
         GetPath := "C:\totalcmd\TOTALCMD64.EXE"
         If FileExist(GetPath)
         {
-            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            SetConfig("Paths","TCPath",GetPath)
             Return GetPath
         }
         GetPath := "C:\totalcmd\TOTALCMD.EXE"
         If FileExist(GetPath)
         {
-            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            SetConfig("Paths","TCPath",GetPath)
             Return GetPath
         }
+        GetPath := Dir . "TOTALCMD.EXE"
+        If FileExist(GetPath)
+        {
+            SetConfig("Paths","TCPath",GetPath)
+            Return GetPath
+        } 
+        
 	}
 	If RegExMatch(File,"ini")
 	{
@@ -2778,6 +2803,12 @@ FindPath(File)
         RegRead,GetPath,HKEY_CURRENT_USER,Software\VIATC,%Reg%
         If FileExist(GetPath)
             Return GetPath
+        RegRead,GetPath,HKEY_CURRENT_USER,Software\Ghisler\Total Commander,"IniFileName"
+        If FileExist(GetPath)
+        {
+            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            Return GetPath
+        } 
 		GetPath := "C:\Users\" . A_UserName . "\AppData\Roaming\GHISLER\wincmd.ini"
         If FileExist(GetPath)
         {
@@ -3708,7 +3739,7 @@ Setting() ; --- {{{1
 	Gui,Add,Edit,x25 y170 h20 w140 vSusp ,%Susp%
 	Gui,Add,CheckBox,x180 y170 h20 checked%GlobalSusp% vGlobalSusp, Global hotkey &2
 	Gui,Add,GroupBox,x16 y210 H310 w390, Other settings
-	Gui,Add,Text,x25 y228 h20, &Website used to search for the selected file name or folder:
+	Gui,Add,Text,x25 y228 h20, &Website used to search for the selected file or folder:
 	D := 1
 	Loop,15
 	{
@@ -3784,14 +3815,14 @@ Setting() ; --- {{{1
 
 	;Gui,Add,ListView,x16 y32 h300 w390 count20 sortdesc  -Multi vListView g<ListViewDK>,*| Hotkey | Command | Description
     ;the +0x40000 adds resizing
-	Gui,Add,ListView,x16 y32 h300 w390 count20 -Multi vListView g<ListViewDK> +0x40000,*| Hotkey | Command | Description
+	Gui,Add,ListView,x16 y32 h300 w390 count20 -Multi vListView g<ListViewDK> +0x40000, # |*| Hotkey | Command | Description
 	;Gui,Add,ListView,x16 y32 h300 w390 count20 sortdesc  -Multi vListView g<ListViewDK> +0x40000,*| Hotkey | Command | Description
-	Lv_modifycol(2,60)
-	Lv_modifycol(3,100)
-	Lv_modifycol(4,300)
+	Lv_modifycol(3,60)
+	Lv_modifycol(4,100)
+	Lv_modifycol(5,400)
 	lv := MapKey_Arr["Hotkeys"]
 	Stringsplit,Index,lv,%A_Space%
-	Index := Index0 - 1
+    Index := Index0 - 1
 	Loop,%Index%
 	{
 		If Index%A_Index%
@@ -3802,7 +3833,7 @@ Setting() ; --- {{{1
 			Info := ActionInfo_Arr[Action]
 			If Action = <Exec>
 			{
-				Action := " run "
+				Action := " Run "
 				Key_T := Scope . TransHotkey(Key)
 				Info := ExecFile_Arr[key_T]
 			}
@@ -3812,9 +3843,12 @@ Setting() ; --- {{{1
 				Key_T := Scope . TransHotkey(Key)
 				Info := SendText_Arr[key_T]
 			}
-			LV_Add(vis,Scope,Key,Action,Info)
+            Num := Round(A_Index/2)
+			LV_Add(vis,Num,Scope,Key,Action,Info)
 		}
 	}
+    ;add last line because it is often obscured by a scrollbar
+    LV_Add(vis," ","","","","empty line because it is often obscured by a scrollbar")
 
 	Gui,Tab,3
 	Gui,Add,GroupBox,x16 y32 h480 w390, 
@@ -3879,9 +3913,10 @@ Array := ["If you had a fortune cookie what would you like it to say?"
          ,"If you could make one thing come true for all the souls on the planet what would it be?" 
          ,"What is it that you love the most about yourself?"
          ,"What is the ultimate goal of a human being?"
-         ,"What website doesn't exist but should?"
+         ;,"What website doesn't exist but should?"
          ,"There's always time to feel good."
-         ,"Remember to take breaks." ]
+         ,"Remember to take breaks."
+         ,"All is well." ]
 Random, rand, 1,Array.Length()
 Msgbox  % Array[rand] %rand%
 Return
@@ -4054,11 +4089,18 @@ EditItem()
 	Global EventInfo,VIATCSetting
 	If EventInfo
 	{
-		LV_GetText(Scope,EventInfo,1)
-		LV_GetText(Key,EventInfo,2)
-		LV_GetText(Action,EventInfo,3)
-		LV_GetText(Info,EventInfo,4)
-        ; Button25 is the Global chexkbox, (it changes if elements are added to Settings window)
+		;LV_GetText(Scope,EventInfo,1)
+		;LV_GetText(Key,EventInfo,2)
+		;LV_GetText(Action,EventInfo,3)
+		;LV_GetText(Info,EventInfo,4)
+
+		LV_GetText(Scope,EventInfo,2)
+		LV_GetText(Key,EventInfo,3)
+		LV_GetText(Action,EventInfo,4)
+		LV_GetText(Info,EventInfo,5)
+
+
+        ; Button25 is the Global chexkbox
         ;GuiControl,,Button25,1
 		If RegExMatch(Scope,"G")
             Guicontrol,,GlobalCheckbox, 1
@@ -4098,6 +4140,8 @@ DeleItem()
 			IniDelete,%ViATcIni%,ComboKey,%GetText%
 	}
 }
+
+; for the button "1 ViATc ..."
 <VIMCMD>:
 VimCMD()
 Return
@@ -4473,7 +4517,7 @@ TH()
 	if key
 	{
 		If Scope
-			KeyType := "Global key"
+			KeyType := "Global Key"
 		Else
 			KeyType := "Hotkey"
 		If RegExMatch(CheckScope(key),"C")
@@ -4730,7 +4774,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["RCtrl"] :="Rctrl >> right ctrl key, can also be control or ctrl instead "
 HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts to TC trying to resemble the work-flow of Vim and web browser plugins like Vimium or better yet SurfingKeys.`nTo disable the ViATc press alt+`` (alt+backtick which is next to the 1 key) (this shortcut can be modifed), or simply quit ViATc, TC won't be affected.`nTo show/hide TC window: double-click the tray icon, or press Win+F (modifiable)`n")
     HelpInfo_arr["Funct"] :="Single key press to operate. `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: Ctrl, Alt, Shift or LWin (must be LWin not Win).`nAll how the hotkey is written is case insensitive co <ctrl>a is same as <Ctrl>A - it will treated as lowercase. `n`nExamples of mappings:`n<LWin>g          - this works as intended`n<Ctrl><Shift>a  - invalid, more than one modifier`n<Ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >  Besides F keys are not allowed only <Ctrl><Shift><Alt><LWin> `n`nPlease click on the keyboard above to get details of each key.`nAlso in the TC window press sm = show mappings from the ini file."
-    HelpInfo_arr["ComboK"] :="Combo Keys take multiple keys to operate. `nKeys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with eight Combos Keys e,a,s,g,z,c,V and a comma. Click the keyboard above for details of what they do. For actual mappings open the Settings window where you can remap everything, you can even remap single Hotkeys into Combos Keys and vice versa."
+    HelpInfo_arr["ComboK"] :="Combo Keys take multiple keys to operate. `nKeys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with the following Combos Keys: e,a,s,S,g,z,c,V and a comma. Click the keyboard above for details of what they do. For actual mappings open the Settings window where you can remap everything, you can even remap single Hotkeys into Combos Keys and vice versa."
     HelpInfo_arr["cmdl"] :="The command line in VIATC supports abbreviations :h :s :r :m :sm :e :q, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys. If you type :map in the command line then all custom hotkeys (all ini file mappings, but not built-in) will be displayed in a tooltip`n If the input is :map key command, where key represents the hotkey to map (it can be a Combo Key or a Hotkey). This feature is suitable for the scenario where there is a temporary need for a mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file.`n:smap and :map are the same except map is a global hotkey and does not support mapping Combo Keys `n:edit  Directly edit ViATc.ini file `n:q quit TC`n`nAll mappings added using the command line are temporary (one session, not saved into the ini file). Examples `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Combo Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Combo Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be interpreted by VIATC as pressing the Enter key."
     HelpInfo_arr["command"] :="All commands can be found in the Settings window on the 'Hotkeys' tab. Commands are divided into 4 categories, there are 4 buttons there that will help you to fill-in the 'Command' textbox:`n`n1.ViATc command `n`n2.TC internal command, they begin with the 'cm_' such as cm_PackFiles but will be input as <PackFiles>.`nDon't panick when the Settings window disappears, it will reappear after double-click, OK or Cancel`n`n3. Run a program or open a file. TC has similar functions built-in but ViATc way might be more convenient`n`n4. Send a string of text. If you want to input a text into the command line then you can use the Combo Key to map the command of sending a text string.`n`nThe above commands, 1 and 2 must be surrounded with <  > , 3 needs to be surrounded with (  ) , and 4 with {  }`n`n`nRight-click any item on the list to edit or delete. Double-click to edit, or select any item and press Delete `nPress the Analysis button anytime to get a tooltip info about the Hotkey`nUse the Global option only when you want Hotkey to work everywhere outside TC. The Global option is not available for ComboKey`nSave to take effect, OK will save and reload. Cancel if you mess-up. Please make backups of the ini file before any changes, there is a button for it in the bottom-left corner of Settings window"
     HelpInfo_arr["About"] :="Author of the original Chinese version is Linxinhong `nhttps://github.com/linxinhong`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname @gmail.com    I don't speak Chinese, I've used Google translate initially and then rephrased and modified this software. `n`nYou can download a compiled executable on https://magicstep.github.io/viatc `nThe compiled version is most likely older than the current script. If you want the most recent script version then download `n https://github.com/magicstep/ViATc-English/archive/master.zip"
