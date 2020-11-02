@@ -19,8 +19,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/11/01"
-Global Version := "0.5.5en beta 20"
+Global Date := "2020/11/02"
+Global Version := "0.5.5en beta 21"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -1546,6 +1546,7 @@ VimRNCreateGui()
 	Gui,+HwndVimRN_ID
 	Gui,+Owner%TCID%
 	Gui,Menu,VimRN_MENU
+    ;Gui, Color, Silver
     ;Gui, Add, Text, x9 y9 w800 h23, Edit this filename:
     ;Gui, Color, AABB99  ;LightGreen
 /*
@@ -1558,13 +1559,16 @@ VimRNCreateGui()
 */
 
     Gui,Font,s12,Arial  ;font for the rename window
-	Gui,Add,Edit,r4 x9 y123  w820 -WantReturn gVimRN_Edit,%GetName%
+	Gui,Add,Edit,r3 x9 y103  w820 -WantReturn gVimRN_Edit,%GetName%
 	;Gui,Add,Edit,r1 w800 -WantReturn gVimRN_Edit,%GetName%  ;original
     Gui,Font,s9
-    Gui, Add, Text, x9 y10 w800 h23, Original filename saved to "history_of_rename.txt"  
-    Gui, Add, Button, x290 y6 w70 h21 gVimRN_history,  &Browse it
+    If HistoryOfRename
+        Gui, Add, Text, x9 y10 w800 h23, Original filename saved to the "history_of_rename.txt"  
+    else
+        Gui, Add, Text, x9 y10 w800 h23, Original filename     not saving "history_of_rename.txt"  
+    Gui, Add, Button, x310 y6 w70 h21 gVimRN_history,  &Browse it
     Gui,Font,s12
-    Gui, Add, Edit, x9 y30 w820 r4 ReadOnly, %GetName%  ;original 
+    Gui, Add, Edit, x9 y30 w820 r3 ReadOnly, %GetName%  ;original 
 
 
     Gui,Font,s18
@@ -1575,7 +1579,8 @@ VimRNCreateGui()
     Gui, Add, Button, x690 y4 w140 h22 Default gVimRN_Enter, &OK ;= Enter
 	;Gui,Show,h400,ViATc Fancy Rename
 	Gui,Show,,ViATc Fancy Rename
-    PostMessage,0x00C5,256,,%ThisControl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 256
+    PostMessage,0x00C5,255,,%ThisControl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 255
+    ;PostMessage,0x00C5,256,,%ThisControl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 256
 
 	VimRN := GetConfig("FancyVimRename","Mode")
 	If VimRN
@@ -1589,7 +1594,10 @@ VimRNCreateGui()
 	If GetConfig("FancyVimRename","UnselectExt")
 	{
 		SplitPath,GetName,,,Ext
-		Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
+        If VimRN
+            Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
+        else
+            Menu,VimRN_Set,Uncheck, Vim mode at start `tAlt+V
         Menu,VimRN_Set,Check, Unselect extension at start `tAlt+E
 	}
 	If Ext And ( Not GetDir )
@@ -1639,6 +1647,10 @@ VimRN_Word:
 Key := VimRN_Vis ? "^+{Right}" : "^{Right}"
 VimRN_SendKey(key)
 Return
+VimRN_WordEnd:
+Key := VimRN_Vis ? "^+{Right}+{Left}" : "^{Right}{Left}"
+VimRN_SendKey(key)
+Return
 VimRN_BackWord:
 Key := VimRN_Vis ? "^+{Left}" : "^{Left}"
 VimRN_SendKey(key)
@@ -1666,14 +1678,19 @@ If VimRN_SendKey("")
 	VimRN_IsFind := True
 }
 Return
-VimRN_SelectThis:
-If VimRN_SendKey("")
-{
+VimRN_DeselectSimple:
+    Send {Right}{Left}   ; deselect
+Return
+VimRN_DeselectStart:
+	Pos := VimRN_GetPos()
+	Pos := Pos[1]
+	VimRN_SetPos(Pos,Pos)
+return
+VimRN_DeselectEnd:
 	Pos := VimRN_GetPos()
 	Pos := Pos[2]
 	VimRN_SetPos(Pos,Pos)
-}
-return
+Return
 VimRN_Selectall:
 If VimRN_SendKey("")
 {
@@ -1701,16 +1718,34 @@ If VimRN_SendKey("")
 	VimRN_SetPos(Pos1+1,Pos1+Pos2+1)
 }
 Return
+;start of the line
 VimRN_Home:
 If VimRN_SendKey("")
-	VimRN_SetPos(0,0)
+{
+    ;VimRN_SetPos(0,0)
+    Key := VimRN_Vis ? "+{Home}" : "{Home}"
+    VimRN_SendKey(key)
+}
+Return
+;start of the top line
+VimRN_Home_g:
+If VimRN_SendKey("")
+{
+    ;VimRN_SetPos(0,0)
+    Key := VimRN_Vis ? "+{Home}" : "{Home}"
+    VimRN_SendKey(key)
+    VimRN_SendKey(key)
+    VimRN_SendKey(key)
+}
 Return
 VimRN_End:
 If VimRN_SendKey("")
 {
-	ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
-	Pos := Strlen(Text)
-	VimRN_SetPos(Pos,Pos)
+	;ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
+	;Pos := Strlen(Text)
+	;VimRN_SetPos(Pos,Pos)
+    Key := VimRN_Vis ? "+{End}" : "{End}"
+    VimRN_SendKey(key)
 }
 Return
 VimRN_Copy:
@@ -1772,7 +1807,13 @@ Return
 VimRN_MultiReplace:
 If VimRN_SendKey("")
 {
+    VimRN := False
+    VimRN_Vis := False
 	VimRN_IsMultiReplace := True
+    Status := "  mode : Replace                                "
+    ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
+    gosub VimRN_DeselectSimple
+    Send +{Right}        ; select one char
 	Pos := VimRN_GetPos()
 	If Pos[1] = Pos[2]
 	{
@@ -1807,30 +1848,58 @@ If VimRN_SendKey("")
 	}
 	Else
 	{
+        ;gosub VimRN_DeselectEnd
+        gosub VimRN_DeselectSimple
         WinSet, Region,, ahk_id %VimRN_ID% ; Restore the window to its original/default display area. !!!!
-
 		Status := "  mode : Vim                                    "
 		ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
 	}
 }
 Return
-VimRN_Insert:
+VimRN_InsertMode:
 If VimRN_SendKey("")
 {
+    VimRN_Count := 0
 	VimRN := False
+	VimRN_Vis := False
 	Status := "  mode : Insert                                 "
 	ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
 }
 Return
+VimRN_Insert:
+If VimRN_SendKey("")
+{
+    ;gosub VimRN_DeselectSimple
+    gosub VimRN_InsertMode
+    gosub VimRN_DeselectStart
+}
+Return
+VimRN_InsertHome:
+    gosub VimRN_InsertMode
+    Send {Home}
+Return
+VimRN_Append:
+If VimRN_SendKey("")
+{
+    gosub VimRN_InsertMode
+    gosub VimRN_DeselectEnd
+    Send {Right}
+}
+Return
+VimRN_AppendEnd:
+    gosub VimRN_InsertMode
+    Send {End}
+Return
 VimRN_Esc:
-VimRN := True
-VimRN_IsReplace := False
-VimRN_IsMultiReplace := False
-VimRN_Count := 0
-Status := "  mode : Vim                                    "
-Tooltip
-Settimer,<RemoveHelpTip>,off
-ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
+    gosub VimRN_DeselectEnd
+    VimRN := True
+    VimRN_IsReplace := False
+    VimRN_IsMultiReplace := False
+    VimRN_Count := 0
+    Status := "  mode : Vim                                    "
+    Tooltip
+    Settimer,<RemoveHelpTip>,off
+    ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
 Return
 VimRN_Quit:
 If VimRN_SendKey("")
@@ -1904,18 +1973,22 @@ q :  Quit, cancel rename without saving
 i :  Insert mode
 v :  Visual select mode (v again to toggle to Vim Normal mode)
 Esc :  Vim's Normal mode
-^[  :  same as Esc
-Capslock : same as Esc (only if this is enabled in the settings)
+^[  :  Same as Esc
+Capslock : Same as Esc (only if this is enabled in the settings)
 Enter :  Save rename
+a :  Append 
+A :  Append at end
+I :  Insert at front
 
+j :  Move downward N lines (if filename is so long that it wraps)
+k :  Move up N lines (if filename is so long that it wraps)
 h :  Move to the left N characters
-l :  move to the right N characters
+l :  Move to the right N characters
 H :  Select to the left N characters
 L :  Select to the right N characters
 w :  Word
+e :  End of a word
 b :  Back a word
-j :  Move downward N lines (if filename is so long that it wraps)
-k :  Move up N lines (if filename is so long that it wraps)
 u :  Undo
 x :  Delete forward
 X :  Delete backward (like backspace or X in vim)
@@ -1925,14 +1998,17 @@ p :  Paste the character
 f :  Find characters, E.g 'f' then 'a' to find 'a'
 t :  Transpose two characters at the cursor
 r :  Replace one character at the cursor
-R :  Replace continuously characters untill Esc
+R :  Replace characters continuously untill Esc
 n :  Select the file name
-e :  Select the extension
-a :  Select all
-g :  Deselect, put cursor at the first character
-^ :  Deselect, put cursor at the first character
-$ :  Deselect, put cursor at the last character
-s :  Deselect, put cursor at the end of the selected text
+[ :  Select the file name
+] :  Select the extension
+' :  Select all
+g :  Put cursor at the first character
+0 :  Put cursor at the first character
+^ :  Put cursor at the first character
+$ :  Put cursor at the last character
+s :  Deselect, put cursor at the start of the selected text
+o :  Deselect, put cursor at the end of the selected text
 )
 	WinGetPos,,,w,h,AHK_ID %VimRN_ID%
     ;MsgBox, 262144, MyTitle, My Text Here   ;Always-on-top is  262144
@@ -1980,7 +2056,15 @@ VimRN_SendNum()
 		If VimRN_Count
 			VimRN_Count := ThisNum + (VimRN_Count * 10 )
 		Else
-			VimRN_Count := ThisNum + 0
+            If ThisNum = 0
+            {
+                ;VimRN_SetPos(0,0)
+                Key := VimRN_Vis ? "+{Home}" : "{Home}"
+                VimRN_SendKey(key)
+                Return False
+            }
+            else
+			   VimRN_Count := ThisNum + 0
 		if VimRN_Count > 256
 			VimRN_Count := 256
 		ControlGetText,status,msctls_statusbar321,AHK_ID %VimRN_ID%
@@ -2092,13 +2176,32 @@ VimRN_SetPos(Pos1,Pos2)
 	PostMessage,0x00B1,%Pos1%,%Pos2%,Edit1,AHK_ID %VimRN_ID%
 }
 
+
 ; --- hardcoded settings {{{1
 SetDefaultKey()
 {
-    ; ---------  keys for quick-search (ctrl+s)
+    ; ---------  keys for quick-search (\ or ctrl+s)
 	Hotkey,Ifwinactive,ahk_class TQUICKSEARCH
 	Hotkey,+j,<Down>
-	Hotkey,+k,<Up>
+	Hotkey,+k,<Up>    
+	Hotkey,!j,<Down>
+	Hotkey,!k,<Up>
+    Hotkey,^g,<Down>
+	Hotkey,^t,<Up>
+    ; ---------  keys for search (? or alt+F7)
+    Hotkey,Ifwinactive,ahk_class TFindFile
+	Hotkey,!j,<Down>
+	Hotkey,!k,<Up>
+    Hotkey,^g,<Down>
+	Hotkey,^t,<Up>
+    Hotkey,^e,<Down>
+	Hotkey,^y,<Up>
+    ; ---------  keys for Help
+	Hotkey,Ifwinactive,Help   VIATC %Version%
+	Hotkey,j,<Down>
+	Hotkey,k,<Up>    
+	Hotkey,h,<Left>    
+	Hotkey,l,<Right>    
 
     ; -------- single keys
 	Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
@@ -2258,6 +2361,7 @@ SetDefaultKey()
 	Hotkey,h,VimRN_Left,on,UseErrorLevel
 	Hotkey,l,VimRN_Right,on,UseErrorLevel
 	Hotkey,w,VimRN_Word,on,UseErrorLevel
+    Hotkey,e,VimRN_WordEnd,on,UseErrorLevel
 	Hotkey,b,VimRN_BackWord,on,UseErrorLevel
 	Hotkey,+j,VimRN_SDown,on,UseErrorLevel
 	Hotkey,+k,VimRN_SUp,on,UseErrorLevel
@@ -2268,18 +2372,22 @@ SetDefaultKey()
 	Hotkey,+X,VimRN_Backspace,on,UseErrorLevel
 	Hotkey,x,VimRN_Delete,on,UseErrorLevel
 	Hotkey,i,VimRN_Insert,on,UseErrorLevel
+	Hotkey,+i,VimRN_InsertHome,on,UseErrorLevel
+	Hotkey,a,VimRN_Append,on,UseErrorLevel
+	Hotkey,+a,VimRN_AppendEnd,on,UseErrorLevel
 	Hotkey,t,VimRN_Trade,on,UseErrorLevel
 	Hotkey,f,VimRN_Find,on,UseErrorLevel
     Hotkey,r,VimRN_Replace,on,UseErrorLevel
 	Hotkey,+r,VimRN_MultiReplace,on,UseErrorLevel
-	Hotkey,a,VimRN_Selectall,on,UseErrorLevel
-	Hotkey,s,VimRN_SelectThis,on,UseErrorLevel
+	Hotkey,',VimRN_Selectall,on,UseErrorLevel
+	Hotkey,s,VimRN_DeselectStart,on,UseErrorLevel
+	Hotkey,o,VimRN_DeselectEnd,on,UseErrorLevel
 	Hotkey,n,VimRN_Selectfilename,on,UseErrorLevel
-    Hotkey,e,VimRN_Selectext,on,UseErrorLevel
-	;Hotkey,0,VimRN_Home,on,UseErrorLevel
-	;Hotkey,^,VimRN_Home,on,UseErrorLevel
-	Hotkey,+6,VimRN_Home,on,UseErrorLevel
-	Hotkey,g,VimRN_Home,on,UseErrorLevel
+    Hotkey,[,VimRN_Selectfilename,on,UseErrorLevel
+    Hotkey,],VimRN_Selectext,on,UseErrorLevel
+    ;Hotkey,^,VimRN_Home,on,UseErrorLevel
+    Hotkey,+6,VimRN_Home,on,UseErrorLevel
+	Hotkey,g,VimRN_Home_g,on,UseErrorLevel
 	Hotkey,$,VimRN_End,on,UseErrorLevel
 	Hotkey,q,VimRN_Quit,on,UseErrorLevel
 	Hotkey,u,VimRN_Undo,on,UseErrorLevel
@@ -2400,10 +2508,10 @@ ExecFile()
 	{
 		Key := "H" . A_ThisHotkey
 		If Not ExecFile_Arr[Key]
-			Key := "S" . A_ThisHotkey
+			Key := "G" . A_ThisHotkey
 	}
 	Else
-		Key := "S" . A_ThisHotkey
+		Key := "G" . A_ThisHotkey
 	If GoExec
 		File := ExecFile_Arr[GoExec]
 	Else
@@ -2427,10 +2535,10 @@ SendText()
 	{
 		Key := "H" . A_ThisHotkey
 		If Not SendText_Arr[Key]
-			Key := "S" . A_ThisHotkey
+			Key := "G" . A_ThisHotkey
 	}
 	Else
-		Key := "S" . A_ThisHotkey
+		Key := "G" . A_ThisHotkey
 	If GoText
 		Text := SendText_Arr[GoText]
 	Else
@@ -2982,7 +3090,7 @@ MapKeyAdd(Key,Action,Scope)
 MapKeyDelete(Key,Scope)
 {
 	Global MapKey_Arr
-	If Scope = S
+	If Scope = G
 	{
 		Key_T := TransHotkey(Key)
 		Hotkey,IfWinActive
@@ -3342,7 +3450,7 @@ Enter() ;  on Enter pressed {{{2
 				If RegExMatch(Key,"^[^<][^>]+$|^<[^<>]*>[^<>][^<>]+$|^<[^<>]+><[^<>]+>.+$")
 					Tooltip, The mapping failed `, Global hotkeys do not support Combo Keys ,%xn%,%yn%
 				Else
-					If Not MapKeyAdd(Key,Action,"S")
+					If Not MapKeyAdd(Key,Action,"G")
 						Tooltip, The mapping failed ,%xn%,%yn%
 				Else
 					Tooltip, The mapping is successful ,%xn%,%yn%
@@ -4380,7 +4488,7 @@ CheckKey()
 	GuiControlGet,Key,,Edit4,AHK_CLASS %ViATcSetting%
 	GuiControlGet,Action,,Edit5,AHK_CLASS %ViATcSetting%
 	If Scope
-		Scope := "S"
+		Scope := "G"
 	Else
 		Scope := "H"
 	If RegExMatch(CheckScope(key),"C")
@@ -4644,12 +4752,18 @@ Help() ; --- Help {{{1
     Gui,Add,Text,x399 y25 w200 h120 , Click on the keyboard to see what the key does. Please note that some info might not be accurate because any of the hotkeys can be overriden in the Settings.
 	Gui,Font,s9,Arial Bold    
     Gui,Add,Groupbox,x12 y135 w574 h40
-    Gui,Add,Button,x15 y146 w60 gIntro, &Intro
-    Gui,Add,Button,x80 y146 w75 gFunct, &Hotkey
-    Gui,Add,Button,x159 y146 w100 gCombok, Combo &Key
-    Gui,Add,Button,x265 y146 w130 gCmdl, Command &Line
-    Gui,Add,Button,x400 y146 w105 gAction, &Commands
-    Gui,Add,Button,x510 y146 w67 gAbout, &About
+    Gui,Add,Button,x15 y146 w60 gIntro, &1  Intro
+    Gui,Add,Button,x80 y146 w75 gFunct, &2  Hotkey
+    Gui,Add,Button,x159 y146 w100 gCombok, &3  Combo Key
+    Gui,Add,Button,x265 y146 w130 gCmdl, &4  Command Line
+    Gui,Add,Button,x400 y146 w105 gAction, &5  Commands
+    Gui,Add,Button,x510 y146 w67 gAbout, &6  About
+    ;Gui,Add,Button,x15 y146 w60 gIntro, &Intro
+    ;Gui,Add,Button,x80 y146 w75 gFunct, &Hotkey
+    ;Gui,Add,Button,x159 y146 w100 gCombok, Combo &Key
+    ;Gui,Add,Button,x265 y146 w130 gCmdl, Command &Line
+    ;Gui,Add,Button,x400 y146 w105 gAction, &Commands
+    ;Gui,Add,Button,x510 y146 w67 gAbout, &About
     Intro := HelpInfo_Arr["Intro"]
     Gui,Font,s11,Arial   ;font for the bottom textarea box in help window
     ;Gui,Font,s12,Georgia   ;font for the bottom textarea box in help window
@@ -4729,7 +4843,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["W"] :="w >> Small menu `nW >> No mapping "
     HelpInfo_arr["E"] :="e >> e...  (Combo Key, requires another key) `nec >> Compare files by content`nef >> Edit file`neh >> Toggle hidden files`nep >> Edit path in tabbar`n`n`nE >> Edit file prompt"
     HelpInfo_arr["R"] :="r >> Fancy Rename`nR >> Rename (simple default TC, not fancy ViATc) "
-    HelpInfo_arr["T"] :="t >> New tab `nT >> Create a new tab in the background "
+    HelpInfo_arr["T"] :="t >> New tab `nT >> Create a new tab in the background  `n`nctrl+t >>  Go up in QuickSearch (opened by / or ctrl+s)  ctrl+t works the same in real Vim search"
     HelpInfo_arr["Y"] :="y >> Copy window like F5  `nY >> Copy the file name and the full path "
     HelpInfo_arr["U"] :="u >> Up a directory `nU >> Up to the root directory "
     HelpInfo_arr["I"] :="i >> Enter `nI >> No mapping "
@@ -4744,10 +4858,10 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["S"] :="s >> Sort by... (Combo Key, requires another key) `nS >> (Combo Key, requires another key) show all, executables, etc. `nsn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nst >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9 >>"
     HelpInfo_arr["D"] :="d >> Favourite folders hotlist`nD >> Open the desktop folder "
     HelpInfo_arr["F"] :="f >> Page down, Equivalent to PageDown`nF >> Switch to TC Default fast search mode "
-    HelpInfo_arr["G"] :="g >> Tab operation (Combo Key, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngt >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab) also gr, I don't know how to bind gT`nga >> Close All tabs `ngc >> Close the Current tab `ngn >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab "
+    HelpInfo_arr["G"] :="g >> Tab operation (Combo Key, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngt >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab) also gr, I don't know how to bind gT`nga >> Close All tabs `ngc >> Close the Current tab `ngn >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab `n`nctrl+g >>  Go down in QuickSearch (opened by / or ctrl+s)  ctrl+g works the same in real Vim search)"
     HelpInfo_arr["H"] :="h >> Left arrow key. Works in thumbnail and brief mode. In full mode the effect is the cursor enters command line. `nH >> Go Backward in dir history"
-    HelpInfo_arr["J"] :="j >> Go Down num times `nJ >> Select down Num files (folders), In QuickSearch(ctrl+s) go down"
-    HelpInfo_arr["K"] :="k >> Go Up num times `nK >> Select up Num files (folders), In QuickSearch(ctrl+s) go up"
+    HelpInfo_arr["J"] :="j >> Go Down num times `nJ >> Select down Num files (folders),  Go down in QuickSearch(opened by / or ctrl+s)`n alt+j >>  Go down in QuickSearch (go down with ctrl+g as well, same like in real Vim search)"
+    HelpInfo_arr["K"] :="k >> Go Up num times `nK >> Select up Num files (folders),   Go up in QuickSearch(opened by / or ctrl+s)`n alt+k >>  Go up in QuickSearch  (go up with ctrl+t as well, same like in real Vim search)"
     HelpInfo_arr["L"] :="l >> Right arrow key. Works in thumbnail and brief mode. In full mode the effect is the cursor enters command line. `nL >> Go Forward in dir history"
     HelpInfo_arr["`;:"] :="; >> Put focus on the command line `n: >> Get into VIATC command line mode : (like ex mode in vim)"
     HelpInfo_arr["'"""] :="' >> Marks. `n Go to mark by single quote (Create mark by m) `n"" >> No mapping "
