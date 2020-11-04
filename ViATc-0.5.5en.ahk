@@ -19,8 +19,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/11/02"
-Global Version := "0.5.5en beta 21"
+Global Date := "2020/11/04"
+Global Version := "0.5.5en beta 22"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -92,7 +92,10 @@ Else
 	Global TCPanel1 := "TPanel1"
 	Global TCPanel2 := "TMyPanel8"
 }
+Global 64orBlank := (TCBit=64)?64:
 Global TCEditMarks := TCEdit  ;"Edit1"
+Global F11TC := GetConfig("Configuration","F11TC")
+Global IrfanView := GetConfig("Configuration","IrfanView")
 
 GoSub,<ConfigVar>
 Menu,VimRN_Set,Add, Vim mode at start `tAlt+V,VimRN_SelMode
@@ -1128,7 +1131,7 @@ ListMapKeyMultiColumn()
 	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
 	Map := MapKey_Arr["Hotkeys"]
 	Stringsplit,ListMap,Map,%A_Space%
-    Global ColumnCount := 2
+    Global ColumnCount := 3
     ItemCount := 0
 	Loop,% ListMap0
 	{
@@ -1146,10 +1149,18 @@ ListMapKeyMultiColumn()
 				Action := "{" . SendText_Arr[TX] . "}"
 			}
             line := SubStr(ListMap%A_Index%,1,1) . "  " . SubStr(ListMap%A_Index%,2) . "  " . Action
-            loop 20
+            loop 10*ColumnCount
             {
-                if StrLen(line) < 60
-                    line .= " " ;"`t"
+                if StrLen(line) < 20*ColumnCount
+                    line .= " "
+                else
+                    break
+            }
+            loop 4
+            {
+                if StrLen(line) < 25*ColumnCount
+                    line .= "`t"
+                    ;line .= " " ;"`t"
                 else
                     break
             }
@@ -1607,9 +1618,13 @@ VimRNCreateGui()
 		VimRN_SetPos(StartPos,EndPos)
 	}
 
-
 	VimRN_History["s"] := 0
-	VimRN_History[0] := StartPos . "," . EndPos . "," . GetName
+    VimRN_IsReplace := False
+    VimRN_IsMultiReplace := False
+    VimRN_Count := 0
+
+	;VimRN_History[0] := StartPos . "," . EndPos . "," . GetName
+	VimRN_History[0] := StartPos . "|" . EndPos . "|" . GetName
 	VimRN_History["String"] := GetName
 	OnMessage(WM_CHAR,"GetFindText")
 }
@@ -2003,12 +2018,12 @@ n :  Select the file name
 [ :  Select the file name
 ] :  Select the extension
 ' :  Select all
-g :  Put cursor at the first character
-0 :  Put cursor at the first character
-^ :  Put cursor at the first character
-$ :  Put cursor at the last character
-s :  Deselect, put cursor at the start of the selected text
-o :  Deselect, put cursor at the end of the selected text
+g :  Put cursor at the first character of the first line
+0 :  Put cursor at the first character of the line
+^ :  Put cursor at the first character of the line
+$ :  Put cursor at the last character  of the line
+s :  Deselect, put cursor at the start of selected text
+o :  Deselect, put cursor at the end of selected text
 )
 	WinGetPos,,,w,h,AHK_ID %VimRN_ID%
     ;MsgBox, 262144, MyTitle, My Text Here   ;Always-on-top is  262144
@@ -2095,7 +2110,8 @@ VimRN_Undo()
 	Else
 		DontSetText := True
 	Change := VimRN_History[Serial]
-	Stringsplit,Pos,Change,`,
+	;Stringsplit,Pos,Change,`,   ;When fancy-renaming a name including a comma, the undo function truncates till the comma.
+	Stringsplit,Pos,Change,|    ; "|" is a divider because it is not allowed in filenames
 	If Not DontSetText
 		ControlSetText,Edit1,%Pos3%,AHK_ID %VimRN_ID%
 	VimRN_SetPos(Pos1,Pos2)
@@ -2113,7 +2129,8 @@ VimRN_Edit()
 		pos := VimRN_GetPos()
 		StartPos := pos[1]
 		EndtPos  := pos[2]
-		VimRN_History[Serial] :=  StartPos . "," . EndPos . "," .  Change
+		;VimRN_History[Serial] :=  StartPos . "," . EndPos . "," .  Change
+		VimRN_History[Serial] :=  StartPos . "|" . EndPos . "|" .  Change
 		VimRN_History["s"] := Serial
 		VimRN_History["String"] := change
 		If VimRN_IsReplace
@@ -6849,59 +6866,61 @@ Return
 
 ;----------------- Aux ----------
 
-
-If GetConfig("Configuration","Aux")
-{
-
-
-; $ prefix in the hotkey (or #UseHook earlier in the script) will prevent the script from being triggered if the script uses the Send command to send the keys that comprise the hotkey itself
+;----------------- F11TC ----------
+; $ prefix in the hotkey (or #UseHook earlier in the script) will prevent the script from
+; being triggered if the script uses the Send command to send the keys that comprise the hotkey itself
+#If %F11TC%
 $F11::
-    If WinActive("ahk_exe totalcmd64.exe")
-    {
-        program = %A_ScriptDir%\TcFullScreen.exe
-        if FileExist(program)
-            Run %program% 
-        else
-        {
-            link = https://magicstep.github.io/viatc/TcFullScreen/
-            MsgBox, 4, , %program% is required. Download it from %link% `nOpen link?
-            IfMsgBox Yes
-                Run %link% 
-        }
-
-    }
-    else send, {F11}
-    return   
-
-
-;IrfanView map  j = next
-#If (WinActive("ahk_exe i_view32.exe") or WinActive("ahk_exe i_view64.exe") )
-j::Send {Right}
+;If WinActive("ahk_exe totalcmd".%64orBlank%.".exe")
+If WinActive("ahk_exe totalcmd64.exe")
+    gosub <TcFullScreenWithexeplugin>
+else send, {F11}
+return   
 #If
 
-;IrfanView map  k = prev
+
+;----------------- IrfanView ----------
+;IrfanView map  j = right = next
+#If %IrfanView%
 #If (WinActive("ahk_exe i_view32.exe") or WinActive("ahk_exe i_view64.exe") )
-k:: Send {Left}
+    j::Send {Right}
+#If
+
+;IrfanView map  k = left = prev
+#If %IrfanView%
+#If (WinActive("ahk_exe i_view32.exe") or WinActive("ahk_exe i_view64.exe") )
+    k:: Send {Left}
 #If
 
 
 ;IrfanView autoadvance folder in TotalCommander
+#If %IrfanView%
 ScrollLock::
-    If (WinActive("ahk_exe i_view32.exe") or WinActive("ahk_exe i_view64.exe") or WinActive("ahk_exe TOTALCMD64.EXE"))
+If (WinActive("ahk_exe i_view32.exe")
+or WinActive("ahk_exe i_view64.exe")
+or WinActive("ahk_exe TOTALCMD64.EXE"))
+{
+    Send {Esc}
+    Sleep ,200
+    If WinActive("ahk_exe totalcmd64.exe")
     {
-        Send {Esc}
-        Sleep ,200
-        If WinActive("ahk_exe totalcmd64.exe")
-        {
-            Send {BackSpace}
-            Sleep , 30
+        Send {BackSpace}
+        Sleep , 30
+        Send {Down}
+        Send {Space}
+        Sleep ,900
+        Send {Enter}
+        Sleep ,600
+        ;if some files were let loose outside directories then they will be opened by now
+        ;so here check
+        if WinActive("ahk_exe TOTALCMD64.EXE")
+        {   
             Send {Down}
-            Send {Space}
-            Sleep ,900
-            Send {Enter}
+            Sleep ,30
+            Send {Enter} 
+            
             Sleep ,600
-            ;if some files were let loose outside directories then they will be opened by now
-            ;so here check
+            ;if there was a subfolder then we are still in totalcmd
             if WinActive("ahk_exe TOTALCMD64.EXE")
             {   
                 Send {Down}
@@ -6909,35 +6928,28 @@ ScrollLock::
                 Send {Enter} 
                 
                 Sleep ,600
-                ;if there was a subfolder then we are still in totalcmd
+                ;second time the same, if there was a sub-subfolder then we are still in totalcmd
                 if WinActive("ahk_exe TOTALCMD64.EXE")
                 {   
                     Send {Down}
                     Sleep ,30
                     Send {Enter} 
-                    
-                    Sleep ,600
-                    ;second time the same, if there was a sub-subfolder then we are still in totalcmd
-                    if WinActive("ahk_exe TOTALCMD64.EXE")
-                    {   
-                        Send {Down}
-                        Sleep ,30
-                        Send {Enter} 
-                    }                    
-                }
-                Sleep ,600
+                }                    
             }
-            Sleep ,1900
-            ;hide cursor in IrfanView by F11
-            ;Send {F11} 
+            Sleep ,600
         }
-        ; A is an autoadvance in Irfanview
-        Send +a
+        Sleep ,1900
+        ;hide cursor in IrfanView by F11
+        ;Send {F11} 
     }
-    else ;irfan not active
-        send, {ScrollLock}
-return
+    ; A is an autoadvance in Irfanview
+    ;Send +a
 }
+else ;irfan not active
+    send, {ScrollLock}
+return
+#If
+
 
 ; vim: fdm=marker set foldlevel=2
 ;-----------------------------
