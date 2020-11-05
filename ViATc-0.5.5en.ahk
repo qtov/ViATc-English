@@ -1984,16 +1984,16 @@ VimRN_Help()
 	rename_help =
 (
  -----  simple Vim emulator -----
-q :  Quit, cancel rename without saving
+q :  Quit rename without saving
 i :  Insert mode
+I :  Insert at front
+a :  Append 
+A :  Append at end
 v :  Visual select mode (v again to toggle to Vim Normal mode)
 Esc :  Vim's Normal mode
 ^[  :  Same as Esc
 Capslock : Same as Esc (only if this is enabled in the settings)
 Enter :  Save rename
-a :  Append 
-A :  Append at end
-I :  Insert at front
 
 j :  Move downward N lines (if filename is so long that it wraps)
 k :  Move up N lines (if filename is so long that it wraps)
@@ -4864,7 +4864,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["Y"] :="y >> Copy window like F5  `nY >> Copy the file name and the full path "
     HelpInfo_arr["U"] :="u >> Up a directory `nU >> Up to the root directory "
     HelpInfo_arr["I"] :="i >> Enter `nI >> No mapping "
-    HelpInfo_arr["O"] :="o >> Open the left drive list `nO >> Open the list of drives and special folders.  Equivalent to 'This PC' in Windows Explorer"
+    HelpInfo_arr["O"] :="o >> Open the drive list `nO >> Open the list of drives and special folders.  Equivalent to 'This PC' in Windows Explorer"
     HelpInfo_arr["P"] :="p >> Compressed file / folder `nP >> unzip "
     HelpInfo_arr["[{"] :="[ >> Select files with the same file name `n{ >> Unselect files with the same file name "
     HelpInfo_arr["]}"] :="] >> Select files with the same extension `n} >> Unselect files with the same extension "
@@ -4875,7 +4875,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["S"] :="s >> Sort by... (Combo Key, requires another key) `nS >> (Combo Key, requires another key) show all, executables, etc. `nsn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nst >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9 >>"
     HelpInfo_arr["D"] :="d >> Favourite folders hotlist`nD >> Open the desktop folder "
     HelpInfo_arr["F"] :="f >> Page down, Equivalent to PageDown`nF >> Switch to TC Default fast search mode "
-    HelpInfo_arr["G"] :="g >> Tab operation (Combo Key, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngt >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab) also gr, I don't know how to bind gT`nga >> Close All tabs `ngc >> Close the Current tab `ngn >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab `n`nctrl+g >>  Go down in QuickSearch (opened by / or ctrl+s)  ctrl+g works the same in real Vim search)"
+    HelpInfo_arr["G"] :="g >> Tab operation (Combo Key, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngt >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab) also gr, I don't know how to bind gT`nga >> Close All tabs `ngc >> Close the Current tab `ngn >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab `n`nctrl+g >>  Go down in QuickSearch (opened by / or ctrl+s)  ctrl+g works the same in real Vim search,  ctrl+t is up (mnemonic hint: T is above G) "
     HelpInfo_arr["H"] :="h >> Left arrow key. Works in thumbnail and brief mode. In full mode the effect is the cursor enters command line. `nH >> Go Backward in dir history"
     HelpInfo_arr["J"] :="j >> Go Down num times `nJ >> Select down Num files (folders),  Go down in QuickSearch(opened by / or ctrl+s)`n alt+j >>  Go down in QuickSearch (go down with ctrl+g as well, same like in real Vim search)"
     HelpInfo_arr["K"] :="k >> Go Up num times `nK >> Select up Num files (folders),   Go up in QuickSearch(opened by / or ctrl+s)`n alt+k >>  Go up in QuickSearch  (go up with ctrl+t as well, same like in real Vim search)"
@@ -4926,7 +4926,7 @@ SetComboInfo() ; combo keys help {{{2
 SetVimAction()  ; --- internal ViATc commands
 {
     Global VimAction
-    VimAction := " <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <singleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen>  <TCFullScreenWithExePlugin> <EditViATCIni> <ExReName> <azTab> <none>"
+    VimAction := " <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <singleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <TCFullScreenWithExePlugin> <EditViATCIni> <ExReName> <azTab> <none>"
 }
 
 SetActionInfo()  ; --- command's descriptions
@@ -4981,7 +4981,8 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<Internetsearch>"] :=" Use the default internet browser to search for the current file "
     ActionInfo_Arr["<azHistory>"] :=" Folder history menu, A-Z selection "
     ActionInfo_Arr["<azCmdHistory>"] :=" View the command history "
-    ActionInfo_Arr["<ListMapKey>"] :=" Show custom mapping keys "
+    ActionInfo_Arr["<ListMapKey>"] :=" Show custom mapping keys. It's better to just open Settings window instead. "
+    ActionInfo_Arr["<ListMapKeyMultiColumn>"] :=" Show custom mapping keys. It's better to just open Settings window instead. "
     ActionInfo_Arr["<WinMaxLeft>"] :=" Maximize left panel "
     ActionInfo_Arr["<WinMaxRight>"] :=" Maximize right panel "
     ActionInfo_Arr["<AlwayOnTop>"] :=" TC always on top "
