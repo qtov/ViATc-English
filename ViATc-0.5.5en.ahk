@@ -1356,16 +1356,18 @@ azTab()
 	Global TabsBreak,TcExe
 	If RegExMatch(TcExe,"i)totalcmd64\.exe")
     {
-       Msgbox This doesn't work with totalcmd64, 64bit not supported. Not that useful anyway.
+       Msgbox This doesn't work with totalcmd64, 64bit not supported. 
 	   Return 
     }
 	TCid := WinExist("AHK_CLASS TTOTAL_CMD")
+    ;Msgbox  Debugging TCid = [%TCid%]  on line %A_LineNumber% ;!!!
 	WinClose,ViATc_TabList
 	ControlGetPos,xe,ye,we,he,Edit1,AHK_CLASS TTOTAL_CMD
 	Gui,New
 	Gui,+HwndTabsHwnd -Caption  +Owner%TCid%
 	Gui,Add,ListBox,x2 y2 w%we% gSetTab
 	Index := 1
+    ; !!! the ControlGetTabs is causing a nasty error on first use
 	for i,tab in ControlGetTabs("TMyTabControl1","AHK_CLASS TTOTAL_CMD")
 	{
 		vTab := Chr(Index+64) . ":" . Tab
@@ -1411,6 +1413,7 @@ azTab()
 	Gui,Show,h%h% w%w% x%x% y%y%,ViATc_TabList
 	Postmessage,0xB1,7,7,%TCEdit%,AHK_CLASS TTOTAL_CMD
 }
+
 SetTab:
 ControlGet,var,Choice,,Listbox1
 Pos := SubStr(var,1,1)
@@ -1436,6 +1439,7 @@ If Not RegExMatch(Pos,"=")
 	Return
 }
 return
+
 LeftRight()
 {
 	ControlGetPos,x1,y1,,,TPanel1,AHK_CLASS TTOTAL_CMD
@@ -2347,9 +2351,9 @@ SetDefaultKey()
 	ComboKeyAdd("sn","<SrcByName>")
 	ComboKeyAdd("sr","<SrcNegOrder>")
 	ComboKeyAdd("ss","<SrcBySize>")
-	;ComboKeyAdd("<Shift>vmd","<EnableDarkmode>")
-	;ComboKeyAdd("<Shift>vml","<DisableDarkmode>")
-    ;ComboKeyAdd("<Shift>vms","<SwitchDarkmode>")
+    ComboKeyAdd("<Shift>vmt","<SwitchDarkmode>")
+	ComboKeyAdd("<Shift>vmd","<EnableDarkmode>")
+	ComboKeyAdd("<Shift>vml","<DisableDarkmode>")
 	ComboKeyAdd("<Shift>vb","<VisButtonbar>")
 	ComboKeyAdd("<Shift>vc","<VisCurDir>")
 	ComboKeyAdd("<Shift>vd","<VisDriveButtons>")
@@ -4940,7 +4944,6 @@ SetVimAction()  ; --- internal ViATc commands
 SetActionInfo()  ; --- command's descriptions
 {
     Global ActionInfo_arr
-    ActionInfo_Arr["<azTab>"] := "(works only in 32 bit TC) use a-z To browse the tab (64 bit TC unavailable)"
     ActionInfo_Arr["<ReLoadVIATC>"] :=" Reload VIATC"
     ActionInfo_Arr["<ReLoadTC>"] :=" Reload TC"
     ActionInfo_Arr["<QuitTC>"] :=" Exit TC"
@@ -5002,6 +5005,7 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<TCFullScreenAlmost>"] :=" TC nearly full screen. Windows taskbar still visible"
     ActionInfo_Arr["<TCFullScreen>"] :="TC full screen. "
     ActionInfo_Arr["<TCFullScreenWithExePlugin>"] :="TC full screen. An external exe program is required, You'll be asked to download. "
+    ActionInfo_Arr["<azTab>"] := " a-z tab selection (works only in 32 bit TC with a nasty error on first use and in 64 bit TC it is unavailable)"
     ActionInfo_Arr["<SrcComments>"] :=" Source window :  Show file comments "
     ActionInfo_Arr["<SrcShort>"] :=" Source window :  List "
     ActionInfo_Arr["<SrcLong>"] :=" Source window :  Details "
@@ -5463,6 +5467,9 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<LoadAllOnDemandFields>"] :=" All files are loaded with notes as needed "
     ActionInfo_Arr["<LoadSelOnDemandFields>"] :=" Only selected files are loading notes as needed "
     ActionInfo_Arr["<ContentStopLoadFields>"] :=" Stop background loading notes "
+    ActionInfo_Arr["<SwitchDarkmode>"] :="Toggle dark mode on and off"
+    ActionInfo_Arr["<EnableDarkmode>"] :="Turn dark mode on"
+    ActionInfo_Arr["<DisableDarkmode>"] :="Turn dark mode off. Light mode"
 }
 
 ; ---- Action Codes{{{3
@@ -6884,6 +6891,17 @@ Return
 <ContentStopLoadFields>:
 SendPos(5514)
 Return
+
+<SwitchDarkmode>:
+SendPos(2950)
+    Return
+<EnableDarkmode>:
+SendPos(2951)
+Return
+<DisableDarkmode>:
+SendPos(2952)
+Return
+
 ;}}}
 
 
