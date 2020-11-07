@@ -1,7 +1,7 @@
 ViATc
 =====
 ViATc - Vim mode at Total Commander  
-2020/11/04  version 0.5.5en beta 22  
+2020/11/07  version 0.5.5en beta 23
 ![viatc_logo credit: https://github.com/linxinhong](https://magicstep.github.io/viatc/viatc_logo.jpg?raw=true "viatc_logo")  
 <sub>image credit: <A href="https://github.com/linxinhong" target="_blank">https://github.com/linxinhong</a></sub><br>  
 This software works on Windows and only as an addition to "Total Commander"  :floppy_disk: - the greatest file manager :100: (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
@@ -32,7 +32,7 @@ Installation
 
 Settings
 ========
-You can add and remove shortcuts via the ViATc Settings window. After changes you must click Save or OK (OK will save and reload ViaTC).  
+You can add and remove shortcuts via the ViATc Settings window. After changes you must click Save or OK (OK will save and reload ViATc).  
 You can also add and remove shortcuts directly in the ini file. Reload ViATc manually after any changes made directly in the ini file to take effect.  
 In the ini file all lines that begin with a semicolon ; are ignored. It's a standard comment in ini files.  
 CapsLock is mapped as Escape. To bypass this use Ctrl+CapsLock  

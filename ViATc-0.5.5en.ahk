@@ -19,8 +19,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/11/04"
-Global Version := "0.5.5en beta 22"
+Global Date := "2020/11/07"
+Global Version := "0.5.5en beta 23"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -78,22 +78,26 @@ Splitpath,TcExe,,TcDir
 If RegExMatch(TcExe,"i)totalcmd64\.exe")
 {
     Global TCBit := 64
+    Global TCExeOnly := "totalcmd64.exe"
+    Global ahk_exe_TC = "ahk_exe totalcmd64.exe"
 	Global TCListBox := "LCLListBox"
 	Global TCEdit := "Edit1"  ;was Edit2, later both are considered when used
-    ; sometimes TC changes "Edit1" to "Edit2" when you open any of it's windows containing an edit-box
+    ; TC changes "Edit1" to "Edit2" when you open any of its windows containing an edit-box
+    Global TCEditRename := "Edit1"
 	GLobal TCPanel1 := "Window1"
 	Global TCPanel2 := "Window11"
 }
 Else
 {
     Global TCBit := 32
+    Global TCExeOnly := "totalcmd.exe"
+    Global ahk_exe_TC = "ahk_exe totalcmd.exe"
 	Global TCListBox := "TMyListBox"
 	Global TCEdit := "Edit1"
+    Global TCEditRename := "TInEdit1"
 	Global TCPanel1 := "TPanel1"
 	Global TCPanel2 := "TMyPanel8"
 }
-Global 64orBlank := (TCBit=64)?64:
-Global TCEditMarks := TCEdit  ;"Edit1"
 Global F11TC := GetConfig("Configuration","F11TC")
 Global IrfanView := GetConfig("Configuration","IrfanView")
 
@@ -518,16 +522,16 @@ If SendPos(4003)
         ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
         If (( %ThisControl% = Edit1 ) or ( %ThisControl% = Edit2 ))
         {
-            TCEditMarks := ThisControl
+            TCEdit := ThisControl
             Break
         }
         Sleep,50
     }
 	;ControlSetText,Edit1,m,AHK_CLASS TTOTAL_CMD
 	;ControlSetText,Edit2,m,AHK_CLASS TTOTAL_CMD
-	ControlSetText,%TCEditMarks%,m,AHK_CLASS TTOTAL_CMD
+	ControlSetText,%TCEdit%,m,AHK_CLASS TTOTAL_CMD
     Send {right}
-	Postmessage,0xB1,2,2,%TCEditMarks%,AHK_CLASS TTOTAL_CMD
+	Postmessage,0xB1,2,2,%TCEdit%,AHK_CLASS TTOTAL_CMD
 	SetTimer,<MarkTimer>,100
 }
 Return
@@ -547,12 +551,12 @@ MarkTimer()
         Sleep,50
     }
 
-    TCEditMarks =  %ThisControl%
+    TCEdit =  %ThisControl%
     ;Msgbox  Debugging ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!! 
 
-	ControlGetText,OutVar,%TCEditMarks%,AHK_CLASS TTOTAL_CMD
-	Match_TCEditMarks := "i)^" . TCEditMarks . "$"
-	If Not RegExMatch(TCEditMarks,Match_TCEditMarks) OR Not RegExMatch(Outvar,"i)^m.?")
+	ControlGetText,OutVar,%TCEdit%,AHK_CLASS TTOTAL_CMD
+	Match_TCEdit := "i)^" . TCEdit . "$"
+	If Not RegExMatch(TCEdit,Match_TCEdit) OR Not RegExMatch(Outvar,"i)^m.?")
 	{
 		Settimer,<MarkTimer>,Off
 		Return
@@ -560,8 +564,8 @@ MarkTimer()
 	If RegExMatch(OutVar,"i)^m.$")
 	{
 		SetTimer,<MarkTimer>,off
-		ControlSetText,%TCEditMarks%,,AHK_CLASS TTOTAL_CMD
-		ControlSend,%TCEditMarks%,{Esc},AHK_CLASS TTOTAL_CMD
+		ControlSetText,%TCEdit%,,AHK_CLASS TTOTAL_CMD
+		ControlSend,%TCEdit%,{Esc},AHK_CLASS TTOTAL_CMD
 		ClipSaved := ClipboardAll
 		Clipboard :=
 		Postmessage 1075, 2029, 0,, ahk_class TTOTAL_CMD
@@ -692,16 +696,18 @@ AddMark()
     {
         ; execute mark in the panel header, the tabstop above the file list
         SendPos(2912)  ;<EditPath> this opens the tabstop above the file list
-        TCEditMarks2 = Edit2
+        TCEdit2 := "Edit2"
+        if TCBit = 32
+             TCEdit2 := "TInEdit1"
         Sleep 100
-        ControlSetText, %TCEditMarks2%, %ThisMenuItem%, ahk_class TTOTAL_CMD
-        ControlSend, %TCEditMarks2%, {Enter}, ahk_class TTOTAL_CMD
+        ControlSetText, %TCEdit2%, %ThisMenuItem%, ahk_class TTOTAL_CMD
+        ControlSend, %TCEdit2%, {Enter}, ahk_class TTOTAL_CMD
     }
     else
     {
         ; execute mark in the command line
-        ControlSetText, %TCEditMarks%, cd %ThisMenuItem%, ahk_class TTOTAL_CMD
-        ControlSend, %TCEditMarks%, {Enter}, ahk_class TTOTAL_CMD
+        ControlSetText, %TCEdit%, cd %ThisMenuItem%, ahk_class TTOTAL_CMD
+        ControlSend, %TCEdit%, {Enter}, ahk_class TTOTAL_CMD
     }
 
 	Return
@@ -968,6 +974,7 @@ IsRootDir()
 If SendPos(-1)
 	SingleRepeat()
 Return
+<TCFullScreenAlmost>:
 <TCLite>:
 If SendPos(0)
 {
@@ -1510,10 +1517,8 @@ VimRNCreateGui()
 	Loop,8
 	{
 		ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-		;If ThisControl = TInEdit1
-        ;;The bar with path has ID = Window17 11 or 12   in 32bit TC ClassNN: PathPanel1
-        ;;You can edit this bar if you double click on it or if you rename ".." at the top of the list
-        If ThisControl = Edit1
+        ;If ThisControl = Edit1
+        If ThisControl = %TCEditRename%
 		{
 			;ControlGetText,GetName,TInEdit1,AHK_CLASS TTOTAL_CMD
 			ControlGetText,GetName,%ThisControl%,AHK_CLASS TTOTAL_CMD
@@ -1942,16 +1947,16 @@ Postmessage,1075,1007,0,,AHK_CLASS TTOTAL_CMD
 Loop,40
 {
 	ControlGetFocus,This,AHK_CLASS TTOTAL_CMD
-	If This = Edit1
+    If This = %TCEditRename%
 	{
-		ControlGetText,ConfirName,Edit1,AHK_CLASS TTOTAL_CMD
-		ControlSetText,Edit1,%NewName%,AHK_CLASS TTOTAL_CMD
+		ControlGetText,ConfirName,%TCEditRename%,AHK_CLASS TTOTAL_CMD
+		ControlSetText,%TCEditRename%,%NewName%,AHK_CLASS TTOTAL_CMD
 		Break
 	}
 	Sleep,50
 }
 If Diff(ConfirName,GetName)
-	ControlSend,Edit1,{enter},AHK_CLASS TTOTAL_CMD
+	ControlSend,%TCEditRename%,{enter},AHK_CLASS TTOTAL_CMD
 Else
 	Return
 Return
@@ -2356,18 +2361,20 @@ SetDefaultKey()
 	ComboKeyAdd("<Shift>vs","<VisStatusbar>")
 	ComboKeyAdd("<Shift>vt","<VisTabHeader>")
 	ComboKeyAdd("<Shift>vw","<VisDirTabs>")
-	ComboKeyAdd("za","<ReLoadTC>")
+    ComboKeyAdd("za","<TCFullScreenAlmost>")
 	ComboKeyAdd("zf","<TCFullScreen>")
-	ComboKeyAdd("zi","<WinMaxLeft>")
-	ComboKeyAdd("zl","<TCLite>")
+	ComboKeyAdd("zp","<TCFullScreenWithExePlugin>")
+	ComboKeyAdd("zh","<WinMaxRight>")
+	ComboKeyAdd("zl","<WinMaxLeft>")
 	ComboKeyAdd("zm","<Maximize>")
 	ComboKeyAdd("zn","<Minimize>")
-	ComboKeyAdd("zo","<WinMaxRight>")
 	ComboKeyAdd("zq","<QuitTC>")
-	ComboKeyAdd("zr","<Restore>")
+	ComboKeyAdd("zr","<ReLoadTC>")
+	ComboKeyAdd("zd","<Restore>")
 	ComboKeyAdd("zs","<Transparent>")
 	ComboKeyAdd("zt","<AlwayOnTop>")
 	ComboKeyAdd("zv","<VerticalPanels>")
+	ComboKeyAdd("zw","<WidePanelToggle>")
 	ComboKeyAdd("zx","<100Percent>")
 	ComboKeyAdd("zz","<50Percent>")
     
@@ -2386,7 +2393,7 @@ SetDefaultKey()
 	Hotkey,+l,VimRN_SRight,on,UseErrorLevel
 	Hotkey,y,VimRN_Copy,on,UseErrorLevel
 	Hotkey,d,VimRN_Backspace,on,UseErrorLevel
-	Hotkey,+X,VimRN_Backspace,on,UseErrorLevel
+	Hotkey,+x,VimRN_Backspace,on,UseErrorLevel
 	Hotkey,x,VimRN_Delete,on,UseErrorLevel
 	Hotkey,i,VimRN_Insert,on,UseErrorLevel
 	Hotkey,+i,VimRN_InsertHome,on,UseErrorLevel
@@ -2402,10 +2409,10 @@ SetDefaultKey()
 	Hotkey,n,VimRN_Selectfilename,on,UseErrorLevel
     Hotkey,[,VimRN_Selectfilename,on,UseErrorLevel
     Hotkey,],VimRN_Selectext,on,UseErrorLevel
-    ;Hotkey,^,VimRN_Home,on,UseErrorLevel
     Hotkey,+6,VimRN_Home,on,UseErrorLevel
 	Hotkey,g,VimRN_Home_g,on,UseErrorLevel
 	Hotkey,$,VimRN_End,on,UseErrorLevel
+	Hotkey,+g,VimRN_End,on,UseErrorLevel
 	Hotkey,q,VimRN_Quit,on,UseErrorLevel
 	Hotkey,u,VimRN_Undo,on,UseErrorLevel
 	Hotkey,v,VimRN_Visual,on,UseErrorLevel
@@ -3375,7 +3382,8 @@ Enter() ;  on Enter pressed {{{2
     Loop,8
     {
         ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-        ;If ThisControl = Edit1
+        ;The bar with path above file list has ID = Window17 11 or 12  TInEdit1 in 32bit TC ClassNN: PathPanel1
+        ;You can edit this bar if you double click on it or if you rename ".." at the top of the list
         If (( %ThisControl% = Edit1) or ( %ThisControl% = Edit2) or ( %ThisControl% = Window17))  ;!!!
         {
             ;Msgbox  ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!!
@@ -4884,13 +4892,13 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["'"""] :="' >> Marks. `n Go to mark by single quote (Create mark by m) `n"" >> No mapping "
     HelpInfo_arr["Enter"] :="Enter >> Enter "
     HelpInfo_arr["LShift"] :="Lshift >> Left shift key, can also be accessed in hotkeys by Shift "
-    HelpInfo_arr["Z"] :="z >> Various TC window settings (Combo Key, requires another key) zz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzi >> Maximize the left panel `nzo >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzr >> Return to normal size, Restore `nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent `nzf >> The simplest TC`nzq >> Exit TC`nza >> Reload TC`n`n`nZ >> Tooltip by mouse-over`n"
+    HelpInfo_arr["Z"] :="z >> Various TC window settings (Combo Key, requires another key) zz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzl >> Maximize the left panel `nzh >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzd >> Return to normal size, Restore down`nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent `nzw >> One 100% Wide Horizontal panel. Toggle`nzq >> Quit TC`nzr >> Reload TC`n`n`nZ >> Tooltip by mouse-over`n"
     ;HelpInfo_arr["X"] :="x >> Delete Files\folders`nX >> Force Delete, like shift+delete ignores recycle bin"
     HelpInfo_arr["X"] :="x >> Close tab`nX >> Enter or Run file under cursor"
     HelpInfo_arr["C"] :="c >> (Combo Key, requires another key) `ncc >> Delete `ncf >> Force Delete, like shift+delete ignores recycle bin`nC  >> Console. Run cmd.exe in the current directory"
     HelpInfo_arr["V"] :="v >> Context menu `nV >> View... (Combo Key, requires another key)`n<Shift>vb >> Toggle visibility :  toolbar `n<Shift>vd >> Toggle visibility :  Drive button `n<Shift>vo >> Toggle visibility :  Two drive button bars `n<Shift>vr >> Toggle visibility :  Drive list `n<Shift>vc >> Toggle visibility :  Current folder `n<Shift>vt >> Toggle visibility :  Sort tab `n<Shift>vs >> Toggle visibility :  Status Bar `n<Shift>vn >> Toggle visibility :  Command Line `n<Shift>vf >> Toggle visibility :  Function button `n<Shift>vw >> Toggle visibility :  Folder tab `n<Shift>ve >> Browse internal commands "
     HelpInfo_arr["B"] :="b >> Move up a page, Equivalent to PageUp`nB >> Open the tabbed browsing window, works in 32bit TConly"
-    HelpInfo_arr["N"] :="n >> Show the folder history ( band a-z navigation )`nN >> No mapping "
+    HelpInfo_arr["N"] :="n >> Show the folder history ( a-z navigation )`nN >> No mapping "
     HelpInfo_arr["M"] :="m >> Marking function like in Vim. Create mark by m then go to mark by single quote. For example ma will make mark a then press 'a to go to mark a `n When m is pressed the command line displays m and prompts to enter the mark letter, when this letter is entered command line closes and the current folder-path is stored as the mark. You can browse away to a different folder, and when you press ' it will show all the marks, press a and you will go to the folder where you were before.`n`n`nM >> Move to the middle of the list (the position is often not accurate, and if there are few lines the cursor might stay the same) Alternatively you can just use 11j"
     HelpInfo_arr[",<"] :=", >> Drives and locations `n< >> No mapping "
     HelpInfo_arr[".>"] :=". >> Repeat the last command. For example: `n   when you enter 10j (go down 10 lines) then to repeat just press the dot .`n   when you enter gt (switch to the next tab) then to repeat you only need to press .`n`n`n> >> No mapping "
@@ -4926,7 +4934,7 @@ SetComboInfo() ; combo keys help {{{2
 SetVimAction()  ; --- internal ViATc commands
 {
     Global VimAction
-    VimAction := " <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <singleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCLite> <TCFullScreen> <TCFullScreenWithExePlugin> <EditViATCIni> <ExReName> <azTab> <none>"
+    VimAction := " <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <singleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCFullScreenAlmost> <TCFullScreen> <TCFullScreenWithExePlugin> <EditViATCIni> <ExReName> <azTab> <none>"
 }
 
 SetActionInfo()  ; --- command's descriptions
@@ -4985,13 +4993,13 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<ListMapKeyMultiColumn>"] :=" Show custom mapping keys. It's better to just open Settings window instead. "
     ActionInfo_Arr["<WinMaxLeft>"] :=" Maximize left panel "
     ActionInfo_Arr["<WinMaxRight>"] :=" Maximize right panel "
-    ActionInfo_Arr["<AlwayOnTop>"] :=" TC always on top "
-    ActionInfo_Arr["<Transparent>"] :=" TC Transparent "
+    ActionInfo_Arr["<AlwayOnTop>"] :=" TC always on top. Toggle "
+    ActionInfo_Arr["<Transparent>"] :=" TC Transparent. Toggle "
     ActionInfo_Arr["<DeleteLHistory>"] :=" Delete history of the left folder "
     ActionInfo_Arr["<DeleteRHistory>"] :=" Delete history of the right folder "
     ActionInfo_Arr["<DelCmdHistory>"] :=" Delete command-line history "
     ActionInfo_Arr["<GoLastTab>"] :=" Go to the last tab "
-    ActionInfo_Arr["<TCLite>"] :=" Minimalistic TC"
+    ActionInfo_Arr["<TCFullScreenAlmost>"] :=" TC nearly full screen. Windows taskbar still visible"
     ActionInfo_Arr["<TCFullScreen>"] :="TC full screen. "
     ActionInfo_Arr["<TCFullScreenWithExePlugin>"] :="TC full screen. An external exe program is required, You'll be asked to download. "
     ActionInfo_Arr["<SrcComments>"] :=" Source window :  Show file comments "
@@ -5000,6 +5008,7 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<SrcTree>"] :=" Source window :  Folder Tree "
     ActionInfo_Arr["<SrcQuickview>"] :=" Source window :  Quick View "
     ActionInfo_Arr["<VerticalPanels>"] :=" Vertical / Horizontal arrangement "
+    ActionInfo_Arr["<WidePanelToggle>"] :=" One 100% Wide Horizontal panel. Toggle"
     ActionInfo_Arr["<SrcQuickInternalOnly>"] :=" Source window :  Quick View ( No plugins )"
     ActionInfo_Arr["<SrcHideQuickview>"] :=" Source window :  Close the Quick View window "
     ActionInfo_Arr["<SrcExecs>"] :=" Source window :  Executable file "
@@ -5256,7 +5265,7 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<Exit>"] :=" Exit  Total Commander"
     ActionInfo_Arr["<Minimize>"] :=" minimize  Total Commander"
     ActionInfo_Arr["<Maximize>"] :=" maximize  Total Commander"
-    ActionInfo_Arr["<Restore>"] :=" Return to normal size "
+    ActionInfo_Arr["<Restore>"] :=" Restore down. Return to normal size "
     ActionInfo_Arr["<ClearCmdLine>"] :=" Clear the command line "
     ActionInfo_Arr["<NextCommand>"] :=" Next command "
     ActionInfo_Arr["<PrevCommand>"] :=" Previous command "
@@ -5473,6 +5482,19 @@ SendPos(304)
 Return
 <VerticalPanels>:
 SendPos(305)
+Return
+<WidePanelToggle>:
+SendPos(305)  ;<VerticalPanels>
+if %wide%
+{
+    SendPos(909)  ;<50Percent>:
+    wide:=false
+}
+else
+{
+    SendPos(910)  ;<100Percent>:
+    wide:=true
+}
 Return
 <SrcQuickInternalOnly>:
 SendPos(306)
@@ -6872,9 +6894,15 @@ Return
 ; being triggered if the script uses the Send command to send the keys that comprise the hotkey itself
 #If %F11TC%
 $F11::
-;If WinActive("ahk_exe totalcmd".%64orBlank%.".exe")
-If WinActive("ahk_exe totalcmd64.exe")
-    gosub <TcFullScreenWithexeplugin>
+If WinActive(ahk_exe_TC)
+{
+    If F11TC = 1
+        gosub <TcFullScreen>
+    If F11TC = 2
+        gosub <TcFullScreenAlmost>
+    Else If F11TC = 3
+        gosub <TCFullScreenWithExePlugin>
+}
 else send, {F11}
 return   
 #If
@@ -6899,7 +6927,7 @@ return
 ScrollLock::
 If (WinActive("ahk_exe i_view32.exe")
 or WinActive("ahk_exe i_view64.exe")
-or WinActive("ahk_exe TOTALCMD64.EXE"))
+or WinActive(ahk_exe_TC))
 {
     Send {Esc}
     Sleep ,200
@@ -6909,37 +6937,34 @@ or WinActive("ahk_exe TOTALCMD64.EXE"))
         Sleep , 30
         Send {Down}
         Send {Space}
-        Sleep ,900
+        Sleep ,800
         Send {Enter}
         Sleep ,600
         ;if some files were let loose outside directories then they will be opened by now
         ;so here check
-        if WinActive("ahk_exe TOTALCMD64.EXE")
+        if WinActive(ahk_exe_TC)
         {   
             Send {Down}
             Sleep ,30
             Send {Enter} 
-            
             Sleep ,600
             ;if there was a subfolder then we are still in totalcmd
-            if WinActive("ahk_exe TOTALCMD64.EXE")
+            if WinActive(ahk_exe_TC)
             {   
                 Send {Down}
                 Sleep ,30
                 Send {Enter} 
-                
                 Sleep ,600
                 ;second time the same, if there was a sub-subfolder then we are still in totalcmd
-                if WinActive("ahk_exe TOTALCMD64.EXE")
+                if WinActive(ahk_exe_TC)
                 {   
                     Send {Down}
                     Sleep ,30
                     Send {Enter} 
                 }                    
             }
-            Sleep ,600
         }
-        Sleep ,1900
+        ;Sleep ,1900
         ;hide cursor in IrfanView by F11
         ;Send {F11} 
     }
