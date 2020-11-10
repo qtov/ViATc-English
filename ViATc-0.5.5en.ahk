@@ -19,8 +19,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/11/07"
-Global Version := "0.5.5en beta 23"
+Global Date := "2020/11/10"
+Global Version := "0.5.5en beta 24"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -1367,6 +1367,15 @@ azTab()
 	Gui,+HwndTabsHwnd -Caption  +Owner%TCid%
 	Gui,Add,ListBox,x2 y2 w%we% gSetTab
 	Index := 1
+    try  ; Attempts to execute code.
+    {
+        tabs = ControlGetTabs("TMyTabControl1","AHK_CLASS TTOTAL_CMD")
+    }
+      catch e  ; Handles the first error/exception raised by the block above.
+      {
+          MsgBox, An exception was thrown!`nSpecifically: %e%
+      }
+
     ; !!! the ControlGetTabs is causing a nasty error on first use
 	for i,tab in ControlGetTabs("TMyTabControl1","AHK_CLASS TTOTAL_CMD")
 	{
@@ -1606,7 +1615,9 @@ VimRNCreateGui()
 	If VimRN
 	{
 		Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
-		Status := "  mode : Vim                                    "
+		;Status := "  mode : Vim Normal                             "
+        Status := "  mode : Visual                                 "
+       	VimRN_Vis := true
 	}
 	Else
 		Status := "  mode : Insert                                 "
@@ -1703,17 +1714,30 @@ If VimRN_SendKey("")
 }
 Return
 VimRN_DeselectSimple:
-    Send {Right}{Left}   ; deselect
+    ;If VimRN_SendKey("")
+    {
+        Send {Right}{Left}   ; deselect
+    }
 Return
 VimRN_DeselectStart:
-	Pos := VimRN_GetPos()
-	Pos := Pos[1]
-	VimRN_SetPos(Pos,Pos)
+    if VimRN    
+    {
+        Pos := VimRN_GetPos()
+        Pos := Pos[1]
+        VimRN_SetPos(Pos,Pos)
+    }
+    else
+       VimRN_SendKey("")    
 return
 VimRN_DeselectEnd:
-	Pos := VimRN_GetPos()
-	Pos := Pos[2]
-	VimRN_SetPos(Pos,Pos)
+    if VimRN    
+    {
+        Pos := VimRN_GetPos()
+        Pos := Pos[2]
+        VimRN_SetPos(Pos,Pos)
+    }
+    else
+       VimRN_SendKey("")    
 Return
 VimRN_Selectall:
 If VimRN_SendKey("")
@@ -1752,7 +1776,7 @@ If VimRN_SendKey("")
 }
 Return
 ;start of the top line
-VimRN_Home_g:
+VimRN_HomeTop:
 If VimRN_SendKey("")
 {
     ;VimRN_SetPos(0,0)
@@ -1789,6 +1813,16 @@ If VimRN_SendKey("")
 	Send {Backspace}
 }
 Return
+VimRN_Substitute:
+If VimRN
+{
+    VimRN_Cut(0)
+	Send {Delete}
+    gosub VimRN_InsertMode
+}
+else
+    If VimRN_SendKey("")
+
 VimRN_Delete:
 If VimRN_SendKey("")
 {
@@ -1800,7 +1834,7 @@ VimRN_Paste:
 If VimRN_SendKey("")
 	VimRN_Paste()
 Return
-VimRN_Trade:
+VimRN_Transpose:
 If VimRN_SendKey("")
 {
 	Pos := VimRN_GetPos()
@@ -1875,13 +1909,13 @@ If VimRN_SendKey("")
         ;gosub VimRN_DeselectEnd
         gosub VimRN_DeselectSimple
         WinSet, Region,, ahk_id %VimRN_ID% ; Restore the window to its original/default display area. !!!!
-		Status := "  mode : Vim                                    "
+		Status := "  mode : Vim Normal                             "
 		ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
 	}
 }
 Return
 VimRN_InsertMode:
-If VimRN_SendKey("")
+;If VimRN_SendKey("")
 {
     VimRN_Count := 0
 	VimRN := False
@@ -1890,37 +1924,54 @@ If VimRN_SendKey("")
 	ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
 }
 Return
+
 VimRN_Insert:
-If VimRN_SendKey("")
+if VimRN
 {
-    ;gosub VimRN_DeselectSimple
-    gosub VimRN_InsertMode
     gosub VimRN_DeselectStart
-}
-Return
-VimRN_InsertHome:
     gosub VimRN_InsertMode
+}
+else
+   VimRN_SendKey("")    
+Return
+
+VimRN_InsertHome:
+if VimRN
+{
+    gosub VimRN_InsertMode
+    gosub VimRN_DeselectSimple
     Send {Home}
+}
+else
+   VimRN_SendKey("")    
 Return
 VimRN_Append:
-If VimRN_SendKey("")
+if VimRN
 {
-    gosub VimRN_InsertMode
     gosub VimRN_DeselectEnd
+    gosub VimRN_InsertMode
     Send {Right}
 }
+else
+   VimRN_SendKey("")    
 Return
 VimRN_AppendEnd:
+if VimRN
+{
+    gosub VimRN_DeselectEnd
     gosub VimRN_InsertMode
     Send {End}
+}
+else
+   VimRN_SendKey("")    
 Return
 VimRN_Esc:
-    gosub VimRN_DeselectEnd
+    ;gosub VimRN_DeselectEnd
     VimRN := True
     VimRN_IsReplace := False
     VimRN_IsMultiReplace := False
     VimRN_Count := 0
-    Status := "  mode : Vim                                    "
+    Status := "  mode : Vim Normal                             "
     Tooltip
     Settimer,<RemoveHelpTip>,off
     ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
@@ -1993,7 +2044,7 @@ VimRN_Help()
 	rename_help =
 (
  -----  simple Vim emulator -----
-q :  Quit rename without saving
+q :  Quit rename without saving ;(in Normal and Visual mode)
 i :  Insert mode
 I :  Insert at front
 a :  Append 
@@ -2002,7 +2053,8 @@ v :  Visual select mode (v again to toggle to Vim Normal mode)
 Esc :  Vim's Normal mode
 ^[  :  Same as Esc
 Capslock : Same as Esc (only if this is enabled in the settings)
-Enter :  Save rename
+Alt+c = Cancel button : Quit rename without saving (in any mode)
+Enter = OK button :  Save rename
 
 j :  Move downward N lines (if filename is so long that it wraps)
 k :  Move up N lines (if filename is so long that it wraps)
@@ -2013,26 +2065,27 @@ L :  Select to the right N characters
 w :  Word
 e :  End of a word
 b :  Back a word
-u :  Undo
+u :  Undo (multiple too)
 x :  Delete forward
 X :  Delete backward (like backspace or X in vim)
 d :  Delete backward (like backspace or X in vim)
-y :  Copy characters (in Visual mode only)
-p :  Paste the character
+s :  Substitute
+y :  Copy (in Visual mode only)
+p :  Paste 
 f :  Find characters, E.g 'f' then 'a' to find 'a'
 t :  Transpose two characters at the cursor
 r :  Replace one character at the cursor
 R :  Replace characters continuously untill Esc
-n :  Select the file name
-[ :  Select the file name
-] :  Select the extension
-' :  Select all
 g :  Put cursor at the first character of the first line
 0 :  Put cursor at the first character of the line
 ^ :  Put cursor at the first character of the line
 $ :  Put cursor at the last character  of the line
-s :  Deselect, put cursor at the start of selected text
-o :  Deselect, put cursor at the end of selected text
+n :  Select the file name
+[ :  Select the file name
+] :  Select the extension
+' :  Select all
+< or , :  Deselect with cursor at selection start
+> or . :  Deselect with cursor at selection end
 )
 	WinGetPos,,,w,h,AHK_ID %VimRN_ID%
     ;MsgBox, 262144, MyTitle, My Text Here   ;Always-on-top is  262144
@@ -2397,24 +2450,29 @@ SetDefaultKey()
 	Hotkey,+l,VimRN_SRight,on,UseErrorLevel
 	Hotkey,y,VimRN_Copy,on,UseErrorLevel
 	Hotkey,d,VimRN_Backspace,on,UseErrorLevel
-	Hotkey,+x,VimRN_Backspace,on,UseErrorLevel
+    Hotkey,s,VimRN_Substitute,on,UseErrorLevel
 	Hotkey,x,VimRN_Delete,on,UseErrorLevel
+    Hotkey,+x,VimRN_Backspace,on,UseErrorLevel
 	Hotkey,i,VimRN_Insert,on,UseErrorLevel
 	Hotkey,+i,VimRN_InsertHome,on,UseErrorLevel
 	Hotkey,a,VimRN_Append,on,UseErrorLevel
 	Hotkey,+a,VimRN_AppendEnd,on,UseErrorLevel
-	Hotkey,t,VimRN_Trade,on,UseErrorLevel
+	Hotkey,t,VimRN_Transpose,on,UseErrorLevel
 	Hotkey,f,VimRN_Find,on,UseErrorLevel
     Hotkey,r,VimRN_Replace,on,UseErrorLevel
 	Hotkey,+r,VimRN_MultiReplace,on,UseErrorLevel
 	Hotkey,',VimRN_Selectall,on,UseErrorLevel
-	Hotkey,s,VimRN_DeselectStart,on,UseErrorLevel
-	Hotkey,o,VimRN_DeselectEnd,on,UseErrorLevel
+	;Hotkey,s,VimRN_DeselectStart,on,UseErrorLevel
+	;Hotkey,o,VimRN_DeselectEnd,on,UseErrorLevel
+	Hotkey,+`,,VimRN_DeselectStart,on,UseErrorLevel   ; <
+	Hotkey,+.,VimRN_DeselectEnd,on,UseErrorLevel      ; >
+	Hotkey,`,,VimRN_DeselectStart,on,UseErrorLevel   ; ,
+	Hotkey,.,VimRN_DeselectEnd,on,UseErrorLevel      ; .
 	Hotkey,n,VimRN_Selectfilename,on,UseErrorLevel
     Hotkey,[,VimRN_Selectfilename,on,UseErrorLevel
     Hotkey,],VimRN_Selectext,on,UseErrorLevel
     Hotkey,+6,VimRN_Home,on,UseErrorLevel
-	Hotkey,g,VimRN_Home_g,on,UseErrorLevel
+	Hotkey,g,VimRN_HomeTop,on,UseErrorLevel
 	Hotkey,$,VimRN_End,on,UseErrorLevel
 	Hotkey,+g,VimRN_End,on,UseErrorLevel
 	Hotkey,q,VimRN_Quit,on,UseErrorLevel
