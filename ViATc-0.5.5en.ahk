@@ -19,8 +19,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/11/10"
-Global Version := "0.5.5en beta 24"
+Global Date := "2020/11/11"
+Global Version := "0.5.5en beta 25"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -47,6 +47,7 @@ Global VimRN_IsMultiReplace := False
 Global VimRN_IsFind := False
 Global ViatcIni
 Global GlobalCheckbox
+Global CheckForUpdatesButton
 ComboKey_Arr := object()
 MapKey_Arr := object()
 ExecFile_Arr := object()
@@ -2282,6 +2283,26 @@ SetDefaultKey()
 	Hotkey,h,<Left>    
 	Hotkey,l,<Right>    
 
+    ; ---------  keys for Settings
+    /*
+	;Hotkey,Ifwinactive,Settings   VIATC %Version%
+	;Hotkey,Ifwinactive,ClassNN:	SysListView321
+    ;ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+    ;ClassNN:	SysListView321
+    ;#If ( %ThisControl% = SysListView321)
+    ;if(winActive(Settings   VIATC %Version%) && controlActive("SysListView321")) 
+
+
+    ;SettingsTitle := "Settings   VIATC " . Version
+    SettingsTitle =Settings   VIATC %Version%
+    ; params: ControlActive( ClassNN , WinTitle )
+    #If ControlActive("SysListView321", SettingsTitle) 
+	Hotkey,j,<Down>
+	Hotkey,k,<Up>    
+    #If
+    */
+
+
     ; -------- single keys
 	Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
 	HotKey,1,<Num1>,on,UseErrorLevel
@@ -2494,6 +2515,19 @@ SetDefaultKey()
 	Hotkey,8,VimRN_Num,on,UseErrorLevel
 	Hotkey,9,VimRN_Num,on,UseErrorLevel
     Hotkey,0,VimRN_Num,on,UseErrorLevel
+}
+
+
+;; usage: If controlActive("SomeClassName")
+;controlActive(controlClassName,winName:="a")
+;{
+;    controlGetFocus,focusedControl,% winName
+;    return controlClassName=focusedControl?1:0
+;}
+
+ControlActive(ClassNN, WinTitle) {
+    ControlGetFocus, CurCon, % WinTitle
+    Return (CurCon=ClassNN)
 }
 
 ; ---  operation {{{
@@ -4079,8 +4113,9 @@ Setting() ; --- {{{1
     Gui,Add,Button,x90 y65 w54 center g<BackupMarksFile>, B&ackup
 	Gui,Add,Button,x150 y65 w40 g<EditMarks>, E&dit
 	;Gui,Add,Text,x185 y300 h16 center,  &V 
-    Gui,Add, Picture, gGreet x170 y320 w60 h-1, %A_ScriptDir%\viatc.ico
-	Gui,Add,Button,x170 y400 w60 gWisdom, &Wisdom
+    Gui,Add, Picture, gGreet x170 y280 w60 h-1, %A_ScriptDir%\viatc.ico
+	Gui,Add,Button,x170 y360 w60 gWisdom, &Wisdom
+	Gui,Add,Button,x130 y420 w140 vCheckForUpdatesButton gCheckForUpdates, Check for &updates
 	;Gui,Add,Text,x72 y450 h16 center,  &ViATc Website: 
     ;Gui,Add,Link,x149 y450 h20, <a href="https://magicstep.github.io/viatc/">magicstep.github.io/viatc</a> 
 	Gui,Add,Text,x120 y450 h16 center,  &Visit: 
@@ -7052,6 +7087,66 @@ else ;irfan not active
 return
 #If
 
+CheckForUpdates()
+{
+    If Not IsInternetConnected()
+    {
+        Msgbox, 48, WinInet.dll, Offline! Check the internet connection.
+        Return false
+    }
+    file_name := "latest_version.txt"
+    ;file_path := A_ScriptDir . "\" . file_name
+    file_path := A_Temp . "\" . file_name
+    /*
+    ;vCheckForUpdatesButton    ClassNN:	Button47
+    ControlGetPos,xn,yn,,hn,%CheckForUpdatesButton%,ahk_class AutoHotkeyGUI
+    xn := xn + 130
+    yn := yn - 95
+    Tooltip,%xn%   %yn%,%xn%,%yn%
+    sleep 1000
+    */
+    xn := 130 + 50
+    yn := 420 + 20
+    Tooltip,Wait ...,%xn%,%yn%
+    ;sleep 1000
+    ;Tooltip Wait ...
+    If FileExist(file_path)
+    {
+        FileDelete, %file_path%
+        If ErrorLevel   ; cannot delete
+            MsgBox, Cannot delete old temporary file %file_path% `nthus the next message might be misleading
+           ;MsgBox, Cannot delete old temporary file %file_path% thus if the next message is "Up to date" then it might be misleading
+    }
+    UrlDownloadToFile, https://magicstep.github.io/viatc/%file_name%, %file_path%
+    Tooltip 
+    If FileExist(file_path)
+    {
+        if A_IsCompiled 
+            FileReadLine, ver, %file_path%, 4
+        else 
+            FileReadLine, ver, %file_path%, 2
+        ;Msg = You are using version :`t %Version%`n
+        If (ver = Version)
+            Msg .= "Up to date"
+        else
+            Msg .= "There is a new version:`t" . ver "`nYou are using version :`t" . Version
+            ;Msg .= "There is a new version:`t" . %ver% ;`nYou are using version :`t %Version%
+
+        FileRead, content, %file_path%
+        Msg .= "`n`n`n" . content
+        MsgBox, %Msg%
+        FileDelete, %file_path%
+    }
+    else
+    {
+        Msgbox, Could not locate %file_path% `nPerhaps it could not be downloaded`, or there is no write access. `nTry again or visit https://magicstep.github.io/viatc
+        Return false
+    }
+}
+
+IsInternetConnected(flag=0x40) {
+Return DllCall("Wininet.dll\InternetGetConnectedState", "Str", flag,"Int",0)
+}
 
 ; vim: fdm=marker set foldlevel=2
 ;-----------------------------
