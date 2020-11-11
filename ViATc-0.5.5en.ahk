@@ -4797,6 +4797,7 @@ Help() ; --- Help {{{1
 	Global TranspHelp,HelpInfo_Arr
 	Gui,New
 	Gui,+HwndVIATCHELP
+    Gui, +Resize  ; Make the window resizable.
 	Gui,Font,s8,Arial Bold
 	Gui,Add,Text,x12 y10 w30 h18 center Border g<ShowHelp>,Esc
 	Gui,Add,Text,x52 y10 w26 h18 center Border g<ShowHelp>,F1
@@ -4890,8 +4891,9 @@ Help() ; --- Help {{{1
     Intro := HelpInfo_Arr["Intro"]
     Gui,Font,s11,Arial   ;font for the bottom textarea box in help window
     ;Gui,Font,s12,Georgia   ;font for the bottom textarea box in help window
-    Gui,Add,Edit,x12 y180 w574 h310 +ReadOnly,%Intro%
-    Gui,Show,w600 h500,Help   VIATC %Version% 
+    ;the +0x40000 adds resizing
+    Gui,Add,Edit,x12 y180 w574 h310 +ReadOnly +0x40000,%Intro%
+    Gui,Show,AutoSize w600 h500,Help   VIATC %Version% 
     If TranspHelp
         WinSet,Transparent,220,ahk_id %VIATCHELP%
     Return
