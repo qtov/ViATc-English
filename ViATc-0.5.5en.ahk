@@ -2431,7 +2431,7 @@ SetDefaultKey()
 	ComboKeyAdd("<Shift>vb","<VisButtonbar>")
 	ComboKeyAdd("<Shift>vc","<VisCurDir>")
 	ComboKeyAdd("<Shift>vd","<VisDriveButtons>")
-	ComboKeyAdd("<Shift>ve","<CommandBrowser>")
+	;ComboKeyAdd("<Shift>ve","<CommandBrowser>")
 	ComboKeyAdd("<Shift>vf","<VisKeyButtons>")
 	ComboKeyAdd("<Shift>vn","<VisCmdLine>")
 	ComboKeyAdd("<Shift>vo","<VisTwoDriveButtons>")
@@ -2455,6 +2455,7 @@ SetDefaultKey()
 	ComboKeyAdd("zw","<WidePanelToggle>")
 	ComboKeyAdd("zx","<100Percent>")
 	ComboKeyAdd("zz","<50Percent>")
+	ComboKeyAdd("zc","<CommandBrowser>")
     
     ; -------  keys for fancy rename 
 	Hotkey,IfWinActive,ViATc Fancy Rename
@@ -4870,8 +4871,8 @@ Help() ; --- Help {{{1
     Gui,Add,Text,x262 y115 w40 h18 center Border g<ShowHelp>,RAlt
     Gui,Add,Text,x304 y115 w40 h18 center Border g<ShowHelp>,Apps
     Gui,Add,Text,x346 y115 w40 h18 center Border g<ShowHelp>,RCtrl
-	Gui,Font,s11,Arial
-    Gui,Add,Text,x399 y25 w200 h120 , Click on the keyboard to see what the key does. Please note that some info might not be accurate because any of the hotkeys can be overriden in the Settings.
+	Gui,Font,s10,Arial
+    Gui,Add,Text,x399 y10 w200 h135 , Click on the keyboard to see what the key does. Please note that some info might not be accurate because any of the hotkeys can be overriden in the Settings.`n`n`nYou can use hjkl below.
 	Gui,Font,s9,Arial Bold    
     Gui,Add,Groupbox,x12 y135 w574 h40
     Gui,Add,Button,x15 y146 w60 gIntro, &1  Intro
@@ -4976,7 +4977,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["\|"] :="\ >> Invert all selections for files and folders  `n| >> Clears all selections"
     ; CapsLock used to sometimes quit in 'fancy rename' instead of going to Vim mode, it is mapped there again
     HelpInfo_arr["CapsLock"] :="CapsLock >> Esc (in some cases it doesn't behave identical"
-    HelpInfo_arr["A"] :="a >> (Combo Key, requires another key) `n A >>  All selected:  Files and folders "
+    HelpInfo_arr["A"] :="a >> (Combo Key, requires another key) Mostly regarding ViATc or files`nah >> ViATc Help`nao >> ViATc Off`nas >> ViATc Setting`naq >> Quit ViATc`nar >> Reload VIATC`nam >> Show file tooltip`nan >> Create a new file`naa >> Select all files but exclude folders`n...`n`n A >>  All selected:  Files and folders "
     HelpInfo_arr["S"] :="s >> Sort by... (Combo Key, requires another key) `nS >> (Combo Key, requires another key) show all, executables, etc. `nsn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nst >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9 >>"
     HelpInfo_arr["D"] :="d >> Favourite folders hotlist`nD >> Open the desktop folder "
     HelpInfo_arr["F"] :="f >> Page down, Equivalent to PageDown`nF >> Switch to TC Default fast search mode "
@@ -4989,11 +4990,11 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["'"""] :="' >> Marks. `n Go to mark by single quote (Create mark by m) `n"" >> No mapping "
     HelpInfo_arr["Enter"] :="Enter >> Enter "
     HelpInfo_arr["LShift"] :="Lshift >> Left shift key, can also be accessed in hotkeys by Shift "
-    HelpInfo_arr["Z"] :="z >> Various TC window settings (Combo Key, requires another key) zz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzl >> Maximize the left panel `nzh >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzd >> Return to normal size, Restore down`nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent `nzw >> One 100% Wide Horizontal panel. Toggle`nzq >> Quit TC`nzr >> Reload TC`n`n`nZ >> Tooltip by mouse-over`n"
+    HelpInfo_arr["Z"] :="z >> Various TC window settings (Combo Key, requires another key) `nzz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzl >> Maximize the left panel `nzh >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzd >> Return to normal size, Restore down`nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent `nzw >> One 100% Wide Horizontal panel. Good for long filenames. Toggle.`nzq >> Quit TC`nzr >> Reload TC`n`n`nZ >> Tooltip by mouse-over`n"
     ;HelpInfo_arr["X"] :="x >> Delete Files\folders`nX >> Force Delete, like shift+delete ignores recycle bin"
     HelpInfo_arr["X"] :="x >> Close tab`nX >> Enter or Run file under cursor"
     HelpInfo_arr["C"] :="c >> (Combo Key, requires another key) `ncc >> Delete `ncf >> Force Delete, like shift+delete ignores recycle bin`nC  >> Console. Run cmd.exe in the current directory"
-    HelpInfo_arr["V"] :="v >> Context menu `nV >> View... (Combo Key, requires another key)`n<Shift>vb >> Toggle visibility :  toolbar `n<Shift>vd >> Toggle visibility :  Drive button `n<Shift>vo >> Toggle visibility :  Two drive button bars `n<Shift>vr >> Toggle visibility :  Drive list `n<Shift>vc >> Toggle visibility :  Current folder `n<Shift>vt >> Toggle visibility :  Sort tab `n<Shift>vs >> Toggle visibility :  Status Bar `n<Shift>vn >> Toggle visibility :  Command Line `n<Shift>vf >> Toggle visibility :  Function button `n<Shift>vw >> Toggle visibility :  Folder tab `n<Shift>ve >> Browse internal commands "
+    HelpInfo_arr["V"] :="v >> Context menu `nV >> View... (Combo Key, requires another key)`n<Shift>vb >> Toggle visibility :  toolbar `n<Shift>vd >> Toggle visibility :  Drive button `n<Shift>vo >> Toggle visibility :  Two drive button bars `n<Shift>vr >> Toggle visibility :  Drive list `n<Shift>vc >> Toggle visibility :  Current folder `n<Shift>vt >> Toggle visibility :  Sort tab `n<Shift>vs >> Toggle visibility :  Status Bar `n<Shift>vn >> Toggle visibility :  Command Line `n<Shift>vf >> Toggle visibility :  Function button `n<Shift>vw >> Toggle visibility :  Folder tab `n "
     HelpInfo_arr["B"] :="b >> Move up a page, Equivalent to PageUp`nB >> Open the tabbed browsing window, works in 32bit TConly"
     HelpInfo_arr["N"] :="n >> Show the folder history ( a-z navigation )`nN >> No mapping "
     HelpInfo_arr["M"] :="m >> Marking function like in Vim. Create mark by m then go to mark by single quote. For example ma will make mark a then press 'a to go to mark a `n When m is pressed the command line displays m and prompts to enter the mark letter, when this letter is entered command line closes and the current folder-path is stored as the mark. You can browse away to a different folder, and when you press ' it will show all the marks, press a and you will go to the folder where you were before.`n`n`nM >> Move to the middle of the list (the position is often not accurate, and if there are few lines the cursor might stay the same) Alternatively you can just use 11j"
@@ -5095,7 +5096,7 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<DeleteRHistory>"] :=" Delete history of the right folder "
     ActionInfo_Arr["<DelCmdHistory>"] :=" Delete command-line history "
     ActionInfo_Arr["<GoLastTab>"] :=" Go to the last tab "
-    ActionInfo_Arr["<TCFullScreenAlmost>"] :=" TC nearly full screen. Windows taskbar still visible"
+    ActionInfo_Arr["<TCFullScreenAlmost>"] :=" TC almost full screen. Windows taskbar still visible"
     ActionInfo_Arr["<TCFullScreen>"] :="TC full screen. "
     ActionInfo_Arr["<TCFullScreenWithExePlugin>"] :="TC full screen. An external exe program is required, You'll be asked to download. "
     ActionInfo_Arr["<azTab>"] := " a-z tab selection (works only in 32 bit TC with a nasty error on first use and in 64 bit TC it is unavailable)"
