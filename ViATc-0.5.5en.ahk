@@ -2085,7 +2085,7 @@ VimRN_Help()
 	rename_help =
 (
  -----  simple Vim emulator -----
-q :  Quit rename without saving ;(in Normal and Visual mode)
+q :  Quit rename without saving (in Normal and Visual mode)
 i :  Insert mode
 I :  Insert at front
 a :  Append 
@@ -2094,6 +2094,7 @@ v :  Visual select mode (v again to toggle to Vim Normal mode)
 Esc :  Vim's Normal mode
 ^[  :  Same as Esc
 Capslock : Same as Esc (only if this is enabled in the settings)
+                   Use Ctrl+Capslock to get Capslock 
 Alt+c = Cancel button : Quit rename without saving (in any mode)
 Enter = OK button :  Save rename
 
@@ -4007,13 +4008,14 @@ Setting() ; --- {{{1
 	Gui,Add,Button,x380 y246 h20 w22 g<DelSearchEng>,&-
 	Gui,Add,CheckBox,x25 y280 h20 checked%ComboTooltips% vComboTooltips, Show tooltips after the first key of Combo Key  &3
 	Gui,Add,CheckBox,x25 y309 h20 checked%transpHelp% vTranspHelp, &Transparent help interface (needs reload as all)
-	Gui,Add,Button,x270 y305 h30 w120 Center g<Help>, Open VIATC Help   &4
+	Gui,Add,Button,x270 y305 h27 w120 Center g<Help>, Open VIATC Help   &4
     Gui,Add,CheckBox,x25 y340 h20 checked%HistoryOfRename% vHistoryOfRename, HistoryOf&Rename ; - see history_of_rename.txt
     Gui,Add,Link,x135 y343 h20, - see <a href="%A_ScriptDir%\history_of_rename.txt">history_of_rename.txt</a>
+    Gui, Add, Button, x270 y340 w80 h21 gVimRN_history,  Edit   &5
     ;Gui,Add,Link,x135 y363 h20, - see <a href="%EditorPath% . %EditorArguments% . %HistoryOfRenamePath%">%HistoryOfRenamePath%</a>
     Gui,Add,CheckBox,x25 y370 h20 checked%FancyVimRename% vFancyVimRename, &Fancy Vim Rename
 
-    Gui,Add,CheckBox,x25 y400 h20 checked%IsCapslockAsEscape% vIsCapslockAsEscape, Capslock as Escape   &5
+    Gui,Add,CheckBox,x25 y400 h20 checked%IsCapslockAsEscape% vIsCapslockAsEscape, Capslock as Escape   &6
 
     ;Gui,Add,Button,x270 y405 h30 w120 Center g<BackupViATcIniFile>, &Backup viatc.ini file
     ;  (this checkbox not working yet)
@@ -4133,6 +4135,10 @@ Setting() ; --- {{{1
     ;Gui,Add,Link,x149 y450 h20, <a href="https://magicstep.github.io/viatc/">magicstep.github.io/viatc</a> 
 	Gui,Add,Text,x120 y450 h16 center,  &Visit: 
     Gui,Add,Link,x145 y450 h20, <a href="https://magicstep.github.io/viatc/">magicstep.github.io/viatc</a> 
+	;Gui,Add,Text,x120 y480 h16 center,  &What's New: 
+    ;Gui,Add,Link,x185 y480 h20, <a href="https://magicstep.github.io/viatc/WhatsNew/">Version Log</a> 
+	Gui,Add,Text,x120 y480 h16 center, Version &Log:
+    Gui,Add,Link,x185 y480 h20, <a href="https://magicstep.github.io/viatc/WhatsNew/">What's New</a> 
     
 
 	Gui,Tab
