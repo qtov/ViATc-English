@@ -1,3 +1,6 @@
+2020/11/23  version 0.5.5en beta 27
+- Improved marks
+
 2020/11/14  version 0.5.5en beta 26
 - Added option to backup and edit wincmd.ini, button in the Settings>Misc 
 - Added "Check for updates" option, button in the Settings>Misc 

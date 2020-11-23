@@ -19,8 +19,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/11/14"
-Global Version := "0.5.5en beta 26"
+Global Date := "2020/11/19"
+Global Version := "0.5.5en beta 27"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -262,7 +262,7 @@ Return
 IfWinNotExist,AHK_CLASS TTOTAL_CMD
 ExitApp
 Return
-<RemoveToolTip>:
+<RemoveTooltip>:
 SetTimer,<RemoveToolTip>, Off
 ToolTip
 return
@@ -519,6 +519,7 @@ G()
 	Last := T0 - 1
 	PostMessage, 0x19E, %Last%, 1, %CTRL%, AHK_CLASS TTOTAL_CMD
 }
+
 ; --- Marks {{{2
 <Mark>:
 If SendPos(4003)
@@ -571,7 +572,12 @@ MarkTimer()
 	{
 		SetTimer,<MarkTimer>,off
 		ControlSetText,%TCEdit%,,AHK_CLASS TTOTAL_CMD
-		ControlSend,%TCEdit%,{Esc},AHK_CLASS TTOTAL_CMD
+        if (OutVar = "m>") or (OutVar = "m<")
+        {
+            Send {Esc}
+        }
+        else
+            ControlSend,%TCEdit%,{Esc},AHK_CLASS TTOTAL_CMD
 		ClipSaved := ClipboardAll
 		Clipboard :=
 		Postmessage 1075, 2029, 0,, ahk_class TTOTAL_CMD
@@ -586,50 +592,25 @@ MarkTimer()
 			Path := Path1 . "..." . SubStr(Path2,1,65) "..."
 		}
 		m := SubStr(OutVar,2,1)
-		mPath := "&" . m . ">>" . Path
-
-        ;save mark to memory
-		If RegExMatch(Mark_Arr["active_marks"],m)
-		{
-			DelM := Mark_Arr[m]
-			Menu,MarkMenu,Delete,%DelM%
-		}
-        Menu,MarkMenu,Add,%mPath%,<AddMark>
-        Mark_Arr["active_marks"] := Mark_Arr["active_marks"] . m
-        Mark_Arr[m] := mPath
-
-
-		Iniread,LastPath,%MarksPath%,MarkList,%m%
-        ;LastOverwrittenMark := m . " >> " . LastPath
-        LastOverwrittenMark := m . "=" . LastPath
-        IniWrite,%LastOverwrittenMark%,%MarksPath%,MarkSettings,LastOverwrittenMark
-
-        ;saving mark to ini file
-        IniWrite,%Path%,%MarksPath%,MarkList,%m%
-        ; active_marks is a string containing a comma separated list of marks
-		IniRead,active_marks,%MarksPath%,MarkSettings,active_marks
-        ;if active_marks not found
-        if active_marks = ERROR
-            new_active_marks = %m%
-        ;if active_marks empty
-        else if active_marks =
-            new_active_marks = %m%
-        ;if mark is already on the list
-        else if RegExMatch(active_marks,m)
+        if (m = " ") or (m = "=") or (m = ";") or (m = "[") or (m = ";")
         {
+            Tooltip The space`, ';'`, '=' and '[' are not allowed as marks  
+            Settimer,<RemoveHelpTip>,3000
+            Return
+        }
+		Iniread,LastPath,%MarksPath%,MarkList,%m%
+        if LastPath and (LastPath != ERROR)
+        {
+            ;LastOverwrittenMark := m . " >> " . LastPath
+            LastOverwrittenMark := m . "=" . LastPath
+            IniWrite,%LastOverwrittenMark%,%MarksPath%,MarkSettings,LastOverwrittenMark
             ;tooltip This mark is already on the list
             ;tooltip mark %m% updated`, `nearlier it was `n%LastOverwrittenMark%
             tooltip mark updated`, earlier it was `n%LastOverwrittenMark% `nRestore with:  a'
             Settimer,<RemoveHelpTip>,4000
-            ;LastOverwrittenMark := m . "=" . LastPath
-            new_active_marks = %active_marks%
         }
-        else
-        {
-            new_active_marks = %active_marks%,%m%
-        }
-        ;update the list of active_marks
-        IniWrite,%new_active_marks%,%MarksPath%,MarkSettings,active_marks
+        ;saving mark to ini file
+        IniWrite,%Path%,%MarksPath%,MarkList,%m%
 	}
 }
 
@@ -765,9 +746,10 @@ AddMark()
 If SendPos(0)
 	;ListMark()
 	;ListMarkFromMemory()
-    ListMarkFromIni()
+    ListAllMarksFromIni()
 Return
 ;ListMark()
+/*
 ListMarkFromMemory()
 {
 	Global Mark_Arr,VIATCINI
@@ -785,54 +767,101 @@ ListMarkFromMemory()
 	;Menu,%InfoMark%.%MarkMenu%,Show,%xn%,%yn%
 } 
 
-ListMarkFromIni()
+ListActiveMarkFromIni()
 {
-		Tooltiplm :=
-		IniRead,active_marks,%MarksPath%,MarkSettings,active_marks
-        ; active_marks is a string containing a comma separated list of marks
-        if active_marks =
-        {
-            Tooltip No marks to show. The active_marks variable in the marks.ini file is empty
-            Settimer,<RemoveHelpTip>,2000
-            Return
-        }
-        if active_marks = ERROR
-        {
-            Tooltip No marks to show. The active_marks variable was not found in the marks.ini file
-            Settimer,<RemoveHelpTip>,2000
-            Return
-        }
-		h := 0
-        ;Loop, Parse, InputVar , Delimiters           , [OmitChars]
-		loop, Parse , active_marks , `,
-		{
-            if A_LoopField =
-                continue
-			h++
-			Iniread,Path,%MarksPath%,MarkList,%A_LoopField%
-			if Path != ERROR
-            {
-                mPath := "&" . A_LoopField . ">>" . Path
-                Menu,MarkMenu,Add,%mPath%,<AddMark>
-            }
-		}	
 
-		IniRead,menu_color,%MarksPath%,MarkSettings,menu_color
-        if menu_color != ERROR
-            Menu, MarkMenu, Color, %menu_color%
-		Controlgetpos,xe,ye,we,he,%TCEdit%,ahk_class TTOTAL_CMD
-        ControlGetFocus,TLB,ahk_class TTOTAL_CMD
-        ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
-        if h = 0
+    Menu,MarkMenu,Add,-----,<AddMark>
+    Menu,MarkMenu,DeleteAll
+    Tooltiplm :=
+    IniRead,active_marks,%MarksPath%,MarkSettings,active_marks
+    ; active_marks is a string containing a comma separated list of marks
+    if active_marks =
+    {
+        Tooltip No marks to show. The active_marks variable in the marks.ini file is empty
+        Settimer,<RemoveHelpTip>,2000
+        Return
+    }
+    if active_marks = ERROR
+    {
+        Tooltip No marks to show. The active_marks variable was not found in the marks.ini file
+        Settimer,<RemoveHelpTip>,2000
+        Return
+    }
+    h := 0
+    ;Loop, Parse, InputVar , Delimiters           , [OmitChars]
+    loop, Parse , active_marks , `,
+    {
+        if A_LoopField =
+            continue
+        h++
+        Iniread,Path,%MarksPath%,MarkList,%A_LoopField%
+        if Path != ERROR
         {
-            Tooltip No marks to show. Nothing was on the active_marks list
-            Settimer,<RemoveHelpTip>,2000
-            ;Return
+            mPath := "&" . A_LoopField . ">>" . Path
+            Menu,MarkMenu,Add,%mPath%,<AddMark>
         }
-        else
-            Menu,MarkMenu,Show,%xn%,%yn%
-            ;Menu,MarkMenu,Show,xe,ye-h*16-5
-		return
+    }	
+
+    IniRead,menu_color,%MarksPath%,MarkSettings,menu_color
+    if menu_color != ERROR
+        Menu, MarkMenu, Color, %menu_color%
+    Controlgetpos,xe,ye,we,he,%TCEdit%,ahk_class TTOTAL_CMD
+    ControlGetFocus,TLB,ahk_class TTOTAL_CMD
+    ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
+    if h = 0
+    {
+        Tooltip No marks to show. Nothing was on the active_marks list
+        Settimer,<RemoveHelpTip>,2000
+        ;Return
+    }
+    else
+        Menu,MarkMenu,Show,%xn%,%yn%
+        ;Menu,MarkMenu,Show,xe,ye-h*16-5
+    return
+}
+*/
+
+ListAllMarksFromIni()
+{
+    Menu,MarkMenu,Add,-----,<AddMark>
+    Menu,MarkMenu,DeleteAll
+    Tooltiplm :=
+    Iniread,all_marks,%MarksPath%,MarkList
+    h := 0
+    ;Loop, Parse, InputVar , Delimiters           , [OmitChars]
+    loop, Parse ,all_marks ,`n
+    {
+        ;if A_LoopField =
+            ;continue
+        ;MsgBox %A_LoopField%
+        ;Menu,MarkMenu,Add,%A_LoopField%,<AddMark>        ; the "C:\" is lost in marks
+        h++
+        m := SubStr(A_LoopField,1,1)
+        ;MsgBox %m%
+        Iniread,Path,%MarksPath%,MarkList,%m%
+        if Path and (Path != ERROR)
+        {
+            mPath := "&" . m . ">>" . Path
+            Menu,MarkMenu,Add,%mPath%,<AddMark>
+        }
+    }	
+
+    IniRead,menu_color,%MarksPath%,MarkSettings,menu_color
+    if menu_color != ERROR
+        Menu, MarkMenu, Color, %menu_color%
+    Controlgetpos,xe,ye,we,he,%TCEdit%,ahk_class TTOTAL_CMD
+    ControlGetFocus,TLB,ahk_class TTOTAL_CMD
+    ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
+    if h = 0
+    {
+        Tooltip No marks to show. Nothing was on the active_marks list
+        Settimer,<RemoveHelpTip>,2000
+        ;Return
+    }
+    else
+        Menu,MarkMenu,Show,%xn%,%yn%
+        ;Menu,MarkMenu,Show,xe,ye-h*16-5
+    return
 }
 ; ----- end of marks ----- }}}2
 
@@ -2133,7 +2162,7 @@ n :  Select the file name
     ;MsgBox, 262144, MyTitle, My Text Here   ;Always-on-top is  262144
 	Msgbox , 262144, Help for Fancy Rename , %rename_help%
     ;tooltip,%rename_help%,0,%h%
-	Settimer,<RemoveHelpTip>,50
+	;Settimer,<RemoveHelpTip>,50
 	Return
 }
 <RemoveHelpTip>:
@@ -3296,6 +3325,7 @@ CreateConfig(Section,Key)
 A new, limited viatc.ini file was just created because the real file
 was not found. You can search for the real one and put it into place. 
 You can also download a default one. 
+There is also one in Templates folder - it might be older than the newest.
         )
     }
 
@@ -7147,6 +7177,7 @@ return
 ; Limitations and TODO: 
 ;   - it will execute whatever extension of the first file is, you have to be sure it's an image
 ;   - it will get stuck at the last nested folder, you have to go up a folder manually
+;   - not every keyboard have ScrollLock, perhaps the Insert key is better
 #If %IrfanView%     ;this variable is set in the viatc.ini file
 ScrollLock::
 If (WinActive("ahk_exe i_view32.exe")
@@ -7183,9 +7214,10 @@ or WinActive(ahk_exe_TC))
             Send {Down}     ; ommit the ".." or the folder just visited
             ;Sleep, 30
             Send {Space}    ; highlight/mark
-            Sleep, 900      ; this delay is only for the user to have time to see what's about to be opened
             ; Abort on Esc
-            ;If GetKeyState("Escape", "P")
+            If GetKeyState("Escape", "P")
+                break
+            Sleep, 900      ; this delay is only for the user to have time to see what's about to be opened
             ; The Escape key has been pressed, so break out of the loop.
 
             ; Abort on ScrollLock being "P"hysically pressed and held
@@ -7199,6 +7231,10 @@ or WinActive(ahk_exe_TC))
             }
             Send {Space}    ; unselect
             Send {Enter}    ; God please it's an image not an exe
+            ;subfolder := A_Index - 1
+            ;if subfolder > 0
+                ;msg .= "`nsubfolder: " . subfolder . " ----"
+            ;Tooltip,%Msg%,%xn%,%yn%   ;!!!!!added
             Sleep, 600
         }
     }

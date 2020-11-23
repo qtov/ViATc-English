@@ -1,7 +1,7 @@
 ViATc
 =====
 ViATc - Vim mode at Total Commander  
-2020/11/14  version 0.5.5en beta 26  
+2020/11/23  version 0.5.5en beta 27  
 ![viatc_logo credit: https://github.com/linxinhong](https://magicstep.github.io/viatc/viatc_logo.jpg?raw=true "viatc_logo")  
 <sub>image credit: <A href="https://github.com/linxinhong" target="_blank">https://github.com/linxinhong</a></sub><br>  
 This software works on Windows as an addition to "Total Commander"  :floppy_disk: - the greatest file manager :100: (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
@@ -12,7 +12,7 @@ What ViATc does to Total Commander (called later TC):
 - adds more shortcuts, you can add and reconfigure them
 - adds more functionality - supports all that AutoHotkey does, not just TC
 
-![mage credit: https://www.itqiyi.com/archives/2073](https://magicstep.github.io/viatc/viatc=Vim(AHK)TC.png?raw=true "viatc_logo")  
+![image credit: https://www.itqiyi.com/archives/2073](https://magicstep.github.io/viatc/viatc=Vim(AHK)TC.png?raw=true "viatc_logo")  
 <sub> image credit: https://www.itqiyi.com/archives/2073  </sub>
 
 Download
