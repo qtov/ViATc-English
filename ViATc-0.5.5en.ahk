@@ -19,8 +19,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/11/19"
-Global Version := "0.5.5en beta 27"
+Global Date := "2020/11/27"
+Global Version := "0.5.5en beta 28"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -72,7 +72,7 @@ If Not FileExist(ViATcIni)
 ;If FileExist(ViATcIni)
     ;Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,ViATcIni,%ViATcIni%
 ;else
-    ;msgbox no ViATcIni
+    ;MsgBox no ViATcIni
 TcExe := FindPath("exe")
 TcIni := FindPath("ini")
 Splitpath,TcExe,,TcDir
@@ -106,6 +106,7 @@ Else
 }
 Global F11TC := GetConfig("Configuration","F11TC")
 Global IrfanView := GetConfig("Configuration","IrfanView")
+Global IrfanViewKey := GetConfig("Configuration","IrfanViewKey")
 
 GoSub,<ConfigVar>
 Menu,VimRN_Set,Add, Vim mode at start `tAlt+V,VimRN_SelMode
@@ -198,7 +199,7 @@ If StartUp
 	{
 		RegWrite,REG_SZ,HKEY_CURRENT_USEr,SOFTWARE\Microsoft\Windows\CurrentVersion\Run,ViATc,%A_ScriptFullPath%
 		If ErrorLevel
-			Msgbox,16,ViATc, Set Startup failed ,3
+			MsgBox,16,ViATc, Set Startup failed ,3
 	}
 }
 Else
@@ -227,7 +228,7 @@ If Not FileExist(EditorPath)
     If Not FileExist(EditorPath) ;fallback to the last resort
         EditorPath := "C:\Windows\notepad.exe"  
     SetConfig("Paths","EditorPath",EditorPath)
-    ;msgbox EditorPath in the ini file was not found, it is now updated to %EditorPath%
+    ;MsgBox EditorPath in the ini file was not found, it is now updated to %EditorPath%
 }
 EditorArguments := GetConfig("Paths","EditorArguments")
 ;Trimming leading and trailing white space is automatic when assigning a variable with only = 
@@ -290,7 +291,7 @@ return
 SendPos(-1)
 return
 <MsgVar>:
-Msgbox % "Text=" SendText_Arr["Hotkeys"] "`n" "Exec=" ExecFile_Arr["HotKeys"] "`n" "MapKeys=" MapKey_Arr["HotKeys"] "`nCombokey=" ComboKey_Arr["Hotkeys"]
+MsgBox % "Text=" SendText_Arr["Hotkeys"] "`n" "Exec=" ExecFile_Arr["HotKeys"] "`n" "MapKeys=" MapKey_Arr["HotKeys"] "`nCombokey=" ComboKey_Arr["Hotkeys"]
 Return
 <ComboWarnAction>:
 Msg := ComboInfo_arr[A_ThisHotkey]
@@ -559,7 +560,7 @@ MarkTimer()
     }
 
     TCEdit =  %ThisControl%
-    ;Msgbox  Debugging ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!! 
+    ;MsgBox  Debugging ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!! 
 
 	ControlGetText,OutVar,%TCEdit%,AHK_CLASS TTOTAL_CMD
 	Match_TCEdit := "i)^" . TCEdit . "$"
@@ -625,7 +626,7 @@ RestoreLastMark()
     ;If Not LastOverwrittenMark
     If (LastOverwrittenMark = "ERROR") or (LastOverwrittenMark = "")
     {
-        Msgbox Nothing to restore
+        MsgBox Nothing to restore
         Return false
     }
     ; LastOverwrittenMark is something like "c=C:\"
@@ -1139,8 +1140,8 @@ DeleteHistory(A)
 		H := "RightHistory"
     DelMsg := " Delete the right folder history ? TC will be terminated and reloaded"
 	}
-	Msgbox,4,ViATC,%DelMsg%
-	Ifmsgbox YES
+	MsgBox,4,ViATC,%DelMsg%
+	IfMsgBox YES
 	{
 		Winkill,AHK_CLASS TTOTAL_CMD
 		n := 0
@@ -1170,8 +1171,8 @@ DeleteCMD()
 {
 	Global TCEXE,TCINI,CmdHistory
 	CmdHistory := Object()
-	Msgbox,4,ViATc, Delete command line history ?
-	Ifmsgbox YES
+	MsgBox,4,ViATc, Delete command line history ?
+	IfMsgBox YES
 	{
 		Winkill ahk_class TTOTAL_CMD
 		n := 0
@@ -1285,7 +1286,7 @@ ListMapKey()
 	}
 
     LM = %InfoLine%%LM%
-    Msgbox  %Lm%
+    MsgBox  %Lm%
     ;; show tooltip
 	;ControlGetPos,xn,yn,,hn,%TCEdit%,AHK_CLASS TTOTAL_CMD
 	;yn := yn - hn - ( ListMap0 * 8 ) - 2
@@ -1426,11 +1427,11 @@ azTab()
 	Global TabsBreak,TcExe
 	If RegExMatch(TcExe,"i)totalcmd64\.exe")
     {
-       Msgbox This doesn't work with totalcmd64, 64bit not supported. 
+       MsgBox This doesn't work with totalcmd64, 64bit not supported. 
 	   Return 
     }
 	TCid := WinExist("AHK_CLASS TTOTAL_CMD")
-    ;Msgbox  Debugging TCid = [%TCid%]  on line %A_LineNumber% ;!!!
+    ;MsgBox  Debugging TCid = [%TCid%]  on line %A_LineNumber% ;!!!
 	WinClose,ViATc_TabList
 	ControlGetPos,xe,ye,we,he,Edit1,AHK_CLASS TTOTAL_CMD
 	Gui,New
@@ -1609,8 +1610,8 @@ VimRNCreateGui()
 		}
 		Sleep,50
 	}
-        ;Msgbox  ThisControl %ThisControl% ;!!!
-        ;Msgbox  GetName %GetName% ;!!!
+        ;MsgBox  ThisControl %ThisControl% ;!!!
+        ;MsgBox  GetName %GetName% ;!!!
 	If Not GetName
         Return
 
@@ -2160,7 +2161,7 @@ n :  Select the file name
 )
 	WinGetPos,,,w,h,AHK_ID %VimRN_ID%
     ;MsgBox, 262144, MyTitle, My Text Here   ;Always-on-top is  262144
-	Msgbox , 262144, Help for Fancy Rename , %rename_help%
+	MsgBox , 262144, Help for Fancy Rename , %rename_help%
     ;tooltip,%rename_help%,0,%h%
 	;Settimer,<RemoveHelpTip>,50
 	Return
@@ -2427,9 +2428,9 @@ SetDefaultKey()
 	Hotkey,+w,<Enter>,On,UseErrorLevel
 	Hotkey,x,<CloseCurrentTab>,On,UseErrorLevel
 	Hotkey,y,<Copy>,On,UseErrorLevel
-	Hotkey,+y,<MoveOnly>,On,UseErrorLevel
+	;Hotkey,+y,<MoveOnly>,On,UseErrorLevel
     ;Hotkey,y,<CopyNamesToClip>,On,UseErrorLevel
-	;Hotkey,+y,<CopyFullNamesToClip>,On,UseErrorLevel
+    Hotkey,+y,<CopyFullNamesToClip>,On,UseErrorLevel
 	Hotkey,.,<SingleRepeat>,On,UseErrorLevel
 	Hotkey,/,<ShowQuickSearch>,On,UseErrorLevel
 	Hotkey,+/,<SearchFor>,On,UseErrorLevel
@@ -2710,7 +2711,7 @@ ExecFile()
 	Run,%File%,,UseErrorLevel,ExecID
 	If ErrorLevel = ERROR
 	{
-		Msgbox  run %File% failure
+		MsgBox  run %File% failure
 		Return
 	}
 	WinWait,AHK_PID %ExecID%,,3
@@ -2784,7 +2785,7 @@ Combokey(Hotkey)  ; {{{1
 					Repeat := Action
 				}
 				Else
-					Msgbox % KeyTemp " command " Action " Error "
+					MsgBox % KeyTemp " command " Action " Error "
 			}
 			Else
 				ControlSetText,%TCEdit%,%KeyTemp%,AHK_CLASS TTOTAL_CMD
@@ -3163,7 +3164,7 @@ FindPath(File)
 	FileSelectFile,GetPath,%FileSF_Option%,%FileSF_FileName%,%FileSF_Prompt%,%FileSF_Filter%
 	If ErrorLevel
 	{
-		Msgbox %FileSF_Error%
+		MsgBox %FileSF_Error%
 		Return
 	}
 	Else
@@ -3556,7 +3557,7 @@ Enter() ;  on Enter pressed {{{2
         ;You can edit this bar if you double click on it or if you rename ".." at the top of the list
         If (( %ThisControl% = Edit1) or ( %ThisControl% = Edit2) or ( %ThisControl% = Window17))  ;!!!
         {
-            ;Msgbox  ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!!
+            ;MsgBox  ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!!
             Break
         }
         Sleep,50
@@ -3780,7 +3781,7 @@ template()
 	Filegetattrib,Attributes,%Temp_file%
 	IfInString, Attributes, D
 	{
-		Msgbox ,, Add a new template, Please select the file
+		MsgBox ,, Add a new template, Please select the file
 		Return
 	}
 	Splitpath,temp_file,,,Ext
@@ -3882,7 +3883,7 @@ CreateFile(item)
 			}
 			Else
 			{
-				Msgbox  The template file has been moved or deleted
+				MsgBox  The template file has been moved or deleted
 				IniDelete,%ViatcIni%,TemplateList,%A_Index%
 			}
 			Break
@@ -3912,7 +3913,7 @@ Temp_Create()
 	{
 		Filecopy,%FilePath%,%NewFile%,1
 		If ErrorLevel
-			Msgbox  The file already exists
+			MsgBox  The file already exists
 		Gui,Destroy
 		EmptyMem()
 	}
@@ -4160,6 +4161,10 @@ Setting() ; --- {{{1
 	;Gui,Add,Text,x185 y300 h16 center,  &V 
     Gui,Add, Picture, gGreet x170 y280 w60 h-1, %A_ScriptDir%\viatc.ico
 	Gui,Add,Button,x170 y360 w60 gWisdom, &Wisdom
+
+
+	;Gui,Add,GroupBox,x26 y400 h112 w370, Internet
+	Gui,Add,GroupBox,x46 y400 h100 w330, Internet
 	Gui,Add,Button,x130 y420 w140 vCheckForUpdatesButton gCheckForUpdates, Check for &updates
 	;Gui,Add,Text,x72 y450 h16 center,  &ViATc Website: 
     ;Gui,Add,Link,x149 y450 h20, <a href="https://magicstep.github.io/viatc/">magicstep.github.io/viatc</a> 
@@ -4182,7 +4187,7 @@ Setting() ; --- {{{1
 ;gGreet
 Greet:
 KeyWait, LButton, Up
-Msgbox Thank you for using ViATc.
+MsgBox Thank you for using ViATc.
 Return
 
 ;gWisdom
@@ -4197,14 +4202,14 @@ Array := ["If you had a fortune cookie what would you like it to say?"
                       ,"Remember to take breaks."
                           ,"All is well." ]
 Random, rand, 1,Array.Length()
-Msgbox  % Array[rand] %rand%
+MsgBox  % Array[rand] %rand%
 Return
 
 ;OnMessage(0x201, "ImgClic")
 ;ImgClic(wParam, lParam, msg, hwnd) {
 ;global MyImageHwnd   ; for HwndMyImageHwnd 
 ;If (hwnd := MyImageHwnd)
-	;Msgbox Congrats
+	;MsgBox Congrats
 ;}
 
 GuiContextMenu:
@@ -4317,9 +4322,9 @@ BackupTCIniFile()
     FileCopy,%TCIni%,%NewFile%
     If Fileexist(NewFile)
         ;Tooltip Backup of wincmd.ini succesfull. `n%NewFile%
-        Msgbox,,, Backup of wincmd.ini succesfull. `n`nIt is now in`n%NewFile%
+        MsgBox,,, Backup of wincmd.ini succesfull. `n`nIt is now in`n%NewFile%
     Else
-        Msgbox,0x10,, Backup of wincmd.ini failed. `n`nCouldn't copy %TCIni% `nto %NewFile%
+        MsgBox,0x10,, Backup of wincmd.ini failed. `n`nCouldn't copy %TCIni% `nto %NewFile%
     ;Sleep,1400
     ;Tooltip
     Return
@@ -5098,7 +5103,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["T"] :="t >> New tab `nT >> Create a new tab in the background  `n`nctrl+t >>  Go up in QuickSearch (opened by / or ctrl+s)  ctrl+t works the same in real Vim search"
     HelpInfo_arr["Y"] :="y >> Copy window like F5  `nY >> Copy the file name and the full path "
     HelpInfo_arr["U"] :="u >> Up a directory `nU >> Up to the root directory "
-    HelpInfo_arr["I"] :="i >> Enter `nI >> No mapping "
+    HelpInfo_arr["I"] :="i >> Enter `nI >>  Make target = source " ;No mapping "
     HelpInfo_arr["O"] :="o >> Open the drive list `nO >> Open the list of drives and special folders.  Equivalent to 'This PC' in Windows Explorer"
     HelpInfo_arr["P"] :="p >> Compressed file / folder `nP >> unzip "
     HelpInfo_arr["[{"] :="[ >> Select files with the same file name `n{ >> Unselect files with the same file name "
@@ -5161,7 +5166,7 @@ SetComboInfo() ; combo keys help {{{2
 SetVimAction()  ; --- internal ViATc commands
 {
     Global VimAction
-    VimAction := " <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <SingleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <RestoreLastMark> <CheckForUpdates> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCFullScreenAlmost> <TCFullScreen> <TCFullScreenWithExePlugin> <BackupViATcIniFile> <EditViATcIniFile> <BackupTCIniFile> <EditTCIniFile> <BackupMarksFile> <EditMarksFile> <azTab> <none>"
+    VimAction := " <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <SingleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <RestoreLastMark> <SetTitleAsDateTime> <CheckForUpdates> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCFullScreenAlmost> <TCFullScreen> <TCFullScreenWithExePlugin> <BackupViATcIniFile> <EditViATcIniFile> <BackupTCIniFile> <EditTCIniFile> <BackupMarksFile> <EditMarksFile> <azTab> <none>"
 ;<ExReName> 
 }
 
@@ -5218,6 +5223,7 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<ForceDel>"] :=" Forced Delete, like shift+delete ignores recycle bin"
     ActionInfo_Arr["<Mark>"] :=" Marks like in Vim, Mark the current folder with ma, use 'a to go to the corresponding mark "
     ActionInfo_Arr["<RestoreLastMark>"] :=" Restore the last overwritten mark "
+    ActionInfo_Arr["<SetTitleAsDateTime>"] :=" Set the TC title as DateTime"
     ActionInfo_Arr["<CheckForUpdates>"] :=" Check for the ViATc updates "
     ActionInfo_Arr["<ListMark>"] :=" Offer to use marks created earlier by m like in Vim "
     ActionInfo_Arr["<ListMarksTooltip>"] :=" Show all marks in a tooltip (show only, not able to use)"
@@ -5495,7 +5501,7 @@ SetActionInfo()  ; --- command's descriptions
     ActionInfo_Arr["<GotoDriveU>"] :=" Go to the drive  U"
     ActionInfo_Arr["<GotoDriveZ>"] :=" GotoDriveZ, max 26"
     ActionInfo_Arr["<HelpIndex>"] :=" Help index "
-    ActionInfo_Arr["<Keyboard>"] :=" Shortcut list "
+    ActionInfo_Arr["<Keyboard>"] :=" TC Keyboard layout, list of TC shortcuts "
     ActionInfo_Arr["<Register>"] :=" registration message "
     ActionInfo_Arr["<VisitHomepage>"] :=" access  Totalcmd  website "
     ActionInfo_Arr["<About>"] :=" About  Total Commander"
@@ -7140,6 +7146,30 @@ Return
 
 ;----------------- Aux ----------
 
+<SetTitleAsDateTime>:
+SetTitleAsDateTime()
+Return
+
+SetTitleAsDateTime()
+{
+    SetTimer subTimer, 500
+}
+
+subTimer:
+if WinActive( "ahk_class TTOTAL_CMD" )
+if WinActive(ahk_exe_TC)
+{
+   FormatTime, time,, dd.MM.yyyy - HH:mm:ss
+   WinGet, ProcessPath, ProcessPath
+   FileGetVersion, version, %ProcessPath%
+   IfInString, ProcessPath, TOTALCMD64.EXE
+      WinSetTitle Total Commander (x64)- %version% -     %time%
+   else
+      WinSetTitle Total Commander - %version% -     %time%
+}
+Return
+
+
 ;----------------- F11TC ----------
 ; $ prefix in the hotkey (or #UseHook earlier in the script) will prevent the script from
 ; being triggered if the script uses the Send command to send the keys that comprise the hotkey itself
@@ -7170,6 +7200,90 @@ return
 #If %IrfanView%
 #If (WinActive("ahk_exe i_view32.exe") or WinActive("ahk_exe i_view64.exe") )
     k:: Send {Left}
+#If
+
+
+; IrfanView autoadvance folder in TotalCommander
+; Limitations and TODO: 
+;   - it will execute whatever extension of the first file is, you have to be sure it's an image
+;   - it will get stuck at the last nested folder, you have to go up a folder manually
+;   - not every keyboard have ScrollLock, perhaps the Insert key is better
+#If %IrfanView%     ;this variable is set in the viatc.ini file
+IrfanViewKey = "Insert"
+Hotkey, %IrfanViewKey%, Traverse, On               ;Turn on the dynamic hotkey.
+Hotkey,"Insert", Traverse, On               ;Turn on the dynamic hotkey.
+Hotkey,Insert, Traverse, On               ;Turn on the dynamic hotkey.
+;Hotkey,F2, Traverse, On               ;Turn on the dynamic hotkey.
+;Hotkey,{ScrollLock}, Traverse, On               ;Turn on the dynamic hotkey.
+Traverse:
+MsgBox Traverse
+ComObjCreate("SAPI.SpVoice").Speak("Traverse")
+If (WinActive("ahk_exe i_view32.exe")
+or WinActive("ahk_exe i_view64.exe")
+or WinActive(ahk_exe_TC))
+{
+    ;the second Esc is if Irfan was full-screen, Irfan has an option to exit with one Esc too
+    Send {Esc}{Esc}
+    loop 11
+    {
+        If WinActive(ahk_exe_TC)
+            break
+        Sleep, 200  ; let it close, 400 is sometimes not enough
+    }
+    If WinActive(ahk_exe_TC)
+    {
+        Send {BackSpace}    ; go up a dir
+        Sleep, 30
+        ; check if TC is still active, it would mean that no files were opened
+        loop 9   ; max depth of nested folders
+        if WinActive(ahk_exe_TC)
+        {   
+            ; TC is active so no files were opened
+            ;tooltip subfolder: %A_Index% 
+            msg = hold ScrollLock to abort
+            subfolder := A_Index - 2
+            if subfolder > 0
+                msg .= "`nsubfolder: " . subfolder
+            ControlGetFocus,CurrentListBox,ahk_class TTOTAL_CMD
+            ControlGetPos,xn,yn,,,%CurrentListBox%,AHK_CLASS TTOTAL_CMD
+            xn += 90
+            yn -= 25
+            Tooltip,%Msg%,%xn%,%yn%
+            Send {Down}     ; ommit the ".." or the folder just visited
+            ;Sleep, 30
+            Send {Space}    ; highlight/mark
+            ; Abort on Esc
+            If GetKeyState("Escape", "P")
+                break
+            Sleep, 900      ; this delay is only for the user to have time to see what's about to be opened
+            ; The Escape key has been pressed, so break out of the loop.
+
+            ; Abort on ScrollLock being "P"hysically pressed and held
+            If GetKeyState("ScrollLock", "P")
+            {
+                ; The ScrollLock key has been pressed, so break out of the loop.
+                Tooltip,aborted,%xn%,%yn%
+                sleep 2000
+                break
+                ;MsgBox paused until OK
+            }
+            Send {Space}    ; unselect
+            Send {Enter}    ; God please it's an image not an exe
+            ;subfolder := A_Index - 1
+            ;if subfolder > 0
+                ;msg .= "`nsubfolder: " . subfolder . " ----"
+            ;Tooltip,%Msg%,%xn%,%yn%   ;!!!!!added
+            Sleep, 600
+        }
+    }
+    tooltip
+    ;Sleep, 1900
+    ;Send {F11}     ; hide cursor in IrfanView by F11 if configured that way
+    ;Send +a        ; uppercase A turns on an autoadvance in Irfanview
+}
+else ;Irfanview and TC are not active, so something else will take the key
+    send, {%IrfanViewKey%}
+return
 #If
 
 
@@ -7248,6 +7362,7 @@ else ;Irfanview and TC are not active, so something else will take the key
 return
 #If
 
+
 <CheckForUpdates>:
 CheckForUpdates()
 Return
@@ -7256,7 +7371,7 @@ CheckForUpdates()
 {
     If Not IsInternetConnected()
     {
-        Msgbox, 48, WinInet.dll, Offline! Check the internet connection.
+        MsgBox, 48, WinInet.dll, Offline! Check the internet connection.
         Return false
     }
     file_name := "latest_version.txt"
@@ -7304,7 +7419,7 @@ CheckForUpdates()
     }
     else
     {
-        Msgbox, Could not locate %file_path% `nPerhaps it could not be downloaded`, or there is no write access. `nTry again or visit https://magicstep.github.io/viatc
+        MsgBox, Could not locate %file_path% `nPerhaps it could not be downloaded`, or there is no write access. `nTry again or visit https://magicstep.github.io/viatc
         Return false
     }
 }
