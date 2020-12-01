@@ -1,7 +1,7 @@
 ViATc
 =====
 ViATc - Vim mode at Total Commander  
-2020/11/27  version 0.5.5en beta 28  
+2020/12/01  version 0.5.5en beta 29  
 ![viatc_logo credit: https://github.com/linxinhong](https://magicstep.github.io/viatc/viatc_logo.jpg?raw=true "viatc_logo")  
 <sub>image credit: <A href="https://github.com/linxinhong" target="_blank">https://github.com/linxinhong</a></sub><br>  
 This software works on Windows as an addition to "Total Commander"  :floppy_disk: - the greatest file manager :100: (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
@@ -59,6 +59,7 @@ ma = mark a
 :r = reload  
 sm = show mappings from ini file  
 an = show menu to create a new file from template  
+zw = toggle one wide panel  
 gg = go top  
 G  = go bottom  
 r  = rename with a fancy vim emulator,  

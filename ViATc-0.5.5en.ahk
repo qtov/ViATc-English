@@ -19,8 +19,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/11/27"
-Global Version := "0.5.5en beta 28"
+Global Date := "2020/12/01"
+Global Version := "0.5.5en beta 29"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -36,15 +36,15 @@ VimAction :=
 KeyCount := 0
 Global Vim := true
 Global InsertMode := False
-Global VimRN := True
-Global VimRN_Count
-Global VimRN_ID
-Global VimRN_History := Object()
-Global VimRN_Temp
-Global VimRN_Vis := False
-Global VimRN_IsReplace := False
-Global VimRN_IsMultiReplace := False
-Global VimRN_IsFind := False
+Global FancyR := True
+Global FancyR_Count
+Global FancyR_ID
+Global FancyR_History := Object()
+Global FancyR_Temp
+Global FancyR_Vis := False
+Global FancyR_IsReplace := False
+Global FancyR_IsMultiReplace := False
+Global FancyR_IsFind := False
 Global ViatcIni
 Global GlobalCheckbox
 Global CheckForUpdatesButton
@@ -104,15 +104,14 @@ Else
     ;Global TCPanel1 := "LCLListBox2"
 	;Global TCPanel2 := "LCLListBox1"
 }
-Global F11TC := GetConfig("Configuration","F11TC")
-Global IrfanView := GetConfig("Configuration","IrfanView")
-Global IrfanViewKey := GetConfig("Configuration","IrfanViewKey")
 
 GoSub,<ConfigVar>
-Menu,VimRN_Set,Add, Vim mode at start `tAlt+V,VimRN_SelMode
-Menu,VimRN_Set,Add, Unselect extension at start `tAlt+E,VimRN_SelExt
-Menu,VimRN_MENU,Add, Settings (&S),:VimRN_Set
-Menu,VimRN_MENU,Add, Help (&H),VimRN_Help
+Menu,FancyR_DefaultsMenu,Add, Insert mode at start `tAlt+I,FancyR_SelMode
+Menu,FancyR_DefaultsMenu,Add, Unselect extension at start `tAlt+E,FancyR_SelExt
+Menu,FancyR_MENU,Add, &Defaults,:FancyR_DefaultsMenu
+Menu,FancyR_MENU,Add, &Keys,FancyR_Keys
+Menu,FancyR_MENU,Add, &Help,FancyR_Help
+
 Menu,Tray,NoStandard
 Menu,Tray,Add, Run TC (&T),<ToggleTC>
 Menu,Tray,Add, Disable (&D),<ToggleViATc>
@@ -216,7 +215,7 @@ HistoryOfRename := GetConfig("Configuration","HistoryOfRename")
 IsCapslockAsEscape := GetConfig("Configuration","IsCapslockAsEscape")
 FancyVimRename := GetConfig("FancyVimRename","Enabled")
 UseSystemClipboard := GetConfig("FancyVimRename","UseSystemClipboard")
-VimRN  := GetConfig("FancyVimRename","Enabled")
+FancyR  := GetConfig("FancyVimRename","Enabled")
 EditorPath := GetConfig("Paths","EditorPath")
 If Not FileExist(EditorPath)   
 {
@@ -235,6 +234,14 @@ EditorArguments := GetConfig("Paths","EditorArguments")
 EditorArguments = %EditorArguments% 
 EditorArguments :=A_space . EditorArguments . A_space
 IniRead,ExecuteInHeader,%MarksPath%,MarkSettings,ExecuteInHeader
+Global F11TC := GetConfig("Configuration","F11TC")
+Global IrfanView := GetConfig("Configuration","IrfanView")
+Global IrfanViewKey := GetConfig("Configuration","IrfanViewKey")
+If IrfanView     ;this variable is set in the viatc.ini file
+{
+	HotKey,Ifwinactive
+    Hotkey,%IrfanViewKey%, <Traverse>, On, UseErrorLevel           ;Turn on the dynamic hotkey.
+}
 Return
 ;}}}
 
@@ -1586,16 +1593,16 @@ ControlGetTabs(Control, WinTitle="", WinText="")
 }
 
 ; ----- fancy rename {{{1
-<VimRN>:
+<FancyR>:
 If SendPos(0)
-	VimRNCreateGui()
+	FancyRCreateGui()
 Return
-VimRNCreateGui()
+FancyRCreateGui()
 {
 	Static WM_CHAR := 0x102
 	Global GetName
     Global UseSystemClipboard
-	WinClose,AHK_ID %VimRN_ID%
+	WinClose,AHK_ID %FancyR_ID%
 	PostMessage 1075, 1007, 0,, ahk_class TTOTAL_CMD
     ;loop 8 times to wait till the little rename line opens, so we can copy content
 	Loop,8
@@ -1643,419 +1650,426 @@ VimRNCreateGui()
 
 	WinGet,TCID,ID,AHK_CLASS TTOTAL_CMD
 	Gui,New
-	Gui,+HwndVimRN_ID
+	Gui,+HwndFancyR_ID
 	Gui,+Owner%TCID%
-	Gui,Menu,VimRN_MENU
+	Gui,Menu,FancyR_MENU
     ;Gui, Color, Silver
     ;Gui, Add, Text, x9 y9 w800 h23, Edit this filename:
     ;Gui, Color, AABB99  ;LightGreen
 /*
     Gui,Font,s14,Arial  ;font for the rename window
-	Gui,Add,Edit,r5 x9  w800 -WantReturn gVimRN_Edit,%GetName%
-	;Gui,Add,Edit,r1 w800 -WantReturn gVimRN_Edit,%GetName%  ;original
+	Gui,Add,Edit,r5 x9  w800 -WantReturn gFancyR_Edit,%GetName%
+	;Gui,Add,Edit,r1 w800 -WantReturn gFancyR_Edit,%GetName%  ;original
     Gui,Font,s12
     Gui, Add, Text, x9 y177 w800 h23, Original filename (saved to history_of_rename.txt):
     Gui, Add, Edit, x9 y202 w800 r5 ReadOnly, %GetName%  ;original 
 */
 
     Gui,Font,s12,Arial  ;font for the rename window
-	Gui,Add,Edit,r3 x9 y103  w820 -WantReturn gVimRN_Edit,%GetName%
-	;Gui,Add,Edit,r1 w800 -WantReturn gVimRN_Edit,%GetName%  ;original
+	Gui,Add,Edit,r3 x9 y103  w820 -WantReturn gFancyR_Edit,%GetName%
+	;Gui,Add,Edit,r1 w800 -WantReturn gFancyR_Edit,%GetName%  ;original
     Gui,Font,s9
     If HistoryOfRename
         Gui, Add, Text, x9 y10 w800 h23, Original filename saved to the "history_of_rename.txt"  
     else
         Gui, Add, Text, x9 y10 w800 h23, Original filename     not saving "history_of_rename.txt"  
-    Gui, Add, Button, x310 y6 w70 h21 gVimRN_history,  &Browse it
+    Gui, Add, Button, x310 y6 w70 h21 gFancyR_history,  &Browse it
     Gui,Font,s12
     Gui, Add, Edit, x9 y30 w820 r3 ReadOnly, %GetName%  ;original 
 
 
     Gui,Font,s18
 	Gui,Add,StatusBar
-	;Gui,Add,Button,Default Hidden gVimRN_Enter
+	;Gui,Add,Button,Default Hidden gFancyR_Enter
     Gui,Font,s9,Arial  ;font for the rename window
     Gui, Add, Button, x515 y4 w140 h22 gCancel, &Cancel ; = q
-    Gui, Add, Button, x690 y4 w140 h22 Default gVimRN_Enter, &OK ;= Enter
+    Gui, Add, Button, x690 y4 w140 h22 Default gFancyR_Enter, &OK ;= Enter
 	;Gui,Show,h400,ViATc Fancy Rename
 	Gui,Show,,ViATc Fancy Rename
-    PostMessage,0x00C5,255,,%ThisControl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 255
-    ;PostMessage,0x00C5,256,,%ThisControl%,AHK_ID %VimRN_ID%  ;LIMITTEXT to 256
+    PostMessage,0x00C5,255,,%ThisControl%,AHK_ID %FancyR_ID%  ;LIMITTEXT to 255
+    ;PostMessage,0x00C5,256,,%ThisControl%,AHK_ID %FancyR_ID%  ;LIMITTEXT to 256
 
-	VimRN := GetConfig("FancyVimRename","Mode")
-	If VimRN
+	FancyR_Insert := GetConfig("FancyVimRename","InsertMode")
+	If FancyR_Insert
+    {
+		Menu,FancyR_DefaultsMenu,Check, Insert mode at start `tAlt+I
+		Status := "  mode : Insert                                 "
+        FancyR := false
+       	FancyR_Vis := false
+    }
+    Else
 	{
-		Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
+		Menu,FancyR_DefaultsMenu,Uncheck, Insert mode at start `tAlt+I
 		;Status := "  mode : Vim Normal                             "
         Status := "  mode : Visual                                 "
-       	VimRN_Vis := true
+       	FancyR_Vis := true
 	}
-	Else
-		Status := "  mode : Insert                                 "
-	ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
+	ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
 	If GetConfig("FancyVimRename","UnselectExt")
 	{
 		SplitPath,GetName,,,Ext
-        If VimRN
-            Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
+        If FancyR_Insert
+            Menu,FancyR_DefaultsMenu,Check, Insert mode at start `tAlt+I
         else
-            Menu,VimRN_Set,Uncheck, Vim mode at start `tAlt+V
-        Menu,VimRN_Set,Check, Unselect extension at start `tAlt+E
+            Menu,FancyR_DefaultsMenu,Uncheck, Insert mode at start `tAlt+I
+        Menu,FancyR_DefaultsMenu,Check, Unselect extension at start `tAlt+E
 	}
 	If Ext And ( Not GetDir )
 	{
 		StartPos := 0
 		EndPos := StrLen(GetName) - strlen(Ext) - 1
-		VimRN_SetPos(StartPos,EndPos)
+		FancyR_DefaultsMenuPos(StartPos,EndPos)
 	}
 
-	VimRN_History["s"] := 0
-    VimRN_IsReplace := False
-    VimRN_IsMultiReplace := False
-    VimRN_Count := 0
+	FancyR_History["s"] := 0
+    FancyR_IsReplace := False
+    FancyR_IsMultiReplace := False
+    FancyR_Count := 0
 
-	;VimRN_History[0] := StartPos . "," . EndPos . "," . GetName
-	VimRN_History[0] := StartPos . "|" . EndPos . "|" . GetName
-	VimRN_History["String"] := GetName
+	;FancyR_History[0] := StartPos . "," . EndPos . "," . GetName
+	FancyR_History[0] := StartPos . "|" . EndPos . "|" . GetName
+	FancyR_History["String"] := GetName
 	OnMessage(WM_CHAR,"GetFindText")
 }
 GetFindText(byRef w, byRef l)
 {
-	If VimRN_IsFind
+	If FancyR_IsFind
 	{
 		ThisChar := Chr(w)
-		ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
-		GetPos := VimRN_GetPos()
+		ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
+		GetPos := FancyR_GetPos()
 		StartPos := GetPos[2] + 1
 		Pos := RegExMatch(Text,RegExReplace(ThisChar,"\+|\?|\.|\*|\{|\}|\(|\)|\||\^|\$|\[|\]|\\","\$0"),"",StartPos)
-		VimRN_SetPos(Pos-1,Pos)
-		VimRN_IsFind := False
-		VimRN := True
+		FancyR_DefaultsMenuPos(Pos-1,Pos)
+		FancyR_IsFind := False
+		FancyR := True
 		Return 0
 	}
 }
-VimRN_Num:
-VimRN_SendNum()
+FancyR_Num:
+FancyR_SendNum()
 Return
-VimRN_Down:
-Key := VimRN_Vis ? "+{Down}" : "{Down}"
-VimRN_SendKey(key)
+FancyR_Down:
+Key := FancyR_Vis ? "+{Down}" : "{Down}"
+FancyR_SendKey(key)
 Return
-VimRN_Up:
-Key := VimRN_Vis ? "+{Up}" : "{Up}"
-VimRN_SendKey(key)
+FancyR_Up:
+Key := FancyR_Vis ? "+{Up}" : "{Up}"
+FancyR_SendKey(key)
 Return
-VimRN_Left:
-Key := VimRN_Vis ? "+{Left}" : "{Left}"
-VimRN_SendKey(key)
+FancyR_Left:
+Key := FancyR_Vis ? "+{Left}" : "{Left}"
+FancyR_SendKey(key)
 Return
-VimRN_Word:
-Key := VimRN_Vis ? "^+{Right}" : "^{Right}"
-VimRN_SendKey(key)
+FancyR_Word:
+Key := FancyR_Vis ? "^+{Right}" : "^{Right}"
+FancyR_SendKey(key)
 Return
-VimRN_WordEnd:
-Key := VimRN_Vis ? "^+{Right}+{Left}" : "^{Right}{Left}"
-VimRN_SendKey(key)
+FancyR_WordEnd:
+Key := FancyR_Vis ? "^+{Right}+{Left}" : "^{Right}{Left}"
+FancyR_SendKey(key)
 Return
-VimRN_BackWord:
-Key := VimRN_Vis ? "^+{Left}" : "^{Left}"
-VimRN_SendKey(key)
+FancyR_BackWord:
+Key := FancyR_Vis ? "^+{Left}" : "^{Left}"
+FancyR_SendKey(key)
 Return
-VimRN_Right:
-Key := VimRN_Vis ? "+{Right}" : "{Right}"
-VimRN_SendKey(key)
+FancyR_Right:
+Key := FancyR_Vis ? "+{Right}" : "{Right}"
+FancyR_SendKey(key)
 Return
-VimRN_SDown:
-VimRN_SendKey("+{Down}")
+FancyR_SDown:
+FancyR_SendKey("+{Down}")
 Return
-VimRN_SLeft:
-VimRN_SendKey("+{Left}")
+FancyR_SLeft:
+FancyR_SendKey("+{Left}")
 Return
-VimRN_SUp:
-VimRN_SendKey("+{Up}")
+FancyR_SUp:
+FancyR_SendKey("+{Up}")
 Return
-VimRN_SRight:
-VimRN_SendKey("+{Right}")
+FancyR_SRight:
+FancyR_SendKey("+{Right}")
 Return
-VimRN_Find:
-If VimRN_SendKey("")
+FancyR_Find:
+If FancyR_SendKey("")
 {
-	VimRN := False
-	VimRN_IsFind := True
+	FancyR := False
+	FancyR_IsFind := True
 }
 Return
-VimRN_DeselectSimple:
-    ;If VimRN_SendKey("")
+FancyR_DeselectSimple:
+    ;If FancyR_SendKey("")
     {
         Send {Right}{Left}   ; deselect
     }
 Return
-VimRN_DeselectStart:
-    if VimRN    
+FancyR_DeselectStart:
+    if FancyR    
     {
-        Pos := VimRN_GetPos()
+        Pos := FancyR_GetPos()
         Pos := Pos[1]
-        VimRN_SetPos(Pos,Pos)
+        FancyR_DefaultsMenuPos(Pos,Pos)
     }
     else
-       VimRN_SendKey("")    
+       FancyR_SendKey("")    
 return
-VimRN_DeselectEnd:
-    if VimRN    
+FancyR_DeselectEnd:
+    if FancyR    
     {
-        Pos := VimRN_GetPos()
+        Pos := FancyR_GetPos()
         Pos := Pos[2]
-        VimRN_SetPos(Pos,Pos)
+        FancyR_DefaultsMenuPos(Pos,Pos)
     }
     else
-       VimRN_SendKey("")    
+       FancyR_SendKey("")    
 Return
-VimRN_Selectall:
-If VimRN_SendKey("")
+FancyR_Selectall:
+If FancyR_SendKey("")
 {
-	ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
+	ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
 	Pos := Strlen(Text)
-	VimRN_SetPos(0,Pos)
+	FancyR_DefaultsMenuPos(0,Pos)
 }
 Return
-VimRN_SelectFileName:
-If VimRN_SendKey("")
+FancyR_SelectFileName:
+If FancyR_SendKey("")
 {
-	ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
+	ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
 	splitpath,Text,,,,FileName
 	Pos := Strlen(FileName)
-	VimRN_SetPos(0,Pos)
+	FancyR_DefaultsMenuPos(0,Pos)
 }
 Return
-VimRN_SelectExt:
-If VimRN_SendKey("")
+FancyR_SelectExt:
+If FancyR_SendKey("")
 {
-	ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
+	ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
 	splitpath,Text,,,FileExt,FileName
 	Pos1 := Strlen(FileName)
 	Pos2 := Strlen(FileExt)
-	VimRN_SetPos(Pos1+1,Pos1+Pos2+1)
+	FancyR_DefaultsMenuPos(Pos1+1,Pos1+Pos2+1)
 }
 Return
 ;start of the line
-VimRN_Home:
-If VimRN_SendKey("")
+FancyR_Home:
+If FancyR_SendKey("")
 {
-    ;VimRN_SetPos(0,0)
-    Key := VimRN_Vis ? "+{Home}" : "{Home}"
-    VimRN_SendKey(key)
+    ;FancyR_DefaultsMenuPos(0,0)
+    Key := FancyR_Vis ? "+{Home}" : "{Home}"
+    FancyR_SendKey(key)
 }
 Return
 ;start of the top line
-VimRN_HomeTop:
-If VimRN_SendKey("")
+FancyR_HomeTop:
+If FancyR_SendKey("")
 {
-    ;VimRN_SetPos(0,0)
-    Key := VimRN_Vis ? "+{Home}" : "{Home}"
-    VimRN_SendKey(key)
-    VimRN_SendKey(key)
-    VimRN_SendKey(key)
+    ;FancyR_DefaultsMenuPos(0,0)
+    Key := FancyR_Vis ? "+{Home}" : "{Home}"
+    FancyR_SendKey(key)
+    FancyR_SendKey(key)
+    FancyR_SendKey(key)
 }
 Return
-VimRN_End:
-If VimRN_SendKey("")
+FancyR_End:
+If FancyR_SendKey("")
 {
-	;ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
+	;ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
 	;Pos := Strlen(Text)
-	;VimRN_SetPos(Pos,Pos)
-    Key := VimRN_Vis ? "+{End}" : "{End}"
-    VimRN_SendKey(key)
+	;FancyR_DefaultsMenuPos(Pos,Pos)
+    Key := FancyR_Vis ? "+{End}" : "{End}"
+    FancyR_SendKey(key)
 }
 Return
-VimRN_Copy:
-If VimRN_SendKey("")
+FancyR_Copy:
+If FancyR_SendKey("")
 {
-	Pos := VimRN_GetPos()
-	ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
-	VimRN_Temp := SubStr(Text,Pos[1]+1,Pos[2]-Pos[1])
+	Pos := FancyR_GetPos()
+	ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
+	FancyR_Temp := SubStr(Text,Pos[1]+1,Pos[2]-Pos[1])
     If UseSystemClipboard
-        Clipboard = %VimRN_Temp%
+        Clipboard = %FancyR_Temp%
 }
 Return
-VimRN_Backspace:
-If VimRN_SendKey("")
+FancyR_Backspace:
+If FancyR_SendKey("")
 {
-	VimRN_Cut(-1)
+	FancyR_Cut(-1)
 	Send {Backspace}
 }
 Return
-VimRN_Substitute:
-If VimRN
+FancyR_Substitute:
+If FancyR
 {
-    VimRN_Cut(0)
+    FancyR_Cut(0)
 	Send {Delete}
-    gosub VimRN_InsertMode
+    gosub FancyR_InsertMode
 }
 else
-    If VimRN_SendKey("")
+    If FancyR_SendKey("")
 
-VimRN_Delete:
-If VimRN_SendKey("")
+FancyR_Delete:
+If FancyR_SendKey("")
 {
-	VimRN_Cut(0)
+	FancyR_Cut(0)
 	Send {Delete}
 }
 Return
-VimRN_Paste:
-If VimRN_SendKey("")
-	VimRN_Paste()
+FancyR_Paste:
+If FancyR_SendKey("")
+	FancyR_Paste()
 Return
-VimRN_Transpose:
-If VimRN_SendKey("")
+FancyR_Transpose:
+If FancyR_SendKey("")
 {
-	Pos := VimRN_GetPos()
-	ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
+	Pos := FancyR_GetPos()
+	ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
 	If Pos[1] > 0
 	{
 		TextA := SubStr(Text,Pos[1],1)
 		TextB := SubStr(Text,Pos[1]+1,1)
 		SetText := SubStr(Text,1,Pos[1]-1) . TextB . TextA . SubStr(Text,Pos[1]+2)
-		ControlSetText,Edit1,%SetText%,AHK_ID %VimRN_ID%
-		VimRN_SetPos(Pos[1],Pos[2])
-		VimRN_Edit()
+		ControlSetText,Edit1,%SetText%,AHK_ID %FancyR_ID%
+		FancyR_DefaultsMenuPos(Pos[1],Pos[2])
+		FancyR_Edit()
 	}
 }
 Return
-VimRN_Replace:
-If VimRN_SendKey("")
+FancyR_Replace:
+If FancyR_SendKey("")
 {
-	VimRN_IsReplace := True
-	Pos := VimRN_GetPos()
+	FancyR_IsReplace := True
+    gosub FancyR_DeselectSimple
+	Pos := FancyR_GetPos()
 	If Pos[1] = Pos[2]
 	{
-		VimRN_SetPos(Pos[1],Pos[1]+1)
-		VimRN := False
+		FancyR_DefaultsMenuPos(Pos[1],Pos[1]+1)
+		FancyR := False
 	}
 }
 Return
-VimRN_MultiReplace:
-If VimRN_SendKey("")
+FancyR_MultiReplace:
+If FancyR_SendKey("")
 {
-    VimRN := False
-    VimRN_Vis := False
-	VimRN_IsMultiReplace := True
+    FancyR := False
+    FancyR_Vis := False
+	FancyR_IsMultiReplace := True
     Status := "  mode : Replace                                "
-    ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
-    gosub VimRN_DeselectSimple
+    gosub FancyR_DeselectSimple
+    ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
+    gosub FancyR_DeselectSimple
     Send +{Right}        ; select one char
-	Pos := VimRN_GetPos()
+	Pos := FancyR_GetPos()
 	If Pos[1] = Pos[2]
 	{
-		VimRN_SetPos(Pos[1],Pos[1]+1)
-		VimRN := False
+		FancyR_DefaultsMenuPos(Pos[1],Pos[1]+1)
+		FancyR := False
 	}
 }
 Return
-VimRN_visual:
-If VimRN_SendKey("")
+FancyR_visual:
+If FancyR_SendKey("")
 {
-	VimRN_Vis := !VimRN_Vis
-	If VimRN_Vis
+	FancyR_Vis := !FancyR_Vis
+	If FancyR_Vis
 	{
 		Status := "  mode : Visual                                 "
-		ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
-        ;!!!!!!!!!!!!!!!!!!!!! experimental below
-        ;Gui, HwndVimRN_ID:Color, red , ahk_id %VimRN_ID% 
+		ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
+        ;!!! experimental below
+        ;Gui, HwndFancyR_ID:Color, red , ahk_id %FancyR_ID% 
         Gui, Edit1:Color, cRed 
         ;Gui, Color, %CustomColor%
         RGB := 0xFF66AA
-        ;GuiControl, %VimRN_ID%: +c%RGB%, ahk_id %VimRN_ID% 
+        ;GuiControl, %FancyR_ID%: +c%RGB%, ahk_id %FancyR_ID% 
         Gui, Edit1:Font, cBlue Bold
         Gui, Font, s18 cRed Bold, Verdana
         GuiControl, Font, msctls_statusbar321
         GuiControl, Font, Edit1
-        GuiControl, HwndVimRN_ID: +c%RGB%, Edit1, color red ;ahk_id %VimRN_ID% 
+        GuiControl, HwndFancyR_ID: +c%RGB%, Edit1, color red ;ahk_id %FancyR_ID% 
         Gui, msctls_statusbar321:Font, cBlue Bold
         Gui, Hotstring:Color, Red, Green
-        Gui, HwndVimRN_ID:Color, Red, Green
+        Gui, HwndFancyR_ID:Color, Red, Green
         ;Tooltip v 
 	}
 	Else
 	{
-        ;gosub VimRN_DeselectEnd
-        gosub VimRN_DeselectSimple
-        WinSet, Region,, ahk_id %VimRN_ID% ; Restore the window to its original/default display area. !!!!
+        ;gosub FancyR_DeselectEnd
+        gosub FancyR_DeselectSimple
+        WinSet, Region,, ahk_id %FancyR_ID% ; Restore the window to its original/default display area. !!!!
 		Status := "  mode : Vim Normal                             "
-		ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
+		ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
 	}
 }
 Return
-VimRN_InsertMode:
-;If VimRN_SendKey("")
+FancyR_InsertMode:
+;If FancyR_SendKey("")
 {
-    VimRN_Count := 0
-	VimRN := False
-	VimRN_Vis := False
+    FancyR_Count := 0
+	FancyR := False
+	FancyR_Vis := False
 	Status := "  mode : Insert                                 "
-	ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
+	ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
 }
 Return
 
-VimRN_Insert:
-if VimRN
+FancyR_Insert:
+if FancyR
 {
-    gosub VimRN_DeselectStart
-    gosub VimRN_InsertMode
+    gosub FancyR_DeselectStart
+    gosub FancyR_InsertMode
 }
 else
-   VimRN_SendKey("")    
+   FancyR_SendKey("")    
 Return
 
-VimRN_InsertHome:
-if VimRN
+FancyR_InsertHome:
+if FancyR
 {
-    gosub VimRN_InsertMode
-    gosub VimRN_DeselectSimple
+    gosub FancyR_InsertMode
+    gosub FancyR_DeselectSimple
     Send {Home}
 }
 else
-   VimRN_SendKey("")    
+   FancyR_SendKey("")    
 Return
-VimRN_Append:
-if VimRN
+FancyR_Append:
+if FancyR
 {
-    gosub VimRN_DeselectEnd
-    gosub VimRN_InsertMode
+    gosub FancyR_DeselectEnd
+    gosub FancyR_InsertMode
     Send {Right}
 }
 else
-   VimRN_SendKey("")    
+   FancyR_SendKey("")    
 Return
-VimRN_AppendEnd:
-if VimRN
+FancyR_AppendEnd:
+if FancyR
 {
-    gosub VimRN_DeselectEnd
-    gosub VimRN_InsertMode
+    gosub FancyR_DeselectEnd
+    gosub FancyR_InsertMode
     Send {End}
 }
 else
-   VimRN_SendKey("")    
+   FancyR_SendKey("")    
 Return
-VimRN_Esc:
-    ;gosub VimRN_DeselectEnd
-    VimRN := True
-    VimRN_IsReplace := False
-    VimRN_IsMultiReplace := False
-    VimRN_Count := 0
+FancyR_Esc:
+    ;gosub FancyR_DeselectEnd
+    FancyR := True
+    FancyR_IsReplace := False
+    FancyR_IsMultiReplace := False
+    FancyR_Count := 0
     Status := "  mode : Vim Normal                             "
     Tooltip
     Settimer,<RemoveHelpTip>,off
-    ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
+    ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
 Return
-VimRN_Quit:
-If VimRN_SendKey("")
-	WinClose,AHK_ID %VimRN_ID%
+FancyR_Quit:
+If FancyR_SendKey("")
+	WinClose,AHK_ID %FancyR_ID%
 Return
-VimRN_Undo:
-If VimRN_SendKey("")
-	VimRN_Undo()
+FancyR_Undo:
+If FancyR_SendKey("")
+	FancyR_Undo()
 Return
-VimRN_history:
+FancyR_history:
 	Global HistoryOfRenamePath
 	match = `"$0
 	file := Regexreplace(HistoryOfRenamePath,".*",match)
@@ -2066,7 +2080,7 @@ VimRN_history:
 	Run,%editfile%,,UseErrorLevel
 Return
 
-VimRN_Enter:
+FancyR_Enter:
 GuiControlGet,NewName,,Edit1
 Gui,Destroy
 Postmessage,1075,1007,0,,AHK_CLASS TTOTAL_CMD
@@ -2086,33 +2100,55 @@ If Diff(ConfirName,GetName)
 Else
 	Return
 Return
-VimRN_Edit:
-VimRN_Edit()
+FancyR_Edit:
+FancyR_Edit()
 Return
-VimRN_SelMode:
-SetConfig("FancyVimRename","Mode",!GetConfig("FancyVimRename","Mode"))
-If GetConfig("FancyVimRename","Mode")
-	Menu,VimRN_Set,Check, Vim mode at start `tAlt+V
+FancyR_SelMode:
+SetConfig("FancyVimRename","InsertMode",!GetConfig("FancyVimRename","InsertMode"))
+If GetConfig("FancyVimRename","InsertMode")
+    Menu,FancyR_DefaultsMenu,Check, Insert mode at start `tAlt+I
 Else
-	Menu,VimRN_Set,UnCheck, Vim mode at start `tAlt+V
+    Menu,FancyR_DefaultsMenu,Uncheck, Insert mode at start `tAlt+I
 Return
-VimRN_SelExt:
+FancyR_SelExt:
 SetConfig("FancyVimRename","UnselectExt",!GetConfig("FancyVimRename","UnselectExt"))
 If GetConfig("FancyVimRename","UnselectExt")
-	Menu,VimRN_Set,Check, Unselect extension at start `tAlt+E
+	Menu,FancyR_DefaultsMenu,Check, Unselect extension at start `tAlt+E
 Else
-	Menu,VimRN_Set,UnCheck, Unselect extension at start `tAlt+E
-Return
-VimRN_Help:
-VimRN_Help()
+	Menu,FancyR_DefaultsMenu,UnCheck, Unselect extension at start `tAlt+E
 Return
 
-; line taken out of the help
-;Esc :  Vim's Normal mode (use the real Esc, not Capslock)
+FancyR_Help:
+FancyR_Help()
+Return
 
-VimRN_Help()
+FancyR_Help()
 {
 	rename_help =
+(
+If you can't type, then press i to edit properly in so called "Insert mode"
+To always start in "Insert mode" open "Defaults" menu and select "Insert mode at start"
+To disable this whole "Fancy rename" open Settings->General  and uncheck "Fancy rename" near the bottom
+To avoid the fancy rename, even if it is enabled, then either use  Shift+r  or   uncomment this line in the viatc.ini file:
+r=<RenameSingleFile>
+)
+
+	WinGetPos,,,w,h,AHK_ID %FancyR_ID%
+    ;MsgBox, 262144, MyTitle, My Text Here   ;Always-on-top is  262144
+	MsgBox , 262144, Help for Fancy Rename , %rename_help%
+    ;tooltip,%rename_help%,0,%h%
+	;Settimer,<RemoveHelpTip>,50
+	Return
+}
+
+
+FancyR_Keys:
+FancyR_Keys()
+Return
+
+FancyR_Keys()
+{
+	rename_keys =
 (
  -----  simple Vim emulator -----
 q :  Quit rename without saving (in Normal and Visual mode)
@@ -2120,7 +2156,7 @@ i :  Insert mode
 I :  Insert at front
 a :  Append 
 A :  Append at end
-v :  Visual select mode (v again to toggle to Vim Normal mode)
+v :  Visual select mode, v again to toggle to Vim Normal mode
 Esc :  Vim's Normal mode
 ^[  :  Same as Esc
 Capslock : Same as Esc (only if this is enabled in the settings)
@@ -2141,8 +2177,8 @@ u :  Undo (multiple too)
 x :  Delete forward
 X :  Delete backward (like backspace or X in vim)
 d :  Delete backward (like backspace or X in vim)
-s :  Substitute
-y :  Copy (in Visual mode only)
+s :  Substitute character or selection
+y :  Copy selection (Visual mode)
 p :  Paste 
 f :  Find characters, E.g 'f' then 'a' to find 'a'
 t :  Transpose two characters at the cursor
@@ -2159,33 +2195,34 @@ n :  Select the file name
 < or , :  Deselect with cursor at selection start
 > or . :  Deselect with cursor at selection end
 )
-	WinGetPos,,,w,h,AHK_ID %VimRN_ID%
+	WinGetPos,,,w,h,AHK_ID %FancyR_ID%
     ;MsgBox, 262144, MyTitle, My Text Here   ;Always-on-top is  262144
-	MsgBox , 262144, Help for Fancy Rename , %rename_help%
+	MsgBox , 262144, Keys for Fancy Rename , %rename_keys%
     ;tooltip,%rename_help%,0,%h%
 	;Settimer,<RemoveHelpTip>,50
 	Return
 }
+
 <RemoveHelpTip>:
-Ifwinnotactive,AHK_ID %VimRN_ID%
+Ifwinnotactive,AHK_ID %FancyR_ID%
 {
 	SetTimer,<RemoveHelpTip>, Off
 	ToolTip
 }
 return
-VimRN_SendKey(ThisKey)
+FancyR_SendKey(ThisKey)
 {
-	If VimRN
+	If FancyR
 	{
-		VimRN_Count := VimRN_Count ? VimRN_Count : 1
-		Loop % VimRN_Count
+		FancyR_Count := FancyR_Count ? FancyR_Count : 1
+		Loop % FancyR_Count
 		{
 			Send %ThisKey%
 		}
-		VimRN_Count := 0
-		ControlGetText,status,msctls_statusbar321,AHK_ID %VimRN_ID%
+		FancyR_Count := 0
+		ControlGetText,status,msctls_statusbar321,AHK_ID %FancyR_ID%
 		status := SubStr(status,1,Strlen(status)-3) . "   "
-		ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
+		ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
 		Return True
 	}
 	Else
@@ -2194,39 +2231,39 @@ VimRN_SendKey(ThisKey)
 		Return False
 	}
 }
-VimRN_SendNum()
+FancyR_SendNum()
 {
 	If A_ThisHotkey is integer
 		ThisNum := A_ThisHotkey
 	Else
 		Return
-	If VimRN
+	If FancyR
 	{
-		If VimRN_Count
-			VimRN_Count := ThisNum + (VimRN_Count * 10 )
+		If FancyR_Count
+			FancyR_Count := ThisNum + (FancyR_Count * 10 )
 		Else
             If ThisNum = 0
             {
-                ;VimRN_SetPos(0,0)
-                Key := VimRN_Vis ? "+{Home}" : "{Home}"
-                VimRN_SendKey(key)
+                ;FancyR_DefaultsMenuPos(0,0)
+                Key := FancyR_Vis ? "+{Home}" : "{Home}"
+                FancyR_SendKey(key)
                 Return False
             }
             else
-			   VimRN_Count := ThisNum + 0
-		if VimRN_Count > 256
-			VimRN_Count := 256
-		ControlGetText,status,msctls_statusbar321,AHK_ID %VimRN_ID%
+			   FancyR_Count := ThisNum + 0
+		if FancyR_Count > 256
+			FancyR_Count := 256
+		ControlGetText,status,msctls_statusbar321,AHK_ID %FancyR_ID%
 		StringRight,isNumber,status,3
 		If RegExMatch(isNumber,"\s\s\s")
-			Status := RegExReplace(Status,"\s\s\s$") . VimRN_Count . "  "
+			Status := RegExReplace(Status,"\s\s\s$") . FancyR_Count . "  "
 		If RegExMatch(isNumber,"\d\s\s")
-			Status := RegExReplace(Status,"\d\s\s$") . VimRN_Count  . " "
+			Status := RegExReplace(Status,"\d\s\s$") . FancyR_Count  . " "
 		If RegExMatch(isNumber,"\d\d\s")
-			Status := RegExReplace(Status,"\d\d\s$") . VimRN_Count
+			Status := RegExReplace(Status,"\d\d\s$") . FancyR_Count
 		If RegExMatch(isNumber,"\d\d\d")
-			Status := RegExReplace(Status,"\d\d\d$") . VimRN_Count
-		ControlSetText,msctls_statusbar321,%status%,AHK_ID %VimRN_ID%
+			Status := RegExReplace(Status,"\d\d\d$") . FancyR_Count
+		ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
 		Return True
 	}
 	Else
@@ -2235,57 +2272,57 @@ VimRN_SendNum()
 		Return False
 	}
 }
-VimRN_Undo()
+FancyR_Undo()
 {
 	DontSetText := False
-	Serial := VimRN_History["s"]
+	Serial := FancyR_History["s"]
 	If  Serial > 0
 		Serial--
 	Else
 		DontSetText := True
-	Change := VimRN_History[Serial]
+	Change := FancyR_History[Serial]
 	;Stringsplit,Pos,Change,`,   ;When fancy-renaming a name including a comma, the undo function truncates till the comma.
 	Stringsplit,Pos,Change,|    ; "|" is a divider because it is not allowed in filenames
 	If Not DontSetText
-		ControlSetText,Edit1,%Pos3%,AHK_ID %VimRN_ID%
-	VimRN_SetPos(Pos1,Pos2)
-	VimRN_History["s"] := Serial
-	VimRN_History["String"] := Pos3
+		ControlSetText,Edit1,%Pos3%,AHK_ID %FancyR_ID%
+	FancyR_DefaultsMenuPos(Pos1,Pos2)
+	FancyR_History["s"] := Serial
+	FancyR_History["String"] := Pos3
 }
-VimRN_Edit()
+FancyR_Edit()
 {
-	Match := "^" . RegExReplace(VimRN_History["String"],"\+|\?|\.|\*|\{|\}|\(|\)|\||\^|\$|\[|\]|\\","\$0") . "$"
-	ControlGetText,Change,Edit1,AHK_ID %VimRN_ID%
+	Match := "^" . RegExReplace(FancyR_History["String"],"\+|\?|\.|\*|\{|\}|\(|\)|\||\^|\$|\[|\]|\\","\$0") . "$"
+	ControlGetText,Change,Edit1,AHK_ID %FancyR_ID%
 	if Not RegExMatch(Change,Match)
 	{
-		Serial := VimRN_History["s"]
+		Serial := FancyR_History["s"]
 		Serial++
-		pos := VimRN_GetPos()
+		pos := FancyR_GetPos()
 		StartPos := pos[1]
 		EndtPos  := pos[2]
-		;VimRN_History[Serial] :=  StartPos . "," . EndPos . "," .  Change
-		VimRN_History[Serial] :=  StartPos . "|" . EndPos . "|" .  Change
-		VimRN_History["s"] := Serial
-		VimRN_History["String"] := change
-		If VimRN_IsReplace
+		;FancyR_History[Serial] :=  StartPos . "," . EndPos . "," .  Change
+		FancyR_History[Serial] :=  StartPos . "|" . EndPos . "|" .  Change
+		FancyR_History["s"] := Serial
+		FancyR_History["String"] := change
+		If FancyR_IsReplace
 		{
-			VimRN_IsReplace := !VimRN_IsReplace
-			VimRN := True
+			FancyR_IsReplace := !FancyR_IsReplace
+			FancyR := True
 		}
-		If VimRN_IsMultiReplace
+		If FancyR_IsMultiReplace
 		{
-			Pos := VimRN_GetPos()
+			Pos := FancyR_GetPos()
 			If Pos[1] = Pos[2]
 			{
-				VimRN_SetPos(Pos[1],Pos[1]+1)
+				FancyR_DefaultsMenuPos(Pos[1],Pos[1]+1)
 			}
 		}
 	}
 }
-VimRN_Cut(Length)
+FancyR_Cut(Length)
 {
-	Pos := VimRN_GetPos()
-	ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
+	Pos := FancyR_GetPos()
+	ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
 	If Pos[1] = Pos[2]
 	{
 		Pos1 := Pos[1] + 1 + Length
@@ -2296,25 +2333,25 @@ VimRN_Cut(Length)
 		Pos1 := Pos[1] + 1
 		Len := Pos[2] - Pos[1]
 	}
-	VimRN_Temp := SubStr(Text,Pos1,Len)
+	FancyR_Temp := SubStr(Text,Pos1,Len)
 }
-VimRN_Paste(Direction="")
+FancyR_Paste(Direction="")
 {
     Global UseSystemClipboard
     If UseSystemClipboard
-        VimRN_Temp := Clipboard
-	Pos := VimRN_GetPos()
-	ControlGetText,Text,Edit1,AHK_ID %VimRN_ID%
-	SetText := SubStr(Text,1,Pos[1]) . VimRN_Temp . SubStr(Text,Pos[1]+1)
-	Pos1 := Pos[1] + Strlen(VimRN_Temp)
-	ControlSetText,Edit1,%SetText%,AHK_ID %VimRN_ID%
-	VimRN_SetPos(Pos1,Pos1)
-	VimRN_Edit()
+        FancyR_Temp := Clipboard
+	Pos := FancyR_GetPos()
+	ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
+	SetText := SubStr(Text,1,Pos[1]) . FancyR_Temp . SubStr(Text,Pos[1]+1)
+	Pos1 := Pos[1] + Strlen(FancyR_Temp)
+	ControlSetText,Edit1,%SetText%,AHK_ID %FancyR_ID%
+	FancyR_DefaultsMenuPos(Pos1,Pos1)
+	FancyR_Edit()
 }
-VimRN_GetPos()
+FancyR_GetPos()
 {
 	Pos := []
-	ControlGet,Edit_ID,hwnd,,Edit1,AHK_ID %VimRN_ID%
+	ControlGet,Edit_ID,hwnd,,Edit1,AHK_ID %FancyR_ID%
 	Varsetcapacity(StartPos,2)
 	Varsetcapacity(EndPos,2)
 	Sendmessage,0x00B0,&StartPos,&EndPos,,AHK_ID %Edit_ID%
@@ -2322,9 +2359,9 @@ VimRN_GetPos()
 	Pos[2] := NumGet(EndPos)
 	Return Pos
 }
-VimRN_SetPos(Pos1,Pos2)
+FancyR_DefaultsMenuPos(Pos1,Pos2)
 {
-	PostMessage,0x00B1,%Pos1%,%Pos2%,Edit1,AHK_ID %VimRN_ID%
+	PostMessage,0x00B1,%Pos1%,%Pos2%,Edit1,AHK_ID %FancyR_ID%
 }
 
 
@@ -2416,7 +2453,7 @@ SetDefaultKey()
 	HotKey,+p,<UnpackFiles>,on,UseErrorLevel
 	HotKey,q,<SrcQuickview>,on,UseErrorLevel
 	HotKey,+q,<Internetsearch>,on,UseErrorLevel
-	Hotkey,r,<VimRN>,on,UseErrorLevel
+	Hotkey,r,<FancyR>,on,UseErrorLevel
 	Hotkey,+r,<RenameSingleFile>,on,UseErrorLevel
     ;Hotkey,+r,<MultiRenameFiles>,on,UseErrorLevel
 	HotKey,t,<OpenNewTab>,on,UseErrorLevel
@@ -2452,10 +2489,10 @@ SetDefaultKey()
 	;Hotkey,`,,<None>,On,UseErrorLevel
 	Hotkey,$Enter,<Enter>,On,UseErrorLevel
 	Hotkey,Esc,<Esc>,On,UseErrorLevel
-
     IniRead,IsCapslockAsEscape,%ViatcIni%,Configuration,IsCapslockAsEscape
     if IsCapslockAsEscape
 	    Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
+
 
     ; ------ combo keys:
     ComboKeyAdd("ca","<SetAttrib>")
@@ -2530,63 +2567,63 @@ SetDefaultKey()
     
     ; -------  keys for fancy rename 
 	Hotkey,IfWinActive,ViATc Fancy Rename
-	Hotkey,j,VimRN_Down,on,UseErrorLevel
-	Hotkey,k,VimRN_Up,on,UseErrorLevel
-	Hotkey,h,VimRN_Left,on,UseErrorLevel
-	Hotkey,l,VimRN_Right,on,UseErrorLevel
-	Hotkey,w,VimRN_Word,on,UseErrorLevel
-    Hotkey,e,VimRN_WordEnd,on,UseErrorLevel
-	Hotkey,b,VimRN_BackWord,on,UseErrorLevel
-	Hotkey,+j,VimRN_SDown,on,UseErrorLevel
-	Hotkey,+k,VimRN_SUp,on,UseErrorLevel
-	Hotkey,+h,VimRN_SLeft,on,UseErrorLevel
-	Hotkey,+l,VimRN_SRight,on,UseErrorLevel
-	Hotkey,y,VimRN_Copy,on,UseErrorLevel
-	Hotkey,d,VimRN_Backspace,on,UseErrorLevel
-    Hotkey,s,VimRN_Substitute,on,UseErrorLevel
-	Hotkey,x,VimRN_Delete,on,UseErrorLevel
-    Hotkey,+x,VimRN_Backspace,on,UseErrorLevel
-	Hotkey,i,VimRN_Insert,on,UseErrorLevel
-	Hotkey,+i,VimRN_InsertHome,on,UseErrorLevel
-	Hotkey,a,VimRN_Append,on,UseErrorLevel
-	Hotkey,+a,VimRN_AppendEnd,on,UseErrorLevel
-	Hotkey,t,VimRN_Transpose,on,UseErrorLevel
-	Hotkey,f,VimRN_Find,on,UseErrorLevel
-    Hotkey,r,VimRN_Replace,on,UseErrorLevel
-	Hotkey,+r,VimRN_MultiReplace,on,UseErrorLevel
-	Hotkey,',VimRN_Selectall,on,UseErrorLevel
-	;Hotkey,s,VimRN_DeselectStart,on,UseErrorLevel
-	;Hotkey,o,VimRN_DeselectEnd,on,UseErrorLevel
-	Hotkey,+`,,VimRN_DeselectStart,on,UseErrorLevel   ; <
-	Hotkey,+.,VimRN_DeselectEnd,on,UseErrorLevel      ; >
-	Hotkey,`,,VimRN_DeselectStart,on,UseErrorLevel   ; ,
-	Hotkey,.,VimRN_DeselectEnd,on,UseErrorLevel      ; .
-	Hotkey,n,VimRN_Selectfilename,on,UseErrorLevel
-    Hotkey,[,VimRN_Selectfilename,on,UseErrorLevel
-    Hotkey,],VimRN_Selectext,on,UseErrorLevel
-    Hotkey,+6,VimRN_Home,on,UseErrorLevel
-	Hotkey,g,VimRN_HomeTop,on,UseErrorLevel
-	Hotkey,$,VimRN_End,on,UseErrorLevel
-	Hotkey,+g,VimRN_End,on,UseErrorLevel
-	Hotkey,q,VimRN_Quit,on,UseErrorLevel
-	Hotkey,u,VimRN_Undo,on,UseErrorLevel
-	Hotkey,v,VimRN_Visual,on,UseErrorLevel
-	Hotkey,p,VimRN_Paste,on,UseErrorLevel
-	Hotkey,Esc,VimRN_Esc,on,UseErrorLevel
-	Hotkey,^[,VimRN_Esc,on,UseErrorLevel
+	Hotkey,j,FancyR_Down,on,UseErrorLevel
+	Hotkey,k,FancyR_Up,on,UseErrorLevel
+	Hotkey,h,FancyR_Left,on,UseErrorLevel
+	Hotkey,l,FancyR_Right,on,UseErrorLevel
+	Hotkey,w,FancyR_Word,on,UseErrorLevel
+    Hotkey,e,FancyR_WordEnd,on,UseErrorLevel
+	Hotkey,b,FancyR_BackWord,on,UseErrorLevel
+	Hotkey,+j,FancyR_SDown,on,UseErrorLevel
+	Hotkey,+k,FancyR_SUp,on,UseErrorLevel
+	Hotkey,+h,FancyR_SLeft,on,UseErrorLevel
+	Hotkey,+l,FancyR_SRight,on,UseErrorLevel
+	Hotkey,y,FancyR_Copy,on,UseErrorLevel
+	Hotkey,d,FancyR_Backspace,on,UseErrorLevel
+    Hotkey,s,FancyR_Substitute,on,UseErrorLevel
+	Hotkey,x,FancyR_Delete,on,UseErrorLevel
+    Hotkey,+x,FancyR_Backspace,on,UseErrorLevel
+	Hotkey,i,FancyR_Insert,on,UseErrorLevel
+	Hotkey,+i,FancyR_InsertHome,on,UseErrorLevel
+	Hotkey,a,FancyR_Append,on,UseErrorLevel
+	Hotkey,+a,FancyR_AppendEnd,on,UseErrorLevel
+	Hotkey,t,FancyR_Transpose,on,UseErrorLevel
+	Hotkey,f,FancyR_Find,on,UseErrorLevel
+    Hotkey,r,FancyR_Replace,on,UseErrorLevel
+	Hotkey,+r,FancyR_MultiReplace,on,UseErrorLevel
+	Hotkey,',FancyR_Selectall,on,UseErrorLevel
+	;Hotkey,s,FancyR_DeselectStart,on,UseErrorLevel
+	;Hotkey,o,FancyR_DeselectEnd,on,UseErrorLevel
+	Hotkey,+`,,FancyR_DeselectStart,on,UseErrorLevel   ; <
+	Hotkey,+.,FancyR_DeselectEnd,on,UseErrorLevel      ; >
+	Hotkey,`,,FancyR_DeselectStart,on,UseErrorLevel   ; ,
+	Hotkey,.,FancyR_DeselectEnd,on,UseErrorLevel      ; .
+	Hotkey,n,FancyR_Selectfilename,on,UseErrorLevel
+    Hotkey,[,FancyR_Selectfilename,on,UseErrorLevel
+    Hotkey,],FancyR_Selectext,on,UseErrorLevel
+    Hotkey,+6,FancyR_Home,on,UseErrorLevel
+	Hotkey,g,FancyR_HomeTop,on,UseErrorLevel
+	Hotkey,$,FancyR_End,on,UseErrorLevel
+	Hotkey,+g,FancyR_End,on,UseErrorLevel
+	Hotkey,q,FancyR_Quit,on,UseErrorLevel
+	Hotkey,u,FancyR_Undo,on,UseErrorLevel
+	Hotkey,v,FancyR_Visual,on,UseErrorLevel
+	Hotkey,p,FancyR_Paste,on,UseErrorLevel
+	Hotkey,Esc,FancyR_Esc,on,UseErrorLevel
+	Hotkey,^[,FancyR_Esc,on,UseErrorLevel
     if IsCapslockAsEscape
-    	Hotkey,Capslock,VimRN_Esc,on,UseErrorLevel
+    	Hotkey,Capslock,FancyR_Esc,on,UseErrorLevel
 	;Hotkey,^Capslock,Capslock,on,UseErrorLevel
-	Hotkey,1,VimRN_Num,on,UseErrorLevel
-	Hotkey,2,VimRN_Num,on,UseErrorLevel
-	Hotkey,3,VimRN_Num,on,UseErrorLevel
-	Hotkey,4,VimRN_Num,on,UseErrorLevel
-	Hotkey,5,VimRN_Num,on,UseErrorLevel
-	Hotkey,6,VimRN_Num,on,UseErrorLevel
-	Hotkey,7,VimRN_Num,on,UseErrorLevel
-	Hotkey,8,VimRN_Num,on,UseErrorLevel
-	Hotkey,9,VimRN_Num,on,UseErrorLevel
-    Hotkey,0,VimRN_Num,on,UseErrorLevel
+	Hotkey,1,FancyR_Num,on,UseErrorLevel
+	Hotkey,2,FancyR_Num,on,UseErrorLevel
+	Hotkey,3,FancyR_Num,on,UseErrorLevel
+	Hotkey,4,FancyR_Num,on,UseErrorLevel
+	Hotkey,5,FancyR_Num,on,UseErrorLevel
+	Hotkey,6,FancyR_Num,on,UseErrorLevel
+	Hotkey,7,FancyR_Num,on,UseErrorLevel
+	Hotkey,8,FancyR_Num,on,UseErrorLevel
+	Hotkey,9,FancyR_Num,on,UseErrorLevel
+    Hotkey,0,FancyR_Num,on,UseErrorLevel
 }
 
 
@@ -4042,9 +4079,9 @@ Setting() ; --- {{{1
 	Gui,Add,Button,x270 y305 h27 w120 Center g<Help>, Open VIATC Help   &4
     Gui,Add,CheckBox,x25 y340 h20 checked%HistoryOfRename% vHistoryOfRename, HistoryOf&Rename ; - see history_of_rename.txt
     Gui,Add,Link,x135 y343 h20, - see <a href="%A_ScriptDir%\history_of_rename.txt">history_of_rename.txt</a>
-    Gui, Add, Button, x270 y340 w80 h21 gVimRN_history,  Edit   &5
+    Gui, Add, Button, x270 y340 w80 h21 gFancyR_history,  Edit   &5
     ;Gui,Add,Link,x135 y363 h20, - see <a href="%EditorPath% . %EditorArguments% . %HistoryOfRenamePath%">%HistoryOfRenamePath%</a>
-    Gui,Add,CheckBox,x25 y370 h20 checked%FancyVimRename% vFancyVimRename, &Fancy Vim Rename
+    Gui,Add,CheckBox,x25 y370 h20 checked%FancyVimRename% vFancyVimRename, &Fancy Rename
 
     Gui,Add,CheckBox,x25 y400 h20 checked%IsCapslockAsEscape% vIsCapslockAsEscape, Capslock as Escape   &6
 
@@ -5105,8 +5142,8 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["U"] :="u >> Up a directory `nU >> Up to the root directory "
     HelpInfo_arr["I"] :="i >> Enter `nI >>  Make target = source " ;No mapping "
     HelpInfo_arr["O"] :="o >> Open the drive list `nO >> Open the list of drives and special folders.  Equivalent to 'This PC' in Windows Explorer"
-    HelpInfo_arr["P"] :="p >> Compressed file / folder `nP >> unzip "
-    HelpInfo_arr["[{"] :="[ >> Select files with the same file name `n{ >> Unselect files with the same file name "
+    HelpInfo_arr["P"] :="p >> pack files/folders `nP >> unPack "
+    HelpInfo_arr["[{"] :="[ >> Select files with the same name `n{ >> Unselect files with the same name "
     HelpInfo_arr["]}"] :="] >> Select files with the same extension `n} >> Unselect files with the same extension "
     HelpInfo_arr["\|"] :="\ >> Invert all selections for files and folders  `n| >> Clears all selections"
     ; CapsLock used to sometimes quit in 'fancy rename' instead of going to Vim mode, it is mapped there again
@@ -5114,7 +5151,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["A"] :="a >> (Combo Key, requires another key) Mostly regarding ViATc or files`nah >> ViATc Help`nao >> ViATc Off`nas >> ViATc Setting`naq >> Quit ViATc`nar >> Reload VIATC`nam >> Show file tooltip`nan >> Create a new file`naa >> Select all files but exclude folders`n...`n`n A >>  All selected:  Files and folders "
     HelpInfo_arr["S"] :="s >> Sort by... (Combo Key, requires another key) `nS >> (Combo Key, requires another key) show all, executables, etc. `nsn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nst >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9 >>"
     HelpInfo_arr["D"] :="d >> Favourite folders hotlist`nD >> Open the desktop folder "
-    HelpInfo_arr["F"] :="f >> Page down, Equivalent to PageDown`nF >> Switch to TC Default fast search mode "
+    HelpInfo_arr["F"] :="f >> Page down, Equivalent to PageDown`nF >> FtpDisconnect " ;Switch to TC Default fast search mode "
     HelpInfo_arr["G"] :="g >> Tab operation (Combo Key, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngt >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab) also gr, I don't know how to bind gT`nga >> Close All tabs `ngc >> Close the Current tab `ngn >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab `n`nctrl+g >>  Go down in QuickSearch (opened by / or ctrl+s)  ctrl+g works the same in real Vim search,  ctrl+t is up (mnemonic hint: T is above G) "
     HelpInfo_arr["H"] :="h >> Left arrow key. Works in thumbnail and brief mode. In full mode the effect is the cursor enters command line. `nH >> Go Backward in dir history"
     HelpInfo_arr["J"] :="j >> Go Down num times `nJ >> Select down Num files (folders),  Go down in QuickSearch(opened by / or ctrl+s)`n alt+j >>  Go down in QuickSearch (go down with ctrl+g as well, same like in real Vim search)"
@@ -7202,22 +7239,13 @@ return
     k:: Send {Left}
 #If
 
-
 ; IrfanView autoadvance folder in TotalCommander
 ; Limitations and TODO: 
 ;   - it will execute whatever extension of the first file is, you have to be sure it's an image
 ;   - it will get stuck at the last nested folder, you have to go up a folder manually
 ;   - not every keyboard have ScrollLock, perhaps the Insert key is better
-#If %IrfanView%     ;this variable is set in the viatc.ini file
-IrfanViewKey = "Insert"
-Hotkey, %IrfanViewKey%, Traverse, On               ;Turn on the dynamic hotkey.
-Hotkey,"Insert", Traverse, On               ;Turn on the dynamic hotkey.
-Hotkey,Insert, Traverse, On               ;Turn on the dynamic hotkey.
-;Hotkey,F2, Traverse, On               ;Turn on the dynamic hotkey.
-;Hotkey,{ScrollLock}, Traverse, On               ;Turn on the dynamic hotkey.
-Traverse:
-MsgBox Traverse
-ComObjCreate("SAPI.SpVoice").Speak("Traverse")
+<Traverse>:
+;ComObjCreate("SAPI.SpVoice").Speak("Traverse")
 If (WinActive("ahk_exe i_view32.exe")
 or WinActive("ahk_exe i_view64.exe")
 or WinActive(ahk_exe_TC))
@@ -7240,7 +7268,8 @@ or WinActive(ahk_exe_TC))
         {   
             ; TC is active so no files were opened
             ;tooltip subfolder: %A_Index% 
-            msg = hold ScrollLock to abort
+            msg = hold Escape or %IrfanViewKey% or ScrollLock to abort
+            ;msg = hold Escape or ScrollLock to abort
             subfolder := A_Index - 2
             if subfolder > 0
                 msg .= "`nsubfolder: " . subfolder
@@ -7252,11 +7281,30 @@ or WinActive(ahk_exe_TC))
             Send {Down}     ; ommit the ".." or the folder just visited
             ;Sleep, 30
             Send {Space}    ; highlight/mark
+            Sleep, 900      ; this delay is only for the user to have time to see what's about to be opened
             ; Abort on Esc
             If GetKeyState("Escape", "P")
+            {
+                ; The Escape key has been pressed, so break out of the loop.
+                ;MsgBox Aborted
+                Tooltip,aborted,%xn%,%yn%
+                sleep 2000
                 break
-            Sleep, 900      ; this delay is only for the user to have time to see what's about to be opened
-            ; The Escape key has been pressed, so break out of the loop.
+                ;MsgBox paused until OK
+            }
+
+            ;Ikey := '"' . %IrfanViewKey% . '"'            
+            ;Ikey="%IrfanViewKey%"
+            ;Msgbox  Debugging IrfanViewKey = [%IrfanViewKey%]  on line %A_LineNumber% ;!!!
+            ;Msgbox  Debugging Ikey = [%Ikey%]  on line %A_LineNumber% ;!!!
+            ;If GetKeyState(%Ikey%, "P")
+            ;If GetKeyState(%IrfanViewKey%, "P")   ; doesn't work
+            If GetKeyState(IrfanViewKey, "P")
+            {
+                Tooltip,aborted,%xn%,%yn%
+                sleep 2000
+                break
+            }
 
             ; Abort on ScrollLock being "P"hysically pressed and held
             If GetKeyState("ScrollLock", "P")
@@ -7283,8 +7331,7 @@ or WinActive(ahk_exe_TC))
 }
 else ;Irfanview and TC are not active, so something else will take the key
     send, {%IrfanViewKey%}
-return
-#If
+Return
 
 
 ; IrfanView autoadvance folder in TotalCommander
@@ -7316,7 +7363,8 @@ or WinActive(ahk_exe_TC))
         {   
             ; TC is active so no files were opened
             ;tooltip subfolder: %A_Index% 
-            msg = hold ScrollLock to abort
+            ;msg = hold ScrollLock to abort
+            msg = hold Escape or ScrollLock to abort
             subfolder := A_Index - 2
             if subfolder > 0
                 msg .= "`nsubfolder: " . subfolder
@@ -7328,10 +7376,10 @@ or WinActive(ahk_exe_TC))
             Send {Down}     ; ommit the ".." or the folder just visited
             ;Sleep, 30
             Send {Space}    ; highlight/mark
+            Sleep, 900      ; this delay is only for the user to have time to see what's about to be opened
             ; Abort on Esc
             If GetKeyState("Escape", "P")
                 break
-            Sleep, 900      ; this delay is only for the user to have time to see what's about to be opened
             ; The Escape key has been pressed, so break out of the loop.
 
             ; Abort on ScrollLock being "P"hysically pressed and held
@@ -7429,4 +7477,13 @@ Return DllCall("Wininet.dll\InternetGetConnectedState", "Str", flag,"Int",0)
 }
 
 ; vim: fdm=marker set foldlevel=2
+
+
+
+
+
+
+
+
+; vim set nofoldenable  ; temporarily disables folding when opening the file, but all folds are restored as soon as you hit zc
 ;-----------------------------
