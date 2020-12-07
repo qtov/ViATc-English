@@ -19,7 +19,7 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/12/01"
+Global Date := "2020/12/07"
 Global Version := "0.5.5en beta 29"
 If A_IsCompiled
     Version .= " Compiled Executable"
@@ -1703,6 +1703,7 @@ FancyRCreateGui()
 		;Status := "  mode : Vim Normal                             "
         Status := "  mode : Visual                                 "
        	FancyR_Vis := true
+        FancyR := true    ; normal mode commands will work too
 	}
 	ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
 	If GetConfig("FancyVimRename","UnselectExt")
