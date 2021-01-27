@@ -19,8 +19,8 @@ Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2020/12/07"
-Global Version := "0.5.5en beta 29"
+Global Date := "2021/01/27"
+Global Version := "0.5.5en beta 30"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -666,6 +666,7 @@ ListMarksTooltip()
 		Tooltiplm :=
 		IniRead,active_marks,%MarksPath%,MarkSettings,active_marks
 		h := 0
+        ; !!! ___ outdated below
 		loop, Parse , active_marks , `,
 		{
 			h++
@@ -732,14 +733,50 @@ AddMark()
     Global ExecuteInHeader
     If ExecuteInHeader
     {
-        ; execute mark in the panel header, the tabstop above the file list
-        SendPos(2912)  ;<EditPath> this opens the tabstop above the file list
-        TCEdit2 := "Edit2"
+        TCEditHeader := "Edit2"
         if TCBit = 32
-             TCEdit2 := "TInEdit1"
+             TCEditHeader := "TInEdit1"
+        ; execute mark in the panel header, the tabstop above the file list
+        ;PostMessage 1075, 2912, 0,, AHK_CLASS TTOTAL_CMD
+        Execute(2912)  ; 2912 is like <EditPath> it opens the tabstop above the file list
+        ;return
+        ;SendPos(2912)  ;<EditPath> this opens the tabstop above the file list
+        ;<EditPath>
+        ;return
         Sleep 100
-        ControlSetText, %TCEdit2%, %ThisMenuItem%, ahk_class TTOTAL_CMD
-        ControlSend, %TCEdit2%, {Enter}, ahk_class TTOTAL_CMD
+        ;Sleep 800
+
+;loop 3
+;{
+;        ;-- if for some unknown me reasons the command line opens instead of the header then try to open the header again
+;        ;Msgbox  Debugging TCEditHeader = [%TCEditHeader%]  on line %A_LineNumber% ;!!!
+;        ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+;        If ( %ThisControl% = TCEditHeader )
+;             break
+;        ;If (( %ThisControl% = Edit1 ) or ( %ThisControl% = Edit2 ))
+;        If ( %ThisControl% = Edit1 )
+;        {
+;            tooltip Oups`, the command line opened instead of the header. ThisMenuItem = [%ThisMenuItem%]
+;            ControlSend, %ThisControl%, {Esc}, ahk_class TTOTAL_CMD
+;            ;Send {Esc}
+;            Sleep 100
+;            SendPos(2912)  ;<EditPath> this opens the tabstop above the file list
+;            Sleep 100
+;        }
+;}
+
+        ; the header should be open by now
+
+        ControlSetText, %TCEditHeader%, %ThisMenuItem%, ahk_class TTOTAL_CMD
+        Sleep 90
+        ControlSend, %TCEditHeader%, {Enter}, ahk_class TTOTAL_CMD
+
+  ;      ;make sure it was executed
+  ;      ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+  ;      If ( %ThisControl% = TCEditHeader )
+  ;          ControlSend, %TCEditHeader%, {Enter}, ahk_class TTOTAL_CMD
+  ;      ;Msgbox  Debugging ThisMenuItem = [%ThisMenuItem%]  on line %A_LineNumber% ;!!!
+
     }
     else
     {
@@ -2494,6 +2531,22 @@ SetDefaultKey()
     if IsCapslockAsEscape
 	    Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
 
+    ; Special characters in ini files
+    ; The following four characters: space ; = [   are not allowed as keys in ini files 
+    ;   thus they cannot be directly remapped as hotkeys (nor be used as marks in ViATc).
+    ; Below is a workaround 
+    IniRead,command,%ViatcIni%,HotkeySpecial,Char_space
+    if %command%
+	    Hotkey, $space,%command%,On,UseErrorLevel
+    IniRead,command,%ViatcIni%,HotkeySpecial,Char_semicolon
+    if %command%
+	    Hotkey,`;,%command%,On,UseErrorLevel
+    IniRead,command,%ViatcIni%,HotkeySpecial,Char_equals
+    if %command%
+	    Hotkey,=,%command%,On,UseErrorLevel
+    IniRead,command,%ViatcIni%,HotkeySpecial,Char_[
+    if %command%
+	    Hotkey,[,%command%,On,UseErrorLevel        
 
     ; ------ combo keys:
     ComboKeyAdd("ca","<SetAttrib>")
@@ -2597,8 +2650,8 @@ SetDefaultKey()
 	;Hotkey,o,FancyR_DeselectEnd,on,UseErrorLevel
 	Hotkey,+`,,FancyR_DeselectStart,on,UseErrorLevel   ; <
 	Hotkey,+.,FancyR_DeselectEnd,on,UseErrorLevel      ; >
-	Hotkey,`,,FancyR_DeselectStart,on,UseErrorLevel   ; ,
-	Hotkey,.,FancyR_DeselectEnd,on,UseErrorLevel      ; .
+	Hotkey,`,,FancyR_DeselectStart,on,UseErrorLevel    ; ,
+	Hotkey,.,FancyR_DeselectEnd,on,UseErrorLevel       ; .
 	Hotkey,n,FancyR_Selectfilename,on,UseErrorLevel
     Hotkey,[,FancyR_Selectfilename,on,UseErrorLevel
     Hotkey,],FancyR_Selectext,on,UseErrorLevel
@@ -2729,6 +2782,12 @@ SendPos(Num,IsCount=False)
 		Send %hotkey%
 		Return False
 	}
+}
+
+; Execute TC's commands, you can find them in TOTALCMD.INC file in TC dir
+Execute(command)
+{
+        PostMessage 1075, %command%, 0,, AHK_CLASS TTOTAL_CMD
 }
 
 ExecFile()
@@ -3592,7 +3651,7 @@ Enter() ;  on Enter pressed {{{2
     {
         ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
         ;The bar with path above file list has ID = Window17 11 or 12  TInEdit1 in 32bit TC ClassNN: PathPanel1
-        ;You can edit this bar if you double click on it or if you rename ".." at the top of the list
+        ;You can edit this bar if you click on it's empty space, or if you rename ".." at the top of the list
         If (( %ThisControl% = Edit1) or ( %ThisControl% = Edit2) or ( %ThisControl% = Window17))  ;!!!
         {
             ;MsgBox  ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!!
@@ -7228,16 +7287,13 @@ return
 
 
 ;----------------- IrfanView ----------
-;IrfanView map  j = right = next
 #If %IrfanView%   ;this variable is set in the viatc.ini file
-#If (WinActive("ahk_exe i_view32.exe") or WinActive("ahk_exe i_view64.exe") )
+#If (WinActive("ahk_exe i_view32.exe") or WinActive("ahk_exe i_view64.exe"))
+#If (WinActive("ahk_class IrfanView") or WinActive("ahk_class FullScreenClass"))
+;IrfanView map  j = right = next
     j::Send {Right}
-#If
-
-;IrfanView map  k = left = prev
-#If %IrfanView%
-#If (WinActive("ahk_exe i_view32.exe") or WinActive("ahk_exe i_view64.exe") )
-    k:: Send {Left}
+    ;IrfanView map  k = left = prev
+    k::Send {Left}
 #If
 
 ; IrfanView autoadvance folder in TotalCommander
