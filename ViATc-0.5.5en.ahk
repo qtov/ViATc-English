@@ -1,6 +1,8 @@
+Global Date := "2021/01/29"
+Global Version := "0.5.5en beta 31"
 ; Author of the original Chinese version is linxinhong https://github.com/linxinhong
 ; Translator and maintainer of the English version is magicstep https://github.com/magicstep  
-; Alternatively you can contact me with the same nickname @gmail.com
+;                    you can contact me with the same nickname @gmail.com
 ; This script works on Windows with AutoHotkey installed only as an addition to 
 ;   "Total Commander" - the file manager from www.ghisler.com  
 ; ViATc tries to resemble the work-flow of Vim and web browser plugins
@@ -8,19 +10,20 @@
 
 ; tripple underscores ___ question ??? and exclamations !!! are markers for debugging
 ; tripple curly braces are for line folding in vim
-
 ; --- the main script {{{1
 #SingleInstance Force
 #Persistent
 #NoEnv
 #NoTrayIcon
+; user.ahk file is for custom snippets and any addition to the viatc.ahk script
+; *i = ignore any read failure
+#include *i user.ahk
+
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 Setkeydelay -1
 SetControlDelay -1
 Detecthiddenwindows on
 Coordmode Menu,Window
-Global Date := "2021/01/27"
-Global Version := "0.5.5en beta 30"
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -30,9 +33,10 @@ Global IconPath := A_ScriptDir . "\viatc.ico"
 Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
 Global HistoryOfRenamePath := A_ScriptDir . "\history_of_rename.txt"
 Global MarksPath := A_ScriptDir . "\marks.ini"
+Global UserFilePath :=  A_ScriptDir . "\user.ahk"
 KeyTemp :=
 Repeat :=
-VimAction :=
+ViatcCommand :=
 KeyCount := 0
 Global Vim := true
 Global InsertMode := False
@@ -57,7 +61,7 @@ Command_Arr := object()
 CmdHistory_Arr := object()
 Mark_Arr := object()
 HideControl_Arr := object()
-ActionInfo_Arr := object()
+CommandInfo_Arr := object()
 HelpInfo_Arr := object()
 ComboInfo_Arr := object()
 ReName_Arr := Object()
@@ -134,8 +138,8 @@ Menu,Tray,NoStandard
 If FileExist(IconPath)
     Menu,Tray,Icon,%IconPath%
 SetHelpInfo()
-SetVimAction()
-SetActionInfo()
+SetViatcCommand()
+SetCommandInfo()
 SetDefaultKey()
 ReadKeyFromIni()
 EmptyMem()
@@ -1250,7 +1254,7 @@ If SendPos(0)
 Return
 ListMapKeyMultiColumn()  
 {
-	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
+	Global MapKey_Arr,CommandInfo_Arr,ExecFile_Arr,SendText_Arr
 	Map := MapKey_Arr["Hotkeys"]
 	Stringsplit,ListMap,Map,%A_Space%
     Global ColumnCount := 3
@@ -1305,7 +1309,7 @@ ListMapKeyMultiColumn()
 ;ListMapKeySingleColumn()
 ListMapKey()
 {
-	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
+	Global MapKey_Arr,CommandInfo_Arr,ExecFile_Arr,SendText_Arr
 	Map := MapKey_Arr["Hotkeys"]
     InfoLine := "ini file mappings only, built-in not listed`nG=Global   H=Hotkey   C=ComboKey`n"
 	Stringsplit,ListMap,Map,%A_Space%
@@ -2535,16 +2539,16 @@ SetDefaultKey()
     ; The following four characters: space ; = [   are not allowed as keys in ini files 
     ;   thus they cannot be directly remapped as hotkeys (nor be used as marks in ViATc).
     ; Below is a workaround 
-    IniRead,command,%ViatcIni%,HotkeySpecial,Char_space
+    IniRead,command,%ViatcIni%,SpecialHotkey,Char_space
     if %command%
 	    Hotkey, $space,%command%,On,UseErrorLevel
-    IniRead,command,%ViatcIni%,HotkeySpecial,Char_semicolon
+    IniRead,command,%ViatcIni%,SpecialHotkey,Char_semicolon
     if %command%
 	    Hotkey,`;,%command%,On,UseErrorLevel
-    IniRead,command,%ViatcIni%,HotkeySpecial,Char_equals
+    IniRead,command,%ViatcIni%,SpecialHotkey,Char_equals
     if %command%
 	    Hotkey,=,%command%,On,UseErrorLevel
-    IniRead,command,%ViatcIni%,HotkeySpecial,Char_[
+    IniRead,command,%ViatcIni%,SpecialHotkey,Char_[
     if %command%
 	    Hotkey,[,%command%,On,UseErrorLevel        
 
@@ -2615,7 +2619,8 @@ SetDefaultKey()
 	ComboKeyAdd("zt","<AlwayOnTop>")
 	ComboKeyAdd("zv","<VerticalPanels>")
 	ComboKeyAdd("zw","<WidePanelToggle>")
-	ComboKeyAdd("zx","<100Percent>")
+	ComboKeyAdd("zx","<WidePanelToggle>")
+	ComboKeyAdd("zi","<100Percent>")
 	ComboKeyAdd("zz","<50Percent>")
 	ComboKeyAdd("zc","<CommandBrowser>")
     
@@ -2902,9 +2907,9 @@ Combokey(Hotkey)  ; {{{1
 }
 ComboKeyAdd(Key,Action,IsGlobal=False)
 {
-	Global ComboKey_Arr,ComboInfo_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
+	Global ComboKey_Arr,ComboInfo_Arr,CommandInfo_Arr,ExecFile_Arr,SendText_Arr
 	Key_T := TransHotkey(key,"ALL")
-	Info := Key . " >>" . ActionInfo_Arr[Action]
+	Info := Key . " >>" . CommandInfo_Arr[Action]
 	If Action = <Text>
 	{
 		Key_N := "C" . Key_T
@@ -3645,7 +3650,7 @@ FS()
 
 Enter() ;  on Enter pressed {{{2
 {
-	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr,TabsBreak
+	Global MapKey_Arr,CommandInfo_Arr,ExecFile_Arr,SendText_Arr,TabsBreak
 
     Loop,8
     {
@@ -4072,7 +4077,7 @@ Setting() ; --- {{{1
 	Global StartUp,Service,TrayIcon,Vim,GlobalTogg,Toggle,GlobalSusp,Susp,ComboTooltips,TranspHelp,Transparent,SearchEng,DefaultSE,ViATcIni,TCExe,TCINI,NeedReload,LnkToDesktop,HistoryOfRename,FancyVimRename, IsCapslockAsEscape,UseSystemClipboard
 	NeedReload := 1
 	Global ListView
-	Global MapKey_Arr,ActionInfo_Arr,ExecFile_Arr,SendText_Arr
+	Global MapKey_Arr,CommandInfo_Arr,ExecFile_Arr,SendText_Arr
 	Vim := GetConfig("Configuration","Vim")
 	Gui,Destroy
 	Gui,+Theme +hwndviatcsetting 
@@ -4086,7 +4091,7 @@ Setting() ; --- {{{1
     ;Gui, Color, 0xA0A0F0
 	Gui,Add,GroupBox,x10 y526 h37 w170 cFF0000, ; viatc.ini file
     ;Gui, Add, Progress, x10 y529 h37 w170 BackgroundSilver Disabled
-    Gui,Add,Text,x14 y539 w60, viatc.ini file:
+    Gui,Add,Text,x24 y539 w60, viatc.ini :
     Gui,Add,Button,x70 y535 w54 center g<BackupViATcIniFile>, &Backup
 	Gui,Add,Button,x130 y535 w40 g<EditViATcIniFile>, &Edit
 	Gui,Add,Button,x240 y535 w80 center Default g<GuiEnter>, &OK 
@@ -4173,7 +4178,7 @@ Setting() ; --- {{{1
 	Gui,Add,Button,x340 y420 w60 g<TestTH>, &Analyze
 	Gui,Add,text,x22 y449 h20, Comma&nd
 	Gui,Add,Edit,x78 y446 h20 w320
-	Gui,Add,Button,x20 y470 h20 w80 g<VimCMD> ,    &1  ViATc ...
+	Gui,Add,Button,x20 y470 h20 w80 g<ViatcCmd> ,    &1  ViATc ...
 	Gui,Add,Button,x120 y470 h20 w80 g<TCCMD> ,    &2  TC ...
 	Gui,Add,Button,x220 y470 h20 w80 g<RunFile>,   &3  Run  ...
 	Gui,Add,Button,x320 y470 h20 w80 g<SendString>,&4  Send text ...
@@ -4197,7 +4202,7 @@ Setting() ; --- {{{1
 			Scope := SubStr(Index%A_Index%,1,1)
 			Key := SubStr(Index%A_Index%,2)
 			Action := MapKey_Arr[Index%A_Index%]
-			Info := ActionInfo_Arr[Action]
+			Info := CommandInfo_Arr[Action]
 			If Action = <Exec>
 			{
 				Action := " Run "
@@ -4246,14 +4251,21 @@ Setting() ; --- {{{1
 	Gui,Tab,4
 	;Gui,Add,GroupBox,x16 y32 h170 w390, Marks
 	Gui,Add,GroupBox,x16 y32 h480 w390, ; whole tab
-    Gui,Add,GroupBox,x20 y56 h37 w180 , ; marks.ini file
-    Gui,Add,Text,x23 y69 w60, marks.ini file:
-    Gui,Add,Button,x90 y65 w54 center g<BackupMarksFile>, &1 Backup
-	Gui,Add,Button,x150 y65 w40 g<EditMarksFile>, &2 Edit
-	Gui,Add,GroupBox,x226 y56 h37 w174, ;wincmd.ini
-    Gui,Add,Text,x233 y69 w60, wincmd.ini:
-    Gui,Add,Button,x292 y65 w54 center g<BackupTCIniFile>,&3 Backup
-	Gui,Add,Button,x352 y65 w40 g<EditTCIniFile>, &4 Edit
+
+    Gui,Add,GroupBox,x20 y46 h37 w180 , ; marks.ini file
+    Gui,Add,Text,x33 y59 w60, marks.ini :
+    Gui,Add,Button,x90 y55 w54 center g<BackupMarksFile>, &1 Backup
+	Gui,Add,Button,x150 y55 w40 g<EditMarksFile>, &2 Edit
+
+	Gui,Add,GroupBox,x226 y46 h37 w174, ;wincmd.ini
+    Gui,Add,Text,x233 y59 w50, wincmd.ini:
+    Gui,Add,Button,x292 y55 w54 center g<BackupTCIniFile>,&3 Backup
+	Gui,Add,Button,x352 y55 w40 g<EditTCIniFile>, &4 Edit
+
+    Gui,Add,GroupBox,x20 y86 h37 w180 , ; user.ahk file
+    Gui,Add,Text,x33 y99 w60, user.ahk :
+    Gui,Add,Button,x90 y95 w54 center g<BackupUserFile>, &5 Backup
+	Gui,Add,Button,x150 y95 w40 g<EditUserFile>, &6 Edit
 
 	;Gui,Add,Text,x185 y300 h16 center,  &V 
     Gui,Add, Picture, gGreet x170 y280 w60 h-1, %A_ScriptDir%\viatc.ico
@@ -4447,6 +4459,40 @@ EditTCIniFile()
 }
 
 
+<BackupUserFile>:
+BackupUserFile()
+Return
+
+BackupUserFile()
+{
+    FormatTime, CurrentDateTime,, yyyy-MM-dd_hh;mm.ss
+    NewFile=%UserFilePath%_%CurrentDateTime%_backup.ahk
+    FileCopy,%UserFilePath%,%NewFile%
+    If Fileexist(NewFile)
+        Tooltip Backup of user.ahk succesfull
+    Else
+        Tooltip Backup of user.ahk failed
+    
+    Sleep,1400
+    Tooltip
+    Return
+}
+
+; Edit user.ahk
+<EditUserFile>:
+	Global UserFilePath
+	match = `"$0
+	file := Regexreplace(UserFilePath,".*",match)
+	If Fileexist(EditorPath)
+		editfile := EditorPath . EditorArguments . file
+	Else
+		editfile := "notepad.exe" . a_space . file
+	Run,%editfile%,,UseErrorLevel
+Return
+
+
+
+
 <AddSearchEng>:
 AddSearchEng()
 Return
@@ -4602,16 +4648,16 @@ DeleItem()
 }
 
 ; for the button "1 ViATc ..."
-<VIMCMD>:
+<ViatcCmd>:
 VimCMD()
 Return
 VimCMD()
 {
-	Global VimAction,ActionInfo_Arr
-	Stringsplit,kk,VimAction,%A_Space%
+	Global ViatcCommand,CommandInfo_Arr
+	Stringsplit,kk,ViatcCommand,%A_Space%
 	Gui,New
-	Gui,+HwndVIMCMDHwnd
-	Gui,Add,ListView,w740 h700 -Multi g<GetVIMCMD>, # | Command | Description
+	Gui,+HwndViatcCmdHwnd
+	Gui,Add,ListView,w740 h700 -Multi g<GetViatcCmd>, # | Command | Description
 	Lv_delete()
 	Lv_modifycol(1,40)
 	Lv_modifycol(2,155)
@@ -4619,24 +4665,24 @@ VimCMD()
 	Loop,%kk0%
 	{
 		key := kk%A_Index%
-		Info := ActionInfo_Arr[key]
+		Info := CommandInfo_Arr[key]
 		LV_ADD(vis,A_Index-1,key,info)
 	}
 	kk := kk%0% - 1
 	lv_delete(1)
-	Gui, Add, Button, x280 y720 w60 h24 Default g<VIMCMDB1>, &OK
+	Gui, Add, Button, x280 y720 w60 h24 Default g<ViatcCmdB1>, &OK
 	Gui, Add, Button, x350 y720 w60 h24 g<Cancel>, &Cancel
 	Gui,Show,,VIATC Command
 }
-<VIMCMDB1>:
-ControlGet,EventInfo,List, Count Focused,SysListView321,ahk_id %VIMCMDHwnd%
+<ViatcCmdB1>:
+ControlGet,EventInfo,List, Count Focused,SysListView321,ahk_id %ViatcCmdHwnd%
 lv_gettext(actiontxt,EventInfo,2)
 ControlSetText,edit5,%actiontxt%,AHK_ID %VIATCSetting%
 Gui,Destroy
 EmptyMem()
 Winactivate,AHK_ID %VIATCSetting%
 Return
-<GetVIMCMD>:
+<GetViatcCmd>:
 lv_gettext(actiontxt,A_EventInfo,2)
 ControlSetText,edit5,%actiontxt%,AHK_ID %VIATCSetting%
 Gui,Destroy
@@ -4835,7 +4881,7 @@ CheckKey()
 Return
 CheckKey()
 {
-	Global VIATCSetting,ViATcIni,MapKey_Arr,ExecFile_Arr,SendText_Arr,ActionInfo_Arr,NeedReload
+	Global VIATCSetting,ViATcIni,MapKey_Arr,ExecFile_Arr,SendText_Arr,CommandInfo_Arr,NeedReload
 	GuiControlGet,Scope,,GlobalCheckbox,AHK_CLASS %ViATcSetting%
 	GuiControlGet,Key,,Edit4,AHK_CLASS %ViATcSetting%
 	GuiControlGet,Action,,Edit5,AHK_CLASS %ViATcSetting%
@@ -4902,7 +4948,7 @@ CheckKey()
 				Return
 			If RegExMatch(GetScope,Scope_M) AND RegExMatch(GetKey,Key_M) AND Not RegExMatch(GetAction,Action_M)
 			{
-				Info := ActionInfo_Arr[Action]
+				Info := CommandInfo_Arr[Action]
 				If RegExMatch(Action,"^\(.*\)$")
 				{
 					Action := " run "
@@ -4919,7 +4965,7 @@ CheckKey()
 				Return
 			}
 		}
-		Info := ActionInfo_Arr[Action]
+		Info := CommandInfo_Arr[Action]
 		If RegExMatch(Action,"^\(.*\)$")
 		{
 			Action := " run "
@@ -5221,7 +5267,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["'"""] :="' >> Marks. `n Go to mark by single quote (Create mark by m) `n"" >> No mapping "
     HelpInfo_arr["Enter"] :="Enter >> Enter "
     HelpInfo_arr["LShift"] :="Lshift >> Left shift key, can also be accessed in hotkeys by Shift "
-    HelpInfo_arr["Z"] :="z >> Various TC window settings (Combo Key, requires another key) `nzz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzl >> Maximize the left panel `nzh >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzd >> Return to normal size, Restore down`nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent `nzw >> One 100% Wide Horizontal panel. Good for long filenames. Toggle.`nzq >> Quit TC`nzr >> Reload TC`n`n`nZ >> Tooltip by mouse-over`n"
+    HelpInfo_arr["Z"] :="z >> Various TC window settings (Combo Key, requires another key) `nzz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzl >> Maximize the left panel `nzh >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzd >> Return to normal size, Restore down`nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent, see-through `nzw or zx >> One 100% Wide Horizontal panel. Good for long filenames. Toggle.`nzq >> Quit TC`nzr >> Reload TC`n`n`nZ >> Tooltip by mouse-over`n"
     ;HelpInfo_arr["X"] :="x >> Delete Files\folders`nX >> Force Delete, like shift+delete ignores recycle bin"
     HelpInfo_arr["X"] :="x >> Close tab`nX >> Enter or Run file under cursor"
     HelpInfo_arr["C"] :="c >> (Combo Key, requires another key) `ncc >> Delete `ncf >> Force Delete, like shift+delete ignores recycle bin`nC  >> Console. Run cmd.exe in the current directory"
@@ -5260,552 +5306,563 @@ SetComboInfo() ; combo keys help {{{2
 
 
 ; ----  ViATc commands, command's descriptions {{{2
-SetVimAction()  ; --- internal ViATc commands
+SetViatcCommand()  ; --- internal ViATc commands
 {
-    Global VimAction
-    VimAction := " <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <SingleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <RestoreLastMark> <SetTitleAsDateTime> <CheckForUpdates> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCFullScreenAlmost> <TCFullScreen> <TCFullScreenWithExePlugin> <BackupViATcIniFile> <EditViATcIniFile> <BackupTCIniFile> <EditTCIniFile> <BackupMarksFile> <EditMarksFile> <azTab> <none>"
-;<ExReName> 
+    Global ViatcCommand
+    ViatcCommand := " <None> <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <SingleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <RestoreLastMark> <SetTitleAsDateTime> <CheckForUpdates> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <azTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCFullScreenAlmost> <TCFullScreen> <TCFullScreenWithExePlugin> <BackupViATcIniFile> <EditViATcIniFile> <BackupTCIniFile> <EditTCIniFile> <BackupMarksFile> <EditMarksFile> <BackupUserFile> <EditUserFile>"
+
+; add user commands
+for index, element in UserCommandsArr
+    ViatcCommand := ViatcCommand . " " . index
+
 }
 
-SetActionInfo()  ; --- command's descriptions
+SetCommandInfo()  ; --- command's descriptions
 {
-    Global ActionInfo_arr
-    ActionInfo_Arr["<ReLoadVIATC>"] :=" Reload VIATC"
-    ActionInfo_Arr["<ReLoadTC>"] :=" Reload TC"
-    ActionInfo_Arr["<QuitTC>"] :=" Exit TC"
-    ActionInfo_Arr["<QuitViATc>"] :=" Exit ViATc"
-    ActionInfo_Arr["<None>"] :=" do nothing "
-    ActionInfo_Arr["<Setting>"] :=" Settings window "
-    ActionInfo_Arr["<FocusCmdLine:>"] := " Command line mode. Focus on the command line with : at the beginning"
-    ActionInfo_Arr["<CreateNewFile>"] := " Menu to create a new file (can be from a template) or a new directory "
-    ActionInfo_Arr["<Help>"] :=  " ViATc Help"
-    ActionInfo_Arr["<Setting>"] := " VIATC Settings"
-    ActionInfo_Arr["<ToggleTC>"] :=" Show / Hide TC"
-    ActionInfo_Arr["<ToggleViATc>"] :=" Enable / Disable most of ViATc, global shortcuts will still work. For disabling all use <ViATcVimOff> "
-    ActionInfo_Arr["<ViATcVimOff>"] :=" Switch-off all ViATc functionality till Esc will switch on. This is more than <ToggleViATc>"
-    ActionInfo_Arr["<Enter>"] :=" Enter does a lot of advanced checks,  use <Return> for simplicity"
-    ActionInfo_Arr["<Return>"] :=" Just sends an Enter key"
-    ActionInfo_Arr["<SingleRepeat>"] :=" Repeat the last action "
-    ActionInfo_Arr["<Esc>"] :=" Reset and send ESC"
-    ActionInfo_Arr["<CapsLock>"] :=" Toggle CapsLock"
-    ActionInfo_Arr["<CapsLockOn>"] :=" CapsLock On"
-    ActionInfo_Arr["<CapsLockOff>"] :=" CapsLock Off"
-    ActionInfo_Arr["<BackupViATcIniFile>"] :=" Backup viatc.ini file "
-    ActionInfo_Arr["<EditViATcIniFile>"] :=" Edit viatc.ini file "
-    ActionInfo_Arr["<BackupMarksFile>"] :=" Backup marks.ini file "
-    ActionInfo_Arr["<EditMarksFile>"] :=" Edit marks.ini file "
-    ActionInfo_Arr["<BackupTCIniFile>"] :=" Backup wincmd.ini file that belongs to TC"
-    ActionInfo_Arr["<EditTCIniFile>"] :=" Edit wincmd.ini file that belongs to TC"
-    ActionInfo_Arr["<Num0>"] :=" numerical 0, can be used for repeats in 10 j "
-    ActionInfo_Arr["<Num1>"] :=" numerical 1, can be used for repeats in 10 j "
-    ActionInfo_Arr["<Num2>"] :=" numerical 2"
-    ActionInfo_Arr["<Num3>"] :=" numerical 3"
-    ActionInfo_Arr["<Num4>"] :=" numerical 4"
-    ActionInfo_Arr["<Num5>"] :=" numerical 5"
-    ActionInfo_Arr["<Num6>"] :=" numerical 6"
-    ActionInfo_Arr["<Num7>"] :=" numerical 7"
-    ActionInfo_Arr["<Num8>"] :=" numerical 8"
-    ActionInfo_Arr["<Num9>"] :=" numerical 9"
-    ActionInfo_Arr["<Down>"] :=" Down "
-    ActionInfo_Arr["<Up>"] :=" Up "
-    ActionInfo_Arr["<Left>"] :=" Left"
-    ActionInfo_Arr["<Right>"] :=" Right"
-    ActionInfo_Arr["<DownSelect>"] :=" Select Down "
-    ActionInfo_Arr["<UpSelect>"] :=" Select Up"
-    ActionInfo_Arr["<Home>"] :=" Go to the first line, Equivalent to Home key"
-    ActionInfo_Arr["<Half>"] :=" Go to the middle of the list (this doesn't work properly)"
-    ActionInfo_Arr["<End>"] :=" Go to last line, Equivalent to End key "
-    ActionInfo_Arr["<PageUp>"] :=" Page Up "
-    ActionInfo_Arr["<PageDown>"] :=" Page Down "
-    ActionInfo_Arr["<ForceDel>"] :=" Forced Delete, like shift+delete ignores recycle bin"
-    ActionInfo_Arr["<Mark>"] :=" Marks like in Vim, Mark the current folder with ma, use 'a to go to the corresponding mark "
-    ActionInfo_Arr["<RestoreLastMark>"] :=" Restore the last overwritten mark "
-    ActionInfo_Arr["<SetTitleAsDateTime>"] :=" Set the TC title as DateTime"
-    ActionInfo_Arr["<CheckForUpdates>"] :=" Check for the ViATc updates "
-    ActionInfo_Arr["<ListMark>"] :=" Offer to use marks created earlier by m like in Vim "
-    ActionInfo_Arr["<ListMarksTooltip>"] :=" Show all marks in a tooltip (show only, not able to use)"
-    ActionInfo_Arr["<Internetsearch>"] :=" Use the default internet browser to search for the current file or folder"
-    ActionInfo_Arr["<azHistory>"] :=" Folder history menu, A-Z selection "
-    ActionInfo_Arr["<azCmdHistory>"] :=" View the command history "
-    ActionInfo_Arr["<ListMapKey>"] :=" Show custom mapping keys. It's better to just open Settings window instead. "
-    ActionInfo_Arr["<ListMapKeyMultiColumn>"] :=" Show custom mapping keys in columns. It's better to just open Settings window instead. "
-    ActionInfo_Arr["<WinMaxLeft>"] :=" Maximize left panel "
-    ActionInfo_Arr["<WinMaxRight>"] :=" Maximize right panel "
-    ActionInfo_Arr["<AlwayOnTop>"] :=" TC always on top. Toggle "
-    ActionInfo_Arr["<Transparent>"] :=" TC Transparent. Toggle "
-    ActionInfo_Arr["<DeleteLHistory>"] :=" Delete history of the left folder "
-    ActionInfo_Arr["<DeleteRHistory>"] :=" Delete history of the right folder "
-    ActionInfo_Arr["<DelCmdHistory>"] :=" Delete command-line history "
-    ActionInfo_Arr["<GoLastTab>"] :=" Go to the last tab "
-    ActionInfo_Arr["<TCFullScreenAlmost>"] :=" TC almost full screen. Windows taskbar still visible"
-    ActionInfo_Arr["<TCFullScreen>"] :=" TC full screen. "
-    ActionInfo_Arr["<TCFullScreenWithExePlugin>"] :=" TC full screen. An external exe program is required, You'll be asked to download. "
-    ActionInfo_Arr["<azTab>"] := " a-z tab selection (works only in 32 bit TC with a nasty error on first use and in 64 bit TC it is unavailable)"
-    ActionInfo_Arr["<SrcComments>"] :=" Source window :  Show file comments "
-    ActionInfo_Arr["<SrcShort>"] :=" Source window :  List "
-    ActionInfo_Arr["<SrcLong>"] :=" Source window :  Details "
-    ActionInfo_Arr["<SrcTree>"] :=" Source window :  Folder Tree "
-    ActionInfo_Arr["<SrcQuickview>"] :=" Source window :  Quick View "
-    ActionInfo_Arr["<VerticalPanels>"] :=" Vertical / Horizontal arrangement "
-    ActionInfo_Arr["<WidePanelToggle>"] :=" One 100% Wide Horizontal panel. Toggle"
-    ActionInfo_Arr["<SrcQuickInternalOnly>"] :=" Source window :  Quick View ( No plugins )"
-    ActionInfo_Arr["<SrcHideQuickview>"] :=" Source window :  Close the Quick View window "
-    ActionInfo_Arr["<SrcExecs>"] :=" Source window :  Executable file "
-    ActionInfo_Arr["<SrcAllFiles>"] :=" Source window :  All files "
-    ActionInfo_Arr["<SrcUserSpec>"] :=" Source window :  The last selected file "
-    ActionInfo_Arr["<SrcUserDef>"] :=" Source window :  Custom type "
-    ActionInfo_Arr["<SrcByName>"] :=" Source window :  Sort by file name "
-    ActionInfo_Arr["<SrcByExt>"] :=" Source window :  Sort by extension "
-    ActionInfo_Arr["<SrcBySize>"] :=" Source window :  Sort by size "
-    ActionInfo_Arr["<SrcByDateTime>"] :=" Source window :  Sort by date and time "
-    ActionInfo_Arr["<SrcUnsorted>"] :=" Source window :  Not sorted "
-    ActionInfo_Arr["<SrcNegOrder>"] :=" Source window :  Reverse sort "
-    ActionInfo_Arr["<SrcOpenDrives>"] :=" Source window :  Open the drive list "
-    ActionInfo_Arr["<SrcThumbs>"] :=" Source window :  Thumbnails "
-    ActionInfo_Arr["<SrcCustomViewMenu>"] :=" Source window :  Customize the view menu "
-    ActionInfo_Arr["<SrcPathFocus>"] :=" Source window :  Focus on the path "
-    ActionInfo_Arr["<LeftComments>"] :=" Left window :  Show file comments "
-    ActionInfo_Arr["<LeftShort>"] :=" Left window :  List "
-    ActionInfo_Arr["<LeftLong>"] :=" Left window :  Details "
-    ActionInfo_Arr["<LeftTree>"] :=" Left window :  Folder Tree "
-    ActionInfo_Arr["<LeftQuickview>"] :=" Left window :  Quick View "
-    ActionInfo_Arr["<LeftQuickInternalOnly>"] :=" Left window :  Quick View ( No plugins )"
-    ActionInfo_Arr["<LeftHideQuickview>"] :=" Left window :  Close the Quick View window "
-    ActionInfo_Arr["<LeftExecs>"] :=" Left window :  executable file "
-    ActionInfo_Arr["<LeftAllFiles>"] :=" Left window :  All files "
-    ActionInfo_Arr["<LeftUserSpec>"] :=" Left window :  The last selected file "
-    ActionInfo_Arr["<LeftUserDef>"] :=" Left window :  Custom type "
-    ActionInfo_Arr["<LeftByName>"] :=" Left window :  Sort by file name "
-    ActionInfo_Arr["<LeftByExt>"] :=" Left window :  Sort by extension "
-    ActionInfo_Arr["<LeftBySize>"] :=" Left window :  Sort by size "
-    ActionInfo_Arr["<LeftByDateTime>"] :=" Left window :  Sort by date and time "
-    ActionInfo_Arr["<LeftUnsorted>"] :=" Left window :  Not sorted "
-    ActionInfo_Arr["<LeftNegOrder>"] :=" Left window :  Reverse sort "
-    ActionInfo_Arr["<LeftOpenDrives>"] :=" Left window :  Open the drive list "
-    ActionInfo_Arr["<LeftPathFocus>"] :=" Left window :  Focus on the path "
-    ActionInfo_Arr["<LeftDirBranch>"] :=" Left window :  Expand all folders "
-    ActionInfo_Arr["<LeftDirBranchSel>"] :=" Left window :  Only the selected folder is expanded "
-    ActionInfo_Arr["<LeftThumbs>"] :=" window :  Thumbnails "
-    ActionInfo_Arr["<LeftCustomViewMenu>"] :=" window :  Customize the view menu "
-    ActionInfo_Arr["<RightComments>"] :=" Right window :  Show file comments "
-    ActionInfo_Arr["<RightShort>"] :=" Right window :  List "
-    ActionInfo_Arr["<RightLong>"] :=" details "
-    ActionInfo_Arr["<RightTre>"] :=" Right window :  Folder Tree "
-    ActionInfo_Arr["<RightQuickvie>"] :=" Right window :  Quick View "
-    ActionInfo_Arr["<RightQuickInternalOnl>"] :=" Right window :  Quick View ( No plugins )"
-    ActionInfo_Arr["<RightHideQuickvie>"] :=" Right window :  Close the Quick View window "
-    ActionInfo_Arr["<RightExec>"] :=" Right window :  executable file "
-    ActionInfo_Arr["<RightAllFile>"] :=" Right window :  All files "
-    ActionInfo_Arr["<RightUserSpe>"] :=" Right window :  The last selected file "
-    ActionInfo_Arr["<RightUserDe>"] :=" Right window :  Custom type "
-    ActionInfo_Arr["<RightByNam>"] :=" Right window :  Sort by file name "
-    ActionInfo_Arr["<RightByEx>"] :=" Right window :  Sort by extension "
-    ActionInfo_Arr["<RightBySiz>"] :=" Right window :  Sort by size "
-    ActionInfo_Arr["<RightByDateTim>"] :=" Right window :  Sort by date and time "
-    ActionInfo_Arr["<RightUnsorte>"] :=" Right window :  Not sorted "
-    ActionInfo_Arr["<RightNegOrde>"] :=" Right window :  Reverse sort "
-    ActionInfo_Arr["<RightOpenDrive>"] :=" Right window :  Open the drive list "
-    ActionInfo_Arr["<RightPathFocu>"] :=" Right window :  Focus on the path "
-    ActionInfo_Arr["<RightDirBranch>"] :=" Right window :  Expand all folders "
-    ActionInfo_Arr["<RightDirBranchSel>"] :=" Right window :  Only the selected folder is expanded "
-    ActionInfo_Arr["<RightThumb>"] :=" Right window :  Thumbnails "
-    ActionInfo_Arr["<RightCustomViewMen>"] :=" Right window :  Customize the view menu "
-    ActionInfo_Arr["<List>"] :=" Lister ( use the lister program to view )"
-    ActionInfo_Arr["<ListInternalOnly>"] :=" Lister ( use the lister program, but not plugin / multimedia )"
-    ActionInfo_Arr["<Edit>"] :=" edit "
-    ActionInfo_Arr["<Copy>"] :=" copy "
-    ActionInfo_Arr["<CopySamepanel>"] :=" Copy to the current window "
-    ActionInfo_Arr["<CopyOtherpanel>"] :=" Copy to another window "
-    ActionInfo_Arr["<RenMov>"] :=" Rename / Move "
-    ActionInfo_Arr["<MkDir>"] :=" New Folder "
-    ActionInfo_Arr["<Delete>"] :=" Delete "
-    ActionInfo_Arr["<TestArchive>"] :=" Test compression package "
-    ActionInfo_Arr["<PackFiles>"] :=" Compressed file "
-    ActionInfo_Arr["<UnpackFiles>"] :=" Unzip files "
-    ActionInfo_Arr["<RenameOnly>"] :=" Rename (Shift+F6)"
-    ActionInfo_Arr["<RenameSingleFile>"] :=" Rename current file "
-    ActionInfo_Arr["<MoveOnly>"] :=" Move (F6)"
-    ActionInfo_Arr["<Properties>"] :=" Display properties "
-    ActionInfo_Arr["<CreateShortcut>"] :=" Create Shortcut "
-    ActionInfo_Arr["<OpenAsUser>"] :=" Run the file under cursor as onother user "
-    ActionInfo_Arr["<Split>"] :=" Split files "
-    ActionInfo_Arr["<Combine>"] :=" Merge documents "
-    ActionInfo_Arr["<Encode>"] :=" Encoding file (MIME/UUE/XXE  format )"
-    ActionInfo_Arr["<Decode>"] :=" Decode the file (MIME/UUE/XXE/BinHex  format )"
-    ActionInfo_Arr["<CRCcreate>"] :=" Create a check file "
-    ActionInfo_Arr["<CRCcheck>"] :=" Verify checksum "
-    ActionInfo_Arr["<SetAttrib>"] :=" Change attributes "
-    ActionInfo_Arr["<Config>"] :=" Configuration :  layout "
-    ActionInfo_Arr["<DisplayConfig>"] :=" Configuration :  display "
-    ActionInfo_Arr["<IconConfig>"] :=" Configuration :  icon "
-    ActionInfo_Arr["<FontConfig>"] :=" Configuration :  Font "
-    ActionInfo_Arr["<ColorConfig>"] :=" Configuration :  Colour "
-    ActionInfo_Arr["<ConfTabChange>"] :=" Configuration :  Tabs "
-    ActionInfo_Arr["<DirTabsConfig>"] :=" Configuration :  Folder tab "
-    ActionInfo_Arr["<CustomColumnConfig>"] :=" Configuration :  Custom columns "
-    ActionInfo_Arr["<CustomColumnDlg>"] :=" Change the current custom column "
-    ActionInfo_Arr["<LanguageConfig>"] :=" Configuration :  Language "
-    ActionInfo_Arr["<Config2>"] :=" Configuration :  Operation method "
-    ActionInfo_Arr["<EditConfig>"] :=" Configuration :  edit / view "
-    ActionInfo_Arr["<CopyConfig>"] :=" Configuration :  copy / delete "
-    ActionInfo_Arr["<RefreshConfig>"] :=" Configuration :  Refresh "
-    ActionInfo_Arr["<QuickSearchConfig>"] :=" Configuration :  quick search "
-    ActionInfo_Arr["<FtpConfig>"] :=" Configuration : FTP"
-    ActionInfo_Arr["<PluginsConfig>"] :=" Configuration :  Plugin "
-    ActionInfo_Arr["<ThumbnailsConfig>"] :=" Configuration :  Thumbnails "
-    ActionInfo_Arr["<LogConfig>"] :=" Configuration :  Log file "
-    ActionInfo_Arr["<IgnoreConfig>"] :=" Configuration :  Hide the file "
-    ActionInfo_Arr["<PackerConfig>"] :=" Configuration :  Compression program "
-    ActionInfo_Arr["<ZipPackerConfig>"] :=" Configuration : ZIP  Compression program "
-    ActionInfo_Arr["<Confirmation>"] :=" Configuration :  other / confirm "
-    ActionInfo_Arr["<ConfigSavePos>"] :=" Save location "
-    ActionInfo_Arr["<ButtonConfig>"] :=" Change the toolbar "
-    ActionInfo_Arr["<ConfigSaveSettings>"] :=" Save Settings "
-    ActionInfo_Arr["<ConfigChangeIniFiles>"] :=" Modify the configuration file directly "
-    ActionInfo_Arr["<ConfigSaveDirHistory>"] :=" Save the folder history "
-    ActionInfo_Arr["<ChangeStartMenu>"] :=" Change the Start menu "
-    ActionInfo_Arr["<NetConnect>"] :=" Mapping network drives "
-    ActionInfo_Arr["<NetDisconnect>"] :=" Disconnect the network drive "
-    ActionInfo_Arr["<NetShareDir>"] :=" Share the current folder "
-    ActionInfo_Arr["<NetUnshareDir>"] :=" Cancel folder sharing "
-    ActionInfo_Arr["<AdministerServer>"] :=" Show system shared folder "
-    ActionInfo_Arr["<ShowFileUser>"] :=" Displays the remote user of the local file "
-    ActionInfo_Arr["<GetFileSpace>"] :=" Calculate the footprint "
-    ActionInfo_Arr["<VolumeId>"] :=" Set the tab "
-    ActionInfo_Arr["<VersionInfo>"] :=" Version Information "
-    ActionInfo_Arr["<ExecuteDOS>"] :=" cmd.exe Console with Command Prompt "
-    ActionInfo_Arr["<CompareDirs>"] :=" Compare folders "
-    ActionInfo_Arr["<CompareDirsWithSubdirs>"] :=" Compare folders ( Also mark a subfolder that does not have another window )"
-    ActionInfo_Arr["<ContextMenu>"] :=" Show the context menu "
-    ActionInfo_Arr["<ContextMenuInternal>"] :=" Show the context menu ( Internal association )"
-    ActionInfo_Arr["<ContextMenuInternalCursor>"] :=" Displays the internal context menu for the file at the cursor "
-    ;ActionInfo_Arr["<ShowRemoteMenu>"] :=" Media Center Remote Control Play / Pause key context menu "
-    ActionInfo_Arr["<ShowRemoteMenu>"] :=" Menu with various actions to choose from ..."
-    ActionInfo_Arr["<SyncChangeDir>"] :=" Synchronous directory changing in both windows "
-    ActionInfo_Arr["<EditComment>"] :=" Edit file comments "
-    ActionInfo_Arr["<FocusLeft>"] :=" Focus on the left window "
-    ActionInfo_Arr["<FocusRight>"] :=" Focus on the right window "
-    ActionInfo_Arr["<FocusCmdLine>"] :=" Focus on the command line "
-    ActionInfo_Arr["<FocusButtonBar>"] :=" Focus on the toolbar "
-    ActionInfo_Arr["<CountDirContent>"] :=" Calculate the space occupied by all folders "
-    ActionInfo_Arr["<UnloadPlugins>"] :=" Unload all plugins "
-    ActionInfo_Arr["<DirMatch>"] :=" Mark a new file, Hide the same "
-    ActionInfo_Arr["<Exchange>"] :=" Exchange left and right windows "
-    ActionInfo_Arr["<MatchSrc>"] :=" target  =  source "
-    ActionInfo_Arr["<ReloadSelThumbs>"] :=" Refresh the thumbnail of the selected file "
-    ActionInfo_Arr["<DirectCableConnect>"] :=" Direct cable connection "
-    ActionInfo_Arr["<NTinstallDriver>"] :=" Load  NT  Parallel port driver "
-    ActionInfo_Arr["<NTremoveDriver>"] :=" Unloading  NT  Parallel port driver "
-    ActionInfo_Arr["<PrintDir>"] :=" Print a list of files "
-    ActionInfo_Arr["<PrintDirSub>"] :=" Print a list of files ( Contains subfolders )"
-    ActionInfo_Arr["<PrintFile>"] :=" Print the contents of the file "
-    ActionInfo_Arr["<SpreadSelection>"] :=" Select a set of files "
-    ActionInfo_Arr["<SelectBoth>"] :=" Select :  Files and folders "
-    ActionInfo_Arr["<SelectFiles>"] :=" Select :  Only file "
-    ActionInfo_Arr["<SelectFolders>"] :=" Select :  Only folders "
-    ActionInfo_Arr["<ShrinkSelection>"] :=" Shrink Selection "
-    ActionInfo_Arr["<ClearFiles>"] :=" Clear selected :  Only files "
-    ActionInfo_Arr["<ClearFolders>"] :=" Clear selected:  Only folders "
-    ActionInfo_Arr["<ClearSelCfg>"] :=" Clear selected:  File and / or folders ( Depending on configuration )"
-    ActionInfo_Arr["<SelectAll>"] :=" All selected :  File and / or folders ( Depending on configuration )"
-    ActionInfo_Arr["<SelectAllBoth>"] :=" All selected :  Files and folders "
-    ActionInfo_Arr["<SelectAllFiles>"] :=" All selected :  Only file "
-    ActionInfo_Arr["<SelectAllFolders>"] :=" All selected :  Only folders "
-    ActionInfo_Arr["<ClearAll>"] :=" Clear All  :  Files and folders "
-    ActionInfo_Arr["<ClearAllFiles>"] :=" Clear All  :  Only file "
-    ActionInfo_Arr["<ClearAllFolders>"] :=" Clear All  :  Only folders "
-    ActionInfo_Arr["<ClearAllCfg>"] :=" Clear All  :  File and / or folders ( Depending on configuration )"
-    ActionInfo_Arr["<ExchangeSelection>"] :=" Reverse selection "
-    ActionInfo_Arr["<ExchangeSelBoth>"] :=" Reverse selection :  Files and folders "
-    ActionInfo_Arr["<ExchangeSelFiles>"] :=" Reverse selection :  Only file "
-    ActionInfo_Arr["<ExchangeSelFolders>"] :=" Reverse selection :  Only folders "
-    ActionInfo_Arr["<SelectCurrentExtension>"] :=" Select the same file with the same extension "
-    ActionInfo_Arr["<UnselectCurrentExtension>"] :=" Do not select the same file with the same extension "
-    ActionInfo_Arr["<SelectCurrentName>"] :=" Select the file with the same file name "
-    ActionInfo_Arr["<UnselectCurrentName>"] :=" Do not select files with the same file name "
-    ActionInfo_Arr["<SelectCurrentNameExt>"] :=" Select the file with the same file name and extension "
-    ActionInfo_Arr["<UnselectCurrentNameExt>"] :=" Do not select files with the same file name and extension "
-    ActionInfo_Arr["<SelectCurrentPath>"] :=" Select the same path under the file ( Expand the folder + Search for files )"
-    ActionInfo_Arr["<UnselectCurrentPath>"] :=" Do not choose the same path under the file ( Expand the folder + Search the file )"
-    ActionInfo_Arr["<RestoreSelection>"] :=" Restore the selection list "
-    ActionInfo_Arr["<SaveSelection>"] :=" Save the selection list "
-    ActionInfo_Arr["<SaveSelectionToFile>"] :=" Export the selection list "
-    ActionInfo_Arr["<SaveSelectionToFileA>"] :=" Export the selection list (ANSI)"
-    ActionInfo_Arr["<SaveSelectionToFileW>"] :=" Export the selection list (Unicode)"
-    ActionInfo_Arr["<SaveDetailsToFile>"] :=" Export details "
-    ActionInfo_Arr["<SaveDetailsToFileA>"] :=" Export details (ANSI)"
-    ActionInfo_Arr["<SaveDetailsToFileW>"] :=" Export details (Unicode)"
-    ActionInfo_Arr["<LoadSelectionFromFile>"] :=" Import selection list ( From the file )"
-    ActionInfo_Arr["<LoadSelectionFromClip>"] :=" Import the selection list ( From the clipboard )"
-    ActionInfo_Arr["<EditPermissionInfo>"] :=" Setting permissions (NTFS)"
-    ActionInfo_Arr["<EditAuditInfo>"] :=" Review the document (NTFS)"
-    ActionInfo_Arr["<EditOwnerInfo>"] :=" Get ownership (NTFS)"
-    ActionInfo_Arr["<CutToClipboard>"] :=" Cut the selected file to the clipboard "
-    ActionInfo_Arr["<CopyToClipboard>"] :=" Copy the selected file to the clipboard "
-    ActionInfo_Arr["<PasteFromClipboard>"] :=" Paste from the clipboard to the current folder "
-    ActionInfo_Arr["<CopyNamesToClip>"] :=" Copy the file name "
-    ActionInfo_Arr["<CopyFullNamesToClip>"] :=" Copy the file name and the full path "
-    ActionInfo_Arr["<CopyNetNamesToClip>"] :=" Copy the file name and network path "
-    ActionInfo_Arr["<CopySrcPathToClip>"] :=" Copy the source path "
-    ActionInfo_Arr["<CopyTrgPathToClip>"] :=" Copy the destination path "
-    ActionInfo_Arr["<CopyFileDetailsToClip>"] :=" Copy the file details "
-    ActionInfo_Arr["<CopyFpFileDetailsToClip>"] :=" Copy the file details and the full path "
-    ActionInfo_Arr["<CopyNetFileDetailsToClip>"] :=" Copy file details and network path "
-    ActionInfo_Arr["<FtpConnect>"] :="FTP  connection "
-    ActionInfo_Arr["<FtpNew>"] :=" New  FTP  connection "
-    ActionInfo_Arr["<FtpDisconnect>"] :=" disconnect  FTP  connection "
-    ActionInfo_Arr["<FtpHiddenFiles>"] :=" Show hidden FTP files "
-    ActionInfo_Arr["<FtpAbort>"] :=" Stop the current  FTP  command "
-    ActionInfo_Arr["<FtpResumeDownload>"] :=" FtpResumeDownload "
-    ActionInfo_Arr["<FtpSelectTransferMode>"] :=" Select the transfer mode "
-    ActionInfo_Arr["<FtpAddToList>"] :=" Add to download list "
-    ActionInfo_Arr["<FtpDownloadList>"] :=" FtpDownloadList "
-    ActionInfo_Arr["<GotoPreviousDir>"] :=" GotoPreviousDir "
-    ActionInfo_Arr["<GotoNextDir>"] :=" GotoNextDir "
-    ActionInfo_Arr["<DirectoryHistory>"] :=" Folder history "
-    ActionInfo_Arr["<GotoPreviousLocalDir>"] :=" GotoPreviousLocalDir (non-FTP)"
-    ActionInfo_Arr["<GotoNextLocalDir>"] :=" GotoNextLocalDir (non-FTP)"
-    ActionInfo_Arr["<DirectoryHotlist>"] :=" DirectoryHotlist "
-    ActionInfo_Arr["<GoToRoot>"] :=" Go to the root folder "
-    ActionInfo_Arr["<GoToParent>"] :=" Go to the upper folder "
-    ActionInfo_Arr["<GoToDir>"] :=" Open the folder or archive at the cursor "
-    ActionInfo_Arr["<OpenDesktop>"] :=" desktop "
-    ActionInfo_Arr["<OpenDrives>"] :=" my computer "
-    ActionInfo_Arr["<OpenControls>"] :=" control panel "
-    ActionInfo_Arr["<OpenFonts>"] :=" Font "
-    ActionInfo_Arr["<OpenNetwork>"] :=" OpenNetwork "
-    ActionInfo_Arr["<OpenPrinters>"] :=" printer "
-    ActionInfo_Arr["<OpenRecycled>"] :=" Recycle bin "
-    ActionInfo_Arr["<CDtree>"] :=" Change the folder "
-    ActionInfo_Arr["<TransferLeft>"] :=" Open the folder or the compressed package at the cursor in the left window "
-    ActionInfo_Arr["<TransferRight>"] :=" Open the folder or archive at the cursor in the right window "
-    ActionInfo_Arr["<EditPath>"] :=" Edit the path of the source window "
-    ActionInfo_Arr["<GoToFirstFile>"] :=" The cursor moves to the first file in the list "
-    ActionInfo_Arr["<GotoNextDrive>"] :=" Go to the next drive "
-    ActionInfo_Arr["<GotoPreviousDrive>"] :=" Go to the previous drive "
-    ActionInfo_Arr["<GotoNextSelected>"] :=" Go to the next selected file "
-    ActionInfo_Arr["<GotoPrevSelected>"] :=" Go to the previous selected file "
-    ActionInfo_Arr["<GotoDriveA>"] :=" Go to the drive  A"
-    ActionInfo_Arr["<GotoDriveC>"] :=" Go to the drive  C"
-    ActionInfo_Arr["<GotoDriveD>"] :=" Go to the drive  D"
-    ActionInfo_Arr["<GotoDriveE>"] :=" Go to the drive  E"
-    ActionInfo_Arr["<GotoDriveF>"] :=" Go to the drive  F"
-    ActionInfo_Arr["<GotoDriveG>"] :=" Go to the drive  G"
-    ActionInfo_Arr["<GotoDriveH>"] :=" Go to the drive  H"
-    ActionInfo_Arr["<GotoDriveI>"] :=" Go to the drive  I"
-    ActionInfo_Arr["<GotoDriveJ>"] :=" Go to the drive  J"
-    ActionInfo_Arr["<GotoDriveK>"] :=" You can customize other drives "
-    ActionInfo_Arr["<GotoDriveU>"] :=" Go to the drive  U"
-    ActionInfo_Arr["<GotoDriveZ>"] :=" GotoDriveZ, max 26"
-    ActionInfo_Arr["<HelpIndex>"] :=" Help index "
-    ActionInfo_Arr["<Keyboard>"] :=" TC Keyboard layout, list of TC shortcuts "
-    ActionInfo_Arr["<Register>"] :=" registration message "
-    ActionInfo_Arr["<VisitHomepage>"] :=" access  Totalcmd  website "
-    ActionInfo_Arr["<About>"] :=" About  Total Commander"
-    ActionInfo_Arr["<Exit>"] :=" Exit  Total Commander"
-    ActionInfo_Arr["<Minimize>"] :=" minimize  Total Commander"
-    ActionInfo_Arr["<Maximize>"] :=" maximize  Total Commander"
-    ActionInfo_Arr["<Restore>"] :=" Restore down. Return to normal size "
-    ActionInfo_Arr["<ClearCmdLine>"] :=" Clear the command line "
-    ActionInfo_Arr["<NextCommand>"] :=" Next command "
-    ActionInfo_Arr["<PrevCommand>"] :=" Previous command "
-    ActionInfo_Arr["<AddPathToCmdline>"] :=" Copy the path to the command line "
-    ActionInfo_Arr["<MultiRenameFiles>"] :=" Batch rename "
-    ActionInfo_Arr["<SysInfo>"] :=" system message "
-    ActionInfo_Arr["<OpenTransferManager>"] :=" Background Transfer Manager "
-    ActionInfo_Arr["<SearchFor>"] :=" Search for files "
-    ActionInfo_Arr["<FileSync>"] :=" Synchronize folders "
-    ActionInfo_Arr["<Associate>"] :=" File association "
-    ActionInfo_Arr["<InternalAssociate>"] :=" Define internal associations "
-    ActionInfo_Arr["<CompareFilesByContent>"] :=" Compare the contents of the file "
-    ActionInfo_Arr["<IntCompareFilesByContent>"] :=" Use the internal comparison program "
-    ActionInfo_Arr["<CommandBrowser>"] :=" Browse TC commands. On OK it is copied into clipboard "
-    ActionInfo_Arr["<VisButtonbar>"] :=" Toggle visibility :  toolbar "
-    ActionInfo_Arr["<VisDriveButtons>"] :=" Toggle visibility :  Drive button "
-    ActionInfo_Arr["<VisTwoDriveButtons>"] :=" Toggle visibility :  Two drive button bars "
-    ActionInfo_Arr["<VisFlatDriveButtons>"] :=" Switch :  flat / convex drive button "
-    ActionInfo_Arr["<VisFlatInterface>"] :=" Switch :  flat / Three-dimensional user interface "
-    ActionInfo_Arr["<VisDriveCombo>"] :=" Toggle visibility :  Drive list "
-    ActionInfo_Arr["<VisCurDir>"] :=" Toggle visibility :  Current folder "
-    ActionInfo_Arr["<VisBreadCrumbs>"] :=" Toggle visibility :  Path navigation bar "
-    ActionInfo_Arr["<VisTabHeader>"] :=" Toggle visibility :  Sort tab "
-    ActionInfo_Arr["<VisStatusbar>"] :=" Toggle visibility :  Status Bar "
-    ActionInfo_Arr["<VisCmdLine>"] :=" Toggle visibility :  Command Line "
-    ActionInfo_Arr["<VisKeyButtons>"] :=" Toggle visibility :  Function button "
-    ActionInfo_Arr["<ToggleViatcVim>"] :=" Toggle Viatc Vim Mode "
-    ActionInfo_Arr["<ShowHint>"] :=" Show file prompts "
-    ActionInfo_Arr["<ShowQuickSearch>"] :=" Show the quick search window "
-    ActionInfo_Arr["<SwitchLongNames>"] :=" Toggle visibility :  Long file name display "
-    ActionInfo_Arr["<RereadSource>"] :=" Refresh the source window "
-    ActionInfo_Arr["<ShowOnlySelected>"] :=" Only the selected files are displayed "
-    ActionInfo_Arr["<SwitchHidSys>"] :=" Toggle hidden or system file display "
-    ActionInfo_Arr["<Switch83Names>"] :=" Toggle : 8.3  Type file name lowercase display "
-    ActionInfo_Arr["<SwitchDirSort>"] :=" Toggle :  The folders are sorted by name "
-    ActionInfo_Arr["<DirBranch>"] :=" Expand all folders "
-    ActionInfo_Arr["<DirBranchSel>"] :=" Only the selected folder is expanded "
-    ActionInfo_Arr["<50Percent>"] :=" Set the window divider at 50%"
-    ActionInfo_Arr["<100Percent>"] :=" Set the window divider at 100% (TC 8.0+)"
-    ActionInfo_Arr["<VisDirTabs>"] :=" Toggle visibility :  Folder tab "
-    ActionInfo_Arr["<VisXPThemeBackground>"] :=" Toggle : XP  Theme background "
-    ActionInfo_Arr["<SwitchOverlayIcons>"] :=" Toggle :  Overlay icon display "
-    ActionInfo_Arr["<VisHistHotButtons>"] :=" Toggle visibility :  Folder history and frequently used folder buttons "
-    ActionInfo_Arr["<SwitchWatchDirs>"] :=" Enable / Disable :  The folder is automatically refreshed "
-    ActionInfo_Arr["<SwitchIgnoreList>"] :=" Enable / Disable :  Customize hidden files "
-    ActionInfo_Arr["<SwitchX64Redirection>"] :=" Toggle : 32  Bit system32  Directory redirect (64 Bit  Windows)"
-    ActionInfo_Arr["<SeparateTreeOff>"] :=" Close the separate folder tree panel "
-    ActionInfo_Arr["<SeparateTree1>"] :=" A separate folder tree panel "
-    ActionInfo_Arr["<SeparateTree2>"] :=" Two separate folder tree panels "
-    ActionInfo_Arr["<SwitchSeparateTree>"] :=" Toggle the independent folder tree panel status "
-    ActionInfo_Arr["<ToggleSeparateTree1>"] :=" Toggle visibility :  A separate folder tree panel "
-    ActionInfo_Arr["<ToggleSeparateTree2>"] :=" Toggle visibility :  Two separate folder tree panels "
-    ActionInfo_Arr["<UserMenu1>"] :=" User menu  1"
-    ActionInfo_Arr["<UserMenu2>"] :=" User menu  2"
-    ActionInfo_Arr["<UserMenu3>"] :=" User menu  3"
-    ActionInfo_Arr["<UserMenu4>"] :="..."
-    ActionInfo_Arr["<UserMenu5>"] :="5"
-    ActionInfo_Arr["<UserMenu6>"] :="6"
-    ActionInfo_Arr["<UserMenu7>"] :="7"
-    ActionInfo_Arr["<UserMenu8>"] :="8"
-    ActionInfo_Arr["<UserMenu9>"] :="9"
-    ActionInfo_Arr["<UserMenu10>"] :=" You can define other user menus "
-    ActionInfo_Arr["<OpenNewTab>"] :=" New tab "
-    ActionInfo_Arr["<OpenNewTabBg>"] :=" New tab ( In the background )"
-    ActionInfo_Arr["<OpenDirInNewTab>"] :=" New tab ( And open the folder at the cursor )"
-    ActionInfo_Arr["<OpenDirInNewTabOther>"] :=" New tab ( Open the folder in another window )"
-    ActionInfo_Arr["<SwitchToNextTab>"] :=" Next tab (Ctrl+Tab)"
-    ActionInfo_Arr["<SwitchToPreviousTab>"] :=" Previous tab (Ctrl+Shift+Tab)"
-    ActionInfo_Arr["<CloseCurrentTab>"] :=" Close the Current tab "
-    ActionInfo_Arr["<CloseAllTabs>"] :=" Close All tabs "
-    ActionInfo_Arr["<DirTabsShowMenu>"] :=" Display the tab menu "
-    ActionInfo_Arr["<ToggleLockCurrentTab>"] :=" Lock/Unlock the current tab "
-    ActionInfo_Arr["<ToggleLockDcaCurrentTab>"] :=" Lock/Unlock the current tab ( You can change the folder )"
-    ActionInfo_Arr["<ExchangeWithTabs>"] :=" Exchange left and right windows and their tabs "
-    ActionInfo_Arr["<GoToLockedDir>"] :=" Go to the root folder of the locked tab "
-    ActionInfo_Arr["<SrcActivateTab1>"] :=" Source window :  Activate the tab  1"
-    ActionInfo_Arr["<SrcActivateTab2>"] :=" Source window :  Activate the tab  2"
-    ActionInfo_Arr["<SrcActivateTab3>"] :="..."
-    ActionInfo_Arr["<SrcActivateTab4>"] :=" max 99 "
-    ActionInfo_Arr["<SrcActivateTab5>"] :="5"
-    ActionInfo_Arr["<SrcActivateTab6>"] :="6"
-    ActionInfo_Arr["<SrcActivateTab7>"] :="7"
-    ActionInfo_Arr["<SrcActivateTab8>"] :="8"
-    ActionInfo_Arr["<SrcActivateTab9>"] :="9"
-    ActionInfo_Arr["<SrcActivateTab10>"] :="0"
-    ActionInfo_Arr["<TrgActivateTab1>"] :=" Target window :  Activate the tab  1"
-    ActionInfo_Arr["<TrgActivateTab2>"] :=" Target window :  Activate the tab  2"
-    ActionInfo_Arr["<TrgActivateTab3>"] :="..."
-    ActionInfo_Arr["<TrgActivateTab4>"] :=" max 99 "
-    ActionInfo_Arr["<TrgActivateTab5>"] :="5"
-    ActionInfo_Arr["<TrgActivateTab6>"] :="6"
-    ActionInfo_Arr["<TrgActivateTab7>"] :="7"
-    ActionInfo_Arr["<TrgActivateTab8>"] :="8"
-    ActionInfo_Arr["<TrgActivateTab9>"] :="9"
-    ActionInfo_Arr["<TrgActivateTab10>"] :="0"
-    ActionInfo_Arr["<LeftActivateTab1>"] :=" Left window :  Activate the tab  1"
-    ActionInfo_Arr["<LeftActivateTab2>"] :=" Left window :  Activate the tab  2"
-    ActionInfo_Arr["<LeftActivateTab3>"] :="..."
-    ActionInfo_Arr["<LeftActivateTab4>"] :=" max 99 "
-    ActionInfo_Arr["<LeftActivateTab5>"] :="5"
-    ActionInfo_Arr["<LeftActivateTab6>"] :="6"
-    ActionInfo_Arr["<LeftActivateTab7>"] :="7"
-    ActionInfo_Arr["<LeftActivateTab8>"] :="8"
-    ActionInfo_Arr["<LeftActivateTab9>"] :="9"
-    ActionInfo_Arr["<LeftActivateTab10>"] :="0"
-    ActionInfo_Arr["<RightActivateTab1>"] :=" Right window :  Activate the tab  1"
-    ActionInfo_Arr["<RightActivateTab2>"] :=" Right window :  Activate the tab  2"
-    ActionInfo_Arr["<RightActivateTab3>"] :="..."
-    ActionInfo_Arr["<RightActivateTab4>"] :=" max 99 "
-    ActionInfo_Arr["<RightActivateTab5>"] :="5"
-    ActionInfo_Arr["<RightActivateTab6>"] :="6"
-    ActionInfo_Arr["<RightActivateTab7>"] :="7"
-    ActionInfo_Arr["<RightActivateTab8>"] :="8"
-    ActionInfo_Arr["<RightActivateTab9>"] :="9"
-    ActionInfo_Arr["<RightActivateTab10>"] :="0"
-    ActionInfo_Arr["<SrcSortByCol1>"] :=" Source window :  Sort by column 1"
-    ActionInfo_Arr["<SrcSortByCol2>"] :=" Source window :  Sort by column 2"
-    ActionInfo_Arr["<SrcSortByCol3>"] :="..."
-    ActionInfo_Arr["<SrcSortByCol4>"] :=" max 99  Column "
-    ActionInfo_Arr["<SrcSortByCol5>"] :="5"
-    ActionInfo_Arr["<SrcSortByCol6>"] :="6"
-    ActionInfo_Arr["<SrcSortByCol7>"] :="7"
-    ActionInfo_Arr["<SrcSortByCol8>"] :="8"
-    ActionInfo_Arr["<SrcSortByCol9>"] :="9"
-    ActionInfo_Arr["<SrcSortByCol10>"] :="0"
-    ActionInfo_Arr["<SrcSortByCol99>"] :="9"
-    ActionInfo_Arr["<TrgSortByCol1>"] :=" Target window :  Sort by column 1"
-    ActionInfo_Arr["<TrgSortByCol2>"] :=" Target window :  Sort by column 2"
-    ActionInfo_Arr["<TrgSortByCol3>"] :="..."
-    ActionInfo_Arr["<TrgSortByCol4>"] :=" max 99  Column "
-    ActionInfo_Arr["<TrgSortByCol5>"] :="5"
-    ActionInfo_Arr["<TrgSortByCol6>"] :="6"
-    ActionInfo_Arr["<TrgSortByCol7>"] :="7"
-    ActionInfo_Arr["<TrgSortByCol8>"] :="8"
-    ActionInfo_Arr["<TrgSortByCol9>"] :="9"
-    ActionInfo_Arr["<TrgSortByCol10>"] :="0"
-    ActionInfo_Arr["<TrgSortByCol99>"] :="9"
-    ActionInfo_Arr["<LeftSortByCol1>"] :=" Left window :  Sort by column 1"
-    ActionInfo_Arr["<LeftSortByCol2>"] :=" Left window :  Sort by column 2"
-    ActionInfo_Arr["<LeftSortByCol3>"] :="..."
-    ActionInfo_Arr["<LeftSortByCol4>"] :=" max 99  Column "
-    ActionInfo_Arr["<LeftSortByCol5>"] :="5"
-    ActionInfo_Arr["<LeftSortByCol6>"] :="6"
-    ActionInfo_Arr["<LeftSortByCol7>"] :="7"
-    ActionInfo_Arr["<LeftSortByCol8>"] :="8"
-    ActionInfo_Arr["<LeftSortByCol9>"] :="9"
-    ActionInfo_Arr["<LeftSortByCol10>"] :="0"
-    ActionInfo_Arr["<LeftSortByCol99>"] :="9"
-    ActionInfo_Arr["<RightSortByCol1>"] :=" Right window :  Sort by column 1"
-    ActionInfo_Arr["<RightSortByCol2>"] :=" Right window :  Sort by column 2"
-    ActionInfo_Arr["<RightSortByCol3>"] :="..."
-    ActionInfo_Arr["<RightSortByCol4>"] :=" max 99  Column "
-    ActionInfo_Arr["<RightSortByCol5>"] :="5"
-    ActionInfo_Arr["<RightSortByCol6>"] :="6"
-    ActionInfo_Arr["<RightSortByCol7>"] :="7"
-    ActionInfo_Arr["<RightSortByCol8>"] :="8"
-    ActionInfo_Arr["<RightSortByCol9>"] :="9"
-    ActionInfo_Arr["<RightSortByCol10>"] :="0"
-    ActionInfo_Arr["<RightSortByCol99>"] :="9"
-    ActionInfo_Arr["<SrcCustomView1>"] :=" Source window :  Customize the column view  1"
-    ActionInfo_Arr["<SrcCustomView2>"] :=" Source window :  Customize the column view  2"
-    ActionInfo_Arr["<SrcCustomView3>"] :="..."
-    ActionInfo_Arr["<SrcCustomView4>"] :=" 29 max"
-    ActionInfo_Arr["<SrcCustomView5>"] :="5"
-    ActionInfo_Arr["<SrcCustomView6>"] :="6"
-    ActionInfo_Arr["<SrcCustomView7>"] :="7"
-    ActionInfo_Arr["<SrcCustomView8>"] :="8"
-    ActionInfo_Arr["<SrcCustomView9>"] :="9"
-    ActionInfo_Arr["<LeftCustomView1>"] :=" Left window :  Customize the column view  1"
-    ActionInfo_Arr["<LeftCustomView2>"] :=" Left window :  Customize the column view  2"
-    ActionInfo_Arr["<LeftCustomView3>"] :="..."
-    ActionInfo_Arr["<LeftCustomView4>"] :=" 29 max"
-    ActionInfo_Arr["<LeftCustomView5>"] :="5"
-    ActionInfo_Arr["<LeftCustomView6>"] :="6"
-    ActionInfo_Arr["<LeftCustomView7>"] :="7"
-    ActionInfo_Arr["<LeftCustomView8>"] :="8"
-    ActionInfo_Arr["<LeftCustomView9>"] :="9"
-    ActionInfo_Arr["<RightCustomView1>"] :=" Right window :  Customize the column view  1"
-    ActionInfo_Arr["<RightCustomView2>"] :=" Right window :  Customize the column view  2"
-    ActionInfo_Arr["<RightCustomView3>"] :="..."
-    ActionInfo_Arr["<RightCustomView4>"] :=" 29 max"
-    ActionInfo_Arr["<RightCustomView5>"] :="5"
-    ActionInfo_Arr["<RightCustomView6>"] :="6"
-    ActionInfo_Arr["<RightCustomView7>"] :="7"
-    ActionInfo_Arr["<RightCustomView8>"] :="8"
-    ActionInfo_Arr["<RightCustomView9>"] :="9"
-    ActionInfo_Arr["<SrcNextCustomView>"] :=" Source window :  Next custom view "
-    ActionInfo_Arr["<SrcPrevCustomView>"] :=" Source window :  Previous view "
-    ActionInfo_Arr["<TrgNextCustomView>"] :=" Target window :  Next custom view "
-    ActionInfo_Arr["<TrgPrevCustomView>"] :=" Target window :  Previous view "
-    ActionInfo_Arr["<LeftNextCustomView>"] :=" Left window :  Next custom view "
-    ActionInfo_Arr["<LeftPrevCustomView>"] :=" Left window :  Previous view "
-    ActionInfo_Arr["<RightNextCustomView>"] :=" Right window :  Next custom view "
-    ActionInfo_Arr["<RightPrevCustomView>"] :=" Right window :  Previous view "
-    ActionInfo_Arr["<LoadAllOnDemandFields>"] :=" All files are loaded with notes as needed "
-    ActionInfo_Arr["<LoadSelOnDemandFields>"] :=" Only selected files are loading notes as needed "
-    ActionInfo_Arr["<ContentStopLoadFields>"] :=" Stop background loading notes "
-    ActionInfo_Arr["<SwitchDarkmode>"] :="Toggle dark mode on and off"
-    ActionInfo_Arr["<EnableDarkmode>"] :="Turn dark mode on"
-    ActionInfo_Arr["<DisableDarkmode>"] :="Turn dark mode off. Light mode"
+    Global CommandInfo_Arr
+
+    ; add  descriptions of user commands
+    for index, element in UserCommandsArr
+        CommandInfo_Arr[index] := UserCommandsArr[index]
+
+    CommandInfo_Arr["<ReLoadVIATC>"] :=" Reload VIATC"
+    CommandInfo_Arr["<ReLoadTC>"] :=" Reload TC"
+    CommandInfo_Arr["<QuitTC>"] :=" Exit TC"
+    CommandInfo_Arr["<QuitViATc>"] :=" Exit ViATc"
+    CommandInfo_Arr["<None>"] :=" do nothing "
+    CommandInfo_Arr["<Setting>"] :=" Settings window "
+    CommandInfo_Arr["<FocusCmdLine:>"] := " Command line mode. Focus on the command line with : at the beginning"
+    CommandInfo_Arr["<CreateNewFile>"] := " Menu to create a new file (can be from a template) or a new directory "
+    CommandInfo_Arr["<Help>"] :=  " ViATc Help"
+    CommandInfo_Arr["<Setting>"] := " VIATC Settings"
+    CommandInfo_Arr["<ToggleTC>"] :=" Show / Hide TC"
+    CommandInfo_Arr["<ToggleViATc>"] :=" Enable / Disable most of ViATc, global shortcuts will still work. For disabling all use <ViATcVimOff> "
+    CommandInfo_Arr["<ViATcVimOff>"] :=" Switch-off all ViATc functionality till Esc will switch on. This is more than <ToggleViATc>"
+    CommandInfo_Arr["<Enter>"] :=" Enter does a lot of advanced checks,  use <Return> for simplicity"
+    CommandInfo_Arr["<Return>"] :=" Just sends an Enter key"
+    CommandInfo_Arr["<SingleRepeat>"] :=" Repeat the last command "
+    CommandInfo_Arr["<Esc>"] :=" Reset and send ESC"
+    CommandInfo_Arr["<CapsLock>"] :=" Toggle CapsLock"
+    CommandInfo_Arr["<CapsLockOn>"] :=" CapsLock On"
+    CommandInfo_Arr["<CapsLockOff>"] :=" CapsLock Off"
+    CommandInfo_Arr["<BackupViATcIniFile>"] :=" Backup viatc.ini file "
+    CommandInfo_Arr["<EditViATcIniFile>"] :=" Edit viatc.ini file "
+    CommandInfo_Arr["<BackupMarksFile>"] :=" Backup marks.ini file "
+    CommandInfo_Arr["<EditMarksFile>"] :=" Edit marks.ini file "
+    CommandInfo_Arr["<BackupTCIniFile>"] :=" Backup wincmd.ini file that belongs to TC"
+    CommandInfo_Arr["<EditTCIniFile>"] :=" Edit wincmd.ini file that belongs to TC"
+    CommandInfo_Arr["<BackupUserFile>"] :=" Backup user.ahk file "
+    CommandInfo_Arr["<EditUserFile>"] :=" Edit user.ahk file"
+    CommandInfo_Arr["<Num0>"] :=" numerical 0, can be used for repeats in 10 j "
+    CommandInfo_Arr["<Num1>"] :=" numerical 1, can be used for repeats in 10 j "
+    CommandInfo_Arr["<Num2>"] :=" numerical 2"
+    CommandInfo_Arr["<Num3>"] :=" numerical 3"
+    CommandInfo_Arr["<Num4>"] :=" numerical 4"
+    CommandInfo_Arr["<Num5>"] :=" numerical 5"
+    CommandInfo_Arr["<Num6>"] :=" numerical 6"
+    CommandInfo_Arr["<Num7>"] :=" numerical 7"
+    CommandInfo_Arr["<Num8>"] :=" numerical 8"
+    CommandInfo_Arr["<Num9>"] :=" numerical 9"
+    CommandInfo_Arr["<Down>"] :=" Down "
+    CommandInfo_Arr["<Up>"] :=" Up "
+    CommandInfo_Arr["<Left>"] :=" Left"
+    CommandInfo_Arr["<Right>"] :=" Right"
+    CommandInfo_Arr["<DownSelect>"] :=" Select Down "
+    CommandInfo_Arr["<UpSelect>"] :=" Select Up"
+    CommandInfo_Arr["<Home>"] :=" Go to the first line, Equivalent to Home key"
+    CommandInfo_Arr["<Half>"] :=" Go to the middle of the list (this doesn't work properly)"
+    CommandInfo_Arr["<End>"] :=" Go to last line, Equivalent to End key "
+    CommandInfo_Arr["<PageUp>"] :=" Page Up "
+    CommandInfo_Arr["<PageDown>"] :=" Page Down "
+    CommandInfo_Arr["<ForceDel>"] :=" Forced Delete, like shift+delete ignores recycle bin"
+    CommandInfo_Arr["<Mark>"] :=" Marks like in Vim, Mark the current folder with ma, use 'a to go to the corresponding mark "
+    CommandInfo_Arr["<RestoreLastMark>"] :=" Restore the last overwritten mark "
+    CommandInfo_Arr["<SetTitleAsDateTime>"] :=" Set the TC title as DateTime"
+    CommandInfo_Arr["<CheckForUpdates>"] :=" Check for the ViATc updates "
+    CommandInfo_Arr["<ListMark>"] :=" Offer to use marks created earlier by m like in Vim "
+    CommandInfo_Arr["<ListMarksTooltip>"] :=" Show all marks in a tooltip (show only, not able to use)"
+    CommandInfo_Arr["<Internetsearch>"] :=" Use the default internet browser to search for the current file or folder"
+    CommandInfo_Arr["<azHistory>"] :=" Folder history menu, A-Z selection "
+    CommandInfo_Arr["<azCmdHistory>"] :=" View the command history "
+    CommandInfo_Arr["<ListMapKey>"] :=" Show custom mapping keys. It's better to just open Settings window instead. "
+    CommandInfo_Arr["<ListMapKeyMultiColumn>"] :=" Show custom mapping keys in columns. It's better to just open Settings window instead. "
+    CommandInfo_Arr["<WinMaxLeft>"] :=" Maximize left panel "
+    CommandInfo_Arr["<WinMaxRight>"] :=" Maximize right panel "
+    CommandInfo_Arr["<AlwayOnTop>"] :=" TC always on top. Toggle "
+    CommandInfo_Arr["<Transparent>"] :=" TC Transparent. See-through. Toggle "
+    CommandInfo_Arr["<DeleteLHistory>"] :=" Delete history of the left folder "
+    CommandInfo_Arr["<DeleteRHistory>"] :=" Delete history of the right folder "
+    CommandInfo_Arr["<DelCmdHistory>"] :=" Delete command-line history "
+    CommandInfo_Arr["<GoLastTab>"] :=" Go to the last tab "
+    CommandInfo_Arr["<TCFullScreenAlmost>"] :=" TC almost full screen. Windows taskbar still visible"
+    CommandInfo_Arr["<TCFullScreen>"] :=" TC full screen. "
+    CommandInfo_Arr["<TCFullScreenWithExePlugin>"] :=" TC full screen. An external exe program is required, You'll be asked to download. "
+    CommandInfo_Arr["<azTab>"] := " a-z tab selection (works only in 32 bit TC with a nasty error on first use and in 64 bit TC it is unavailable)"
+    CommandInfo_Arr["<SrcComments>"] :=" Source window :  Show file comments "
+    CommandInfo_Arr["<SrcShort>"] :=" Source window :  List "
+    CommandInfo_Arr["<SrcLong>"] :=" Source window :  Details "
+    CommandInfo_Arr["<SrcTree>"] :=" Source window :  Folder Tree "
+    CommandInfo_Arr["<SrcQuickview>"] :=" Source window :  Quick View "
+    CommandInfo_Arr["<VerticalPanels>"] :=" Vertical / Horizontal arrangement "
+    CommandInfo_Arr["<WidePanelToggle>"] :=" One 100% Wide Horizontal panel. Toggle"
+    CommandInfo_Arr["<SrcQuickInternalOnly>"] :=" Source window :  Quick View ( No plugins )"
+    CommandInfo_Arr["<SrcHideQuickview>"] :=" Source window :  Close the Quick View window "
+    CommandInfo_Arr["<SrcExecs>"] :=" Source window :  Executable file "
+    CommandInfo_Arr["<SrcAllFiles>"] :=" Source window :  All files "
+    CommandInfo_Arr["<SrcUserSpec>"] :=" Source window :  The last selected file "
+    CommandInfo_Arr["<SrcUserDef>"] :=" Source window :  Custom type "
+    CommandInfo_Arr["<SrcByName>"] :=" Source window :  Sort by file name "
+    CommandInfo_Arr["<SrcByExt>"] :=" Source window :  Sort by extension "
+    CommandInfo_Arr["<SrcBySize>"] :=" Source window :  Sort by size "
+    CommandInfo_Arr["<SrcByDateTime>"] :=" Source window :  Sort by date and time "
+    CommandInfo_Arr["<SrcUnsorted>"] :=" Source window :  Not sorted "
+    CommandInfo_Arr["<SrcNegOrder>"] :=" Source window :  Reverse sort "
+    CommandInfo_Arr["<SrcOpenDrives>"] :=" Source window :  Open the drive list "
+    CommandInfo_Arr["<SrcThumbs>"] :=" Source window :  Thumbnails "
+    CommandInfo_Arr["<SrcCustomViewMenu>"] :=" Source window :  Customize the view menu "
+    CommandInfo_Arr["<SrcPathFocus>"] :=" Source window :  Focus on the path "
+    CommandInfo_Arr["<LeftComments>"] :=" Left window :  Show file comments "
+    CommandInfo_Arr["<LeftShort>"] :=" Left window :  List "
+    CommandInfo_Arr["<LeftLong>"] :=" Left window :  Details "
+    CommandInfo_Arr["<LeftTree>"] :=" Left window :  Folder Tree "
+    CommandInfo_Arr["<LeftQuickview>"] :=" Left window :  Quick View "
+    CommandInfo_Arr["<LeftQuickInternalOnly>"] :=" Left window :  Quick View ( No plugins )"
+    CommandInfo_Arr["<LeftHideQuickview>"] :=" Left window :  Close the Quick View window "
+    CommandInfo_Arr["<LeftExecs>"] :=" Left window :  executable file "
+    CommandInfo_Arr["<LeftAllFiles>"] :=" Left window :  All files "
+    CommandInfo_Arr["<LeftUserSpec>"] :=" Left window :  The last selected file "
+    CommandInfo_Arr["<LeftUserDef>"] :=" Left window :  Custom type "
+    CommandInfo_Arr["<LeftByName>"] :=" Left window :  Sort by file name "
+    CommandInfo_Arr["<LeftByExt>"] :=" Left window :  Sort by extension "
+    CommandInfo_Arr["<LeftBySize>"] :=" Left window :  Sort by size "
+    CommandInfo_Arr["<LeftByDateTime>"] :=" Left window :  Sort by date and time "
+    CommandInfo_Arr["<LeftUnsorted>"] :=" Left window :  Not sorted "
+    CommandInfo_Arr["<LeftNegOrder>"] :=" Left window :  Reverse sort "
+    CommandInfo_Arr["<LeftOpenDrives>"] :=" Left window :  Open the drive list "
+    CommandInfo_Arr["<LeftPathFocus>"] :=" Left window :  Focus on the path "
+    CommandInfo_Arr["<LeftDirBranch>"] :=" Left window :  Expand all folders "
+    CommandInfo_Arr["<LeftDirBranchSel>"] :=" Left window :  Only the selected folder is expanded "
+    CommandInfo_Arr["<LeftThumbs>"] :=" window :  Thumbnails "
+    CommandInfo_Arr["<LeftCustomViewMenu>"] :=" window :  Customize the view menu "
+    CommandInfo_Arr["<RightComments>"] :=" Right window :  Show file comments "
+    CommandInfo_Arr["<RightShort>"] :=" Right window :  List "
+    CommandInfo_Arr["<RightLong>"] :=" details "
+    CommandInfo_Arr["<RightTre>"] :=" Right window :  Folder Tree "
+    CommandInfo_Arr["<RightQuickvie>"] :=" Right window :  Quick View "
+    CommandInfo_Arr["<RightQuickInternalOnl>"] :=" Right window :  Quick View ( No plugins )"
+    CommandInfo_Arr["<RightHideQuickvie>"] :=" Right window :  Close the Quick View window "
+    CommandInfo_Arr["<RightExec>"] :=" Right window :  executable file "
+    CommandInfo_Arr["<RightAllFile>"] :=" Right window :  All files "
+    CommandInfo_Arr["<RightUserSpe>"] :=" Right window :  The last selected file "
+    CommandInfo_Arr["<RightUserDe>"] :=" Right window :  Custom type "
+    CommandInfo_Arr["<RightByNam>"] :=" Right window :  Sort by file name "
+    CommandInfo_Arr["<RightByEx>"] :=" Right window :  Sort by extension "
+    CommandInfo_Arr["<RightBySiz>"] :=" Right window :  Sort by size "
+    CommandInfo_Arr["<RightByDateTim>"] :=" Right window :  Sort by date and time "
+    CommandInfo_Arr["<RightUnsorte>"] :=" Right window :  Not sorted "
+    CommandInfo_Arr["<RightNegOrde>"] :=" Right window :  Reverse sort "
+    CommandInfo_Arr["<RightOpenDrive>"] :=" Right window :  Open the drive list "
+    CommandInfo_Arr["<RightPathFocu>"] :=" Right window :  Focus on the path "
+    CommandInfo_Arr["<RightDirBranch>"] :=" Right window :  Expand all folders "
+    CommandInfo_Arr["<RightDirBranchSel>"] :=" Right window :  Only the selected folder is expanded "
+    CommandInfo_Arr["<RightThumb>"] :=" Right window :  Thumbnails "
+    CommandInfo_Arr["<RightCustomViewMen>"] :=" Right window :  Customize the view menu "
+    CommandInfo_Arr["<List>"] :=" Lister ( use the lister program to view )"
+    CommandInfo_Arr["<ListInternalOnly>"] :=" Lister ( use the lister program, but not plugin / multimedia )"
+    CommandInfo_Arr["<Edit>"] :=" edit "
+    CommandInfo_Arr["<Copy>"] :=" copy "
+    CommandInfo_Arr["<CopySamepanel>"] :=" Copy to the current window "
+    CommandInfo_Arr["<CopyOtherpanel>"] :=" Copy to another window "
+    CommandInfo_Arr["<RenMov>"] :=" Rename / Move "
+    CommandInfo_Arr["<MkDir>"] :=" New Folder "
+    CommandInfo_Arr["<Delete>"] :=" Delete "
+    CommandInfo_Arr["<TestArchive>"] :=" Test compression package "
+    CommandInfo_Arr["<PackFiles>"] :=" Compressed file "
+    CommandInfo_Arr["<UnpackFiles>"] :=" Unzip files "
+    CommandInfo_Arr["<RenameOnly>"] :=" Rename (Shift+F6)"
+    CommandInfo_Arr["<RenameSingleFile>"] :=" Rename current file "
+    CommandInfo_Arr["<MoveOnly>"] :=" Move (F6)"
+    CommandInfo_Arr["<Properties>"] :=" Display properties "
+    CommandInfo_Arr["<CreateShortcut>"] :=" Create Shortcut "
+    CommandInfo_Arr["<OpenAsUser>"] :=" Run the file under cursor as onother user "
+    CommandInfo_Arr["<Split>"] :=" Split files "
+    CommandInfo_Arr["<Combine>"] :=" Merge documents "
+    CommandInfo_Arr["<Encode>"] :=" Encoding file (MIME/UUE/XXE  format )"
+    CommandInfo_Arr["<Decode>"] :=" Decode the file (MIME/UUE/XXE/BinHex  format )"
+    CommandInfo_Arr["<CRCcreate>"] :=" Create a check file "
+    CommandInfo_Arr["<CRCcheck>"] :=" Verify checksum "
+    CommandInfo_Arr["<SetAttrib>"] :=" Change attributes "
+    CommandInfo_Arr["<Config>"] :=" Configuration :  layout "
+    CommandInfo_Arr["<DisplayConfig>"] :=" Configuration :  display "
+    CommandInfo_Arr["<IconConfig>"] :=" Configuration :  icon "
+    CommandInfo_Arr["<FontConfig>"] :=" Configuration :  Font "
+    CommandInfo_Arr["<ColorConfig>"] :=" Configuration :  Colour "
+    CommandInfo_Arr["<ConfTabChange>"] :=" Configuration :  Tabs "
+    CommandInfo_Arr["<DirTabsConfig>"] :=" Configuration :  Folder tab "
+    CommandInfo_Arr["<CustomColumnConfig>"] :=" Configuration :  Custom columns "
+    CommandInfo_Arr["<CustomColumnDlg>"] :=" Change the current custom column "
+    CommandInfo_Arr["<LanguageConfig>"] :=" Configuration :  Language "
+    CommandInfo_Arr["<Config2>"] :=" Configuration :  Operation method "
+    CommandInfo_Arr["<EditConfig>"] :=" Configuration :  edit / view "
+    CommandInfo_Arr["<CopyConfig>"] :=" Configuration :  copy / delete "
+    CommandInfo_Arr["<RefreshConfig>"] :=" Configuration :  Refresh "
+    CommandInfo_Arr["<QuickSearchConfig>"] :=" Configuration :  quick search "
+    CommandInfo_Arr["<FtpConfig>"] :=" Configuration : FTP"
+    CommandInfo_Arr["<PluginsConfig>"] :=" Configuration :  Plugin "
+    CommandInfo_Arr["<ThumbnailsConfig>"] :=" Configuration :  Thumbnails "
+    CommandInfo_Arr["<LogConfig>"] :=" Configuration :  Log file "
+    CommandInfo_Arr["<IgnoreConfig>"] :=" Configuration :  Hide the file "
+    CommandInfo_Arr["<PackerConfig>"] :=" Configuration :  Compression program "
+    CommandInfo_Arr["<ZipPackerConfig>"] :=" Configuration : ZIP  Compression program "
+    CommandInfo_Arr["<Confirmation>"] :=" Configuration :  other / confirm "
+    CommandInfo_Arr["<ConfigSavePos>"] :=" Save location "
+    CommandInfo_Arr["<ButtonConfig>"] :=" Change the toolbar "
+    CommandInfo_Arr["<ConfigSaveSettings>"] :=" Save Settings "
+    CommandInfo_Arr["<ConfigChangeIniFiles>"] :=" Modify the configuration file directly "
+    CommandInfo_Arr["<ConfigSaveDirHistory>"] :=" Save the folder history "
+    CommandInfo_Arr["<ChangeStartMenu>"] :=" Change the Start menu "
+    CommandInfo_Arr["<NetConnect>"] :=" Mapping network drives "
+    CommandInfo_Arr["<NetDisconnect>"] :=" Disconnect the network drive "
+    CommandInfo_Arr["<NetShareDir>"] :=" Share the current folder "
+    CommandInfo_Arr["<NetUnshareDir>"] :=" Cancel folder sharing "
+    CommandInfo_Arr["<AdministerServer>"] :=" Show system shared folder "
+    CommandInfo_Arr["<ShowFileUser>"] :=" Displays the remote user of the local file "
+    CommandInfo_Arr["<GetFileSpace>"] :=" Calculate the footprint "
+    CommandInfo_Arr["<VolumeId>"] :=" Set the tab "
+    CommandInfo_Arr["<VersionInfo>"] :=" Version Information "
+    CommandInfo_Arr["<ExecuteDOS>"] :=" cmd.exe Console with Command Prompt "
+    CommandInfo_Arr["<CompareDirs>"] :=" Compare folders "
+    CommandInfo_Arr["<CompareDirsWithSubdirs>"] :=" Compare folders ( Also mark a subfolder that does not have another window )"
+    CommandInfo_Arr["<ContextMenu>"] :=" Show the context menu "
+    CommandInfo_Arr["<ContextMenuInternal>"] :=" Show the context menu ( Internal association )"
+    CommandInfo_Arr["<ContextMenuInternalCursor>"] :=" Displays the internal context menu for the file at the cursor "
+    ;CommandInfo_Arr["<ShowRemoteMenu>"] :=" Media Center Remote Control Play / Pause key context menu "
+    CommandInfo_Arr["<ShowRemoteMenu>"] :=" Menu with various actions to choose from ..."
+    CommandInfo_Arr["<SyncChangeDir>"] :=" Synchronous directory changing in both windows "
+    CommandInfo_Arr["<EditComment>"] :=" Edit file comments "
+    CommandInfo_Arr["<FocusLeft>"] :=" Focus on the left window "
+    CommandInfo_Arr["<FocusRight>"] :=" Focus on the right window "
+    CommandInfo_Arr["<FocusCmdLine>"] :=" Focus on the command line "
+    CommandInfo_Arr["<FocusButtonBar>"] :=" Focus on the toolbar "
+    CommandInfo_Arr["<CountDirContent>"] :=" Calculate the space occupied by all folders "
+    CommandInfo_Arr["<UnloadPlugins>"] :=" Unload all plugins "
+    CommandInfo_Arr["<DirMatch>"] :=" Mark a new file, Hide the same "
+    CommandInfo_Arr["<Exchange>"] :=" Exchange left and right windows "
+    CommandInfo_Arr["<MatchSrc>"] :=" target  =  source "
+    CommandInfo_Arr["<ReloadSelThumbs>"] :=" Refresh the thumbnail of the selected file "
+    CommandInfo_Arr["<DirectCableConnect>"] :=" Direct cable connection "
+    CommandInfo_Arr["<NTinstallDriver>"] :=" Load  NT  Parallel port driver "
+    CommandInfo_Arr["<NTremoveDriver>"] :=" Unloading  NT  Parallel port driver "
+    CommandInfo_Arr["<PrintDir>"] :=" Print a list of files "
+    CommandInfo_Arr["<PrintDirSub>"] :=" Print a list of files ( Contains subfolders )"
+    CommandInfo_Arr["<PrintFile>"] :=" Print the contents of the file "
+    CommandInfo_Arr["<SpreadSelection>"] :=" Select a set of files "
+    CommandInfo_Arr["<SelectBoth>"] :=" Select :  Files and folders "
+    CommandInfo_Arr["<SelectFiles>"] :=" Select :  Only file "
+    CommandInfo_Arr["<SelectFolders>"] :=" Select :  Only folders "
+    CommandInfo_Arr["<ShrinkSelection>"] :=" Shrink Selection "
+    CommandInfo_Arr["<ClearFiles>"] :=" Clear selected :  Only files "
+    CommandInfo_Arr["<ClearFolders>"] :=" Clear selected:  Only folders "
+    CommandInfo_Arr["<ClearSelCfg>"] :=" Clear selected:  File and / or folders ( Depending on configuration )"
+    CommandInfo_Arr["<SelectAll>"] :=" All selected :  File and / or folders ( Depending on configuration )"
+    CommandInfo_Arr["<SelectAllBoth>"] :=" All selected :  Files and folders "
+    CommandInfo_Arr["<SelectAllFiles>"] :=" All selected :  Only file "
+    CommandInfo_Arr["<SelectAllFolders>"] :=" All selected :  Only folders "
+    CommandInfo_Arr["<ClearAll>"] :=" Clear All  :  Files and folders "
+    CommandInfo_Arr["<ClearAllFiles>"] :=" Clear All  :  Only file "
+    CommandInfo_Arr["<ClearAllFolders>"] :=" Clear All  :  Only folders "
+    CommandInfo_Arr["<ClearAllCfg>"] :=" Clear All  :  File and / or folders ( Depending on configuration )"
+    CommandInfo_Arr["<ExchangeSelection>"] :=" Reverse selection "
+    CommandInfo_Arr["<ExchangeSelBoth>"] :=" Reverse selection :  Files and folders "
+    CommandInfo_Arr["<ExchangeSelFiles>"] :=" Reverse selection :  Only file "
+    CommandInfo_Arr["<ExchangeSelFolders>"] :=" Reverse selection :  Only folders "
+    CommandInfo_Arr["<SelectCurrentExtension>"] :=" Select the same file with the same extension "
+    CommandInfo_Arr["<UnselectCurrentExtension>"] :=" Do not select the same file with the same extension "
+    CommandInfo_Arr["<SelectCurrentName>"] :=" Select the file with the same file name "
+    CommandInfo_Arr["<UnselectCurrentName>"] :=" Do not select files with the same file name "
+    CommandInfo_Arr["<SelectCurrentNameExt>"] :=" Select the file with the same file name and extension "
+    CommandInfo_Arr["<UnselectCurrentNameExt>"] :=" Do not select files with the same file name and extension "
+    CommandInfo_Arr["<SelectCurrentPath>"] :=" Select the same path under the file ( Expand the folder + Search for files )"
+    CommandInfo_Arr["<UnselectCurrentPath>"] :=" Do not choose the same path under the file ( Expand the folder + Search the file )"
+    CommandInfo_Arr["<RestoreSelection>"] :=" Restore the selection list "
+    CommandInfo_Arr["<SaveSelection>"] :=" Save the selection list "
+    CommandInfo_Arr["<SaveSelectionToFile>"] :=" Export the selection list "
+    CommandInfo_Arr["<SaveSelectionToFileA>"] :=" Export the selection list (ANSI)"
+    CommandInfo_Arr["<SaveSelectionToFileW>"] :=" Export the selection list (Unicode)"
+    CommandInfo_Arr["<SaveDetailsToFile>"] :=" Export details "
+    CommandInfo_Arr["<SaveDetailsToFileA>"] :=" Export details (ANSI)"
+    CommandInfo_Arr["<SaveDetailsToFileW>"] :=" Export details (Unicode)"
+    CommandInfo_Arr["<LoadSelectionFromFile>"] :=" Import selection list ( From the file )"
+    CommandInfo_Arr["<LoadSelectionFromClip>"] :=" Import the selection list ( From the clipboard )"
+    CommandInfo_Arr["<EditPermissionInfo>"] :=" Setting permissions (NTFS)"
+    CommandInfo_Arr["<EditAuditInfo>"] :=" Review the document (NTFS)"
+    CommandInfo_Arr["<EditOwnerInfo>"] :=" Get ownership (NTFS)"
+    CommandInfo_Arr["<CutToClipboard>"] :=" Cut the selected file to the clipboard "
+    CommandInfo_Arr["<CopyToClipboard>"] :=" Copy the selected file to the clipboard "
+    CommandInfo_Arr["<PasteFromClipboard>"] :=" Paste from the clipboard to the current folder "
+    CommandInfo_Arr["<CopyNamesToClip>"] :=" Copy the file name "
+    CommandInfo_Arr["<CopyFullNamesToClip>"] :=" Copy the file name and the full path "
+    CommandInfo_Arr["<CopyNetNamesToClip>"] :=" Copy the file name and network path "
+    CommandInfo_Arr["<CopySrcPathToClip>"] :=" Copy the source path "
+    CommandInfo_Arr["<CopyTrgPathToClip>"] :=" Copy the destination path "
+    CommandInfo_Arr["<CopyFileDetailsToClip>"] :=" Copy the file details "
+    CommandInfo_Arr["<CopyFpFileDetailsToClip>"] :=" Copy the file details and the full path "
+    CommandInfo_Arr["<CopyNetFileDetailsToClip>"] :=" Copy file details and network path "
+    CommandInfo_Arr["<FtpConnect>"] :="FTP  connection "
+    CommandInfo_Arr["<FtpNew>"] :=" New  FTP  connection "
+    CommandInfo_Arr["<FtpDisconnect>"] :=" disconnect  FTP  connection "
+    CommandInfo_Arr["<FtpHiddenFiles>"] :=" Show hidden FTP files "
+    CommandInfo_Arr["<FtpAbort>"] :=" Stop the current  FTP  command "
+    CommandInfo_Arr["<FtpResumeDownload>"] :=" FtpResumeDownload "
+    CommandInfo_Arr["<FtpSelectTransferMode>"] :=" Select the transfer mode "
+    CommandInfo_Arr["<FtpAddToList>"] :=" Add to download list "
+    CommandInfo_Arr["<FtpDownloadList>"] :=" FtpDownloadList "
+    CommandInfo_Arr["<GotoPreviousDir>"] :=" GotoPreviousDir "
+    CommandInfo_Arr["<GotoNextDir>"] :=" GotoNextDir "
+    CommandInfo_Arr["<DirectoryHistory>"] :=" Folder history "
+    CommandInfo_Arr["<GotoPreviousLocalDir>"] :=" GotoPreviousLocalDir (non-FTP)"
+    CommandInfo_Arr["<GotoNextLocalDir>"] :=" GotoNextLocalDir (non-FTP)"
+    CommandInfo_Arr["<DirectoryHotlist>"] :=" DirectoryHotlist "
+    CommandInfo_Arr["<GoToRoot>"] :=" Go to the root folder "
+    CommandInfo_Arr["<GoToParent>"] :=" Go to the upper folder "
+    CommandInfo_Arr["<GoToDir>"] :=" Open the folder or archive at the cursor "
+    CommandInfo_Arr["<OpenDesktop>"] :=" desktop "
+    CommandInfo_Arr["<OpenDrives>"] :=" my computer "
+    CommandInfo_Arr["<OpenControls>"] :=" control panel "
+    CommandInfo_Arr["<OpenFonts>"] :=" Font "
+    CommandInfo_Arr["<OpenNetwork>"] :=" OpenNetwork "
+    CommandInfo_Arr["<OpenPrinters>"] :=" printer "
+    CommandInfo_Arr["<OpenRecycled>"] :=" Recycle bin "
+    CommandInfo_Arr["<CDtree>"] :=" Change the folder "
+    CommandInfo_Arr["<TransferLeft>"] :=" Open the folder or the compressed package at the cursor in the left window "
+    CommandInfo_Arr["<TransferRight>"] :=" Open the folder or archive at the cursor in the right window "
+    CommandInfo_Arr["<EditPath>"] :=" Edit the path of the source window "
+    CommandInfo_Arr["<GoToFirstFile>"] :=" The cursor moves to the first file in the list "
+    CommandInfo_Arr["<GotoNextDrive>"] :=" Go to the next drive "
+    CommandInfo_Arr["<GotoPreviousDrive>"] :=" Go to the previous drive "
+    CommandInfo_Arr["<GotoNextSelected>"] :=" Go to the next selected file "
+    CommandInfo_Arr["<GotoPrevSelected>"] :=" Go to the previous selected file "
+    CommandInfo_Arr["<GotoDriveA>"] :=" Go to the drive  A"
+    CommandInfo_Arr["<GotoDriveC>"] :=" Go to the drive  C"
+    CommandInfo_Arr["<GotoDriveD>"] :=" Go to the drive  D"
+    CommandInfo_Arr["<GotoDriveE>"] :=" Go to the drive  E"
+    CommandInfo_Arr["<GotoDriveF>"] :=" Go to the drive  F"
+    CommandInfo_Arr["<GotoDriveG>"] :=" Go to the drive  G"
+    CommandInfo_Arr["<GotoDriveH>"] :=" Go to the drive  H"
+    CommandInfo_Arr["<GotoDriveI>"] :=" Go to the drive  I"
+    CommandInfo_Arr["<GotoDriveJ>"] :=" Go to the drive  J"
+    CommandInfo_Arr["<GotoDriveK>"] :=" You can customize other drives "
+    CommandInfo_Arr["<GotoDriveU>"] :=" Go to the drive  U"
+    CommandInfo_Arr["<GotoDriveZ>"] :=" GotoDriveZ, max 26"
+    CommandInfo_Arr["<HelpIndex>"] :=" Help index "
+    CommandInfo_Arr["<Keyboard>"] :=" TC Keyboard layout, list of TC shortcuts "
+    CommandInfo_Arr["<Register>"] :=" registration message "
+    CommandInfo_Arr["<VisitHomepage>"] :=" access  Totalcmd  website "
+    CommandInfo_Arr["<About>"] :=" About  Total Commander"
+    CommandInfo_Arr["<Exit>"] :=" Exit  Total Commander"
+    CommandInfo_Arr["<Minimize>"] :=" minimize  Total Commander"
+    CommandInfo_Arr["<Maximize>"] :=" maximize  Total Commander"
+    CommandInfo_Arr["<Restore>"] :=" Restore down. Return to normal size "
+    CommandInfo_Arr["<ClearCmdLine>"] :=" Clear the command line "
+    CommandInfo_Arr["<NextCommand>"] :=" Next command "
+    CommandInfo_Arr["<PrevCommand>"] :=" Previous command "
+    CommandInfo_Arr["<AddPathToCmdline>"] :=" Copy the path to the command line "
+    CommandInfo_Arr["<MultiRenameFiles>"] :=" Batch rename "
+    CommandInfo_Arr["<SysInfo>"] :=" system message "
+    CommandInfo_Arr["<OpenTransferManager>"] :=" Background Transfer Manager "
+    CommandInfo_Arr["<SearchFor>"] :=" Search for files "
+    CommandInfo_Arr["<FileSync>"] :=" Synchronize folders "
+    CommandInfo_Arr["<Associate>"] :=" File association "
+    CommandInfo_Arr["<InternalAssociate>"] :=" Define internal associations "
+    CommandInfo_Arr["<CompareFilesByContent>"] :=" Compare the contents of the file "
+    CommandInfo_Arr["<IntCompareFilesByContent>"] :=" Use the internal comparison program "
+    CommandInfo_Arr["<CommandBrowser>"] :=" Browse TC commands. On OK it is copied into clipboard "
+    CommandInfo_Arr["<VisButtonbar>"] :=" Toggle visibility :  toolbar "
+    CommandInfo_Arr["<VisDriveButtons>"] :=" Toggle visibility :  Drive button "
+    CommandInfo_Arr["<VisTwoDriveButtons>"] :=" Toggle visibility :  Two drive button bars "
+    CommandInfo_Arr["<VisFlatDriveButtons>"] :=" Switch :  flat / convex drive button "
+    CommandInfo_Arr["<VisFlatInterface>"] :=" Switch :  flat / Three-dimensional user interface "
+    CommandInfo_Arr["<VisDriveCombo>"] :=" Toggle visibility :  Drive list "
+    CommandInfo_Arr["<VisCurDir>"] :=" Toggle visibility :  Current folder "
+    CommandInfo_Arr["<VisBreadCrumbs>"] :=" Toggle visibility :  Path navigation bar "
+    CommandInfo_Arr["<VisTabHeader>"] :=" Toggle visibility :  Sort tab "
+    CommandInfo_Arr["<VisStatusbar>"] :=" Toggle visibility :  Status Bar "
+    CommandInfo_Arr["<VisCmdLine>"] :=" Toggle visibility :  Command Line "
+    CommandInfo_Arr["<VisKeyButtons>"] :=" Toggle visibility :  Function button "
+    CommandInfo_Arr["<ToggleViatcVim>"] :=" Toggle Viatc Vim Mode "
+    CommandInfo_Arr["<ShowHint>"] :=" Show file prompts "
+    CommandInfo_Arr["<ShowQuickSearch>"] :=" Show the quick search window "
+    CommandInfo_Arr["<SwitchLongNames>"] :=" Toggle visibility :  Long file name display "
+    CommandInfo_Arr["<RereadSource>"] :=" Refresh the source window "
+    CommandInfo_Arr["<ShowOnlySelected>"] :=" Only the selected files are displayed "
+    CommandInfo_Arr["<SwitchHidSys>"] :=" Toggle hidden or system file display "
+    CommandInfo_Arr["<Switch83Names>"] :=" Toggle : 8.3  Type file name lowercase display "
+    CommandInfo_Arr["<SwitchDirSort>"] :=" Toggle :  The folders are sorted by name "
+    CommandInfo_Arr["<DirBranch>"] :=" Expand all folders "
+    CommandInfo_Arr["<DirBranchSel>"] :=" Only the selected folder is expanded "
+    CommandInfo_Arr["<50Percent>"] :=" Set the window divider at 50%"
+    CommandInfo_Arr["<100Percent>"] :=" Set the window divider at 100% (TC 8.0+)"
+    CommandInfo_Arr["<VisDirTabs>"] :=" Toggle visibility :  Folder tab "
+    CommandInfo_Arr["<VisXPThemeBackground>"] :=" Toggle : XP  Theme background "
+    CommandInfo_Arr["<SwitchOverlayIcons>"] :=" Toggle :  Overlay icon display "
+    CommandInfo_Arr["<VisHistHotButtons>"] :=" Toggle visibility :  Folder history and frequently used folder buttons "
+    CommandInfo_Arr["<SwitchWatchDirs>"] :=" Enable / Disable :  The folder is automatically refreshed "
+    CommandInfo_Arr["<SwitchIgnoreList>"] :=" Enable / Disable :  Customize hidden files "
+    CommandInfo_Arr["<SwitchX64Redirection>"] :=" Toggle : 32  Bit system32  Directory redirect (64 Bit  Windows)"
+    CommandInfo_Arr["<SeparateTreeOff>"] :=" Close the separate folder tree panel "
+    CommandInfo_Arr["<SeparateTree1>"] :=" A separate folder tree panel "
+    CommandInfo_Arr["<SeparateTree2>"] :=" Two separate folder tree panels "
+    CommandInfo_Arr["<SwitchSeparateTree>"] :=" Toggle the independent folder tree panel status "
+    CommandInfo_Arr["<ToggleSeparateTree1>"] :=" Toggle visibility :  A separate folder tree panel "
+    CommandInfo_Arr["<ToggleSeparateTree2>"] :=" Toggle visibility :  Two separate folder tree panels "
+    CommandInfo_Arr["<UserMenu1>"] :=" User menu  1"
+    CommandInfo_Arr["<UserMenu2>"] :=" User menu  2"
+    CommandInfo_Arr["<UserMenu3>"] :=" User menu  3"
+    CommandInfo_Arr["<UserMenu4>"] :="..."
+    CommandInfo_Arr["<UserMenu5>"] :="5"
+    CommandInfo_Arr["<UserMenu6>"] :="6"
+    CommandInfo_Arr["<UserMenu7>"] :="7"
+    CommandInfo_Arr["<UserMenu8>"] :="8"
+    CommandInfo_Arr["<UserMenu9>"] :="9"
+    CommandInfo_Arr["<UserMenu10>"] :=" You can define other user menus "
+    CommandInfo_Arr["<OpenNewTab>"] :=" New tab "
+    CommandInfo_Arr["<OpenNewTabBg>"] :=" New tab ( In the background )"
+    CommandInfo_Arr["<OpenDirInNewTab>"] :=" New tab ( And open the folder at the cursor )"
+    CommandInfo_Arr["<OpenDirInNewTabOther>"] :=" New tab ( Open the folder in another window )"
+    CommandInfo_Arr["<SwitchToNextTab>"] :=" Next tab (Ctrl+Tab)"
+    CommandInfo_Arr["<SwitchToPreviousTab>"] :=" Previous tab (Ctrl+Shift+Tab)"
+    CommandInfo_Arr["<CloseCurrentTab>"] :=" Close the Current tab "
+    CommandInfo_Arr["<CloseAllTabs>"] :=" Close All tabs "
+    CommandInfo_Arr["<DirTabsShowMenu>"] :=" Display the tab menu "
+    CommandInfo_Arr["<ToggleLockCurrentTab>"] :=" Lock/Unlock the current tab "
+    CommandInfo_Arr["<ToggleLockDcaCurrentTab>"] :=" Lock/Unlock the current tab ( You can change the folder )"
+    CommandInfo_Arr["<ExchangeWithTabs>"] :=" Exchange left and right windows and their tabs "
+    CommandInfo_Arr["<GoToLockedDir>"] :=" Go to the root folder of the locked tab "
+    CommandInfo_Arr["<SrcActivateTab1>"] :=" Source window :  Activate the tab  1"
+    CommandInfo_Arr["<SrcActivateTab2>"] :=" Source window :  Activate the tab  2"
+    CommandInfo_Arr["<SrcActivateTab3>"] :="..."
+    CommandInfo_Arr["<SrcActivateTab4>"] :=" max 99 "
+    CommandInfo_Arr["<SrcActivateTab5>"] :="5"
+    CommandInfo_Arr["<SrcActivateTab6>"] :="6"
+    CommandInfo_Arr["<SrcActivateTab7>"] :="7"
+    CommandInfo_Arr["<SrcActivateTab8>"] :="8"
+    CommandInfo_Arr["<SrcActivateTab9>"] :="9"
+    CommandInfo_Arr["<SrcActivateTab10>"] :="0"
+    CommandInfo_Arr["<TrgActivateTab1>"] :=" Target window :  Activate the tab  1"
+    CommandInfo_Arr["<TrgActivateTab2>"] :=" Target window :  Activate the tab  2"
+    CommandInfo_Arr["<TrgActivateTab3>"] :="..."
+    CommandInfo_Arr["<TrgActivateTab4>"] :=" max 99 "
+    CommandInfo_Arr["<TrgActivateTab5>"] :="5"
+    CommandInfo_Arr["<TrgActivateTab6>"] :="6"
+    CommandInfo_Arr["<TrgActivateTab7>"] :="7"
+    CommandInfo_Arr["<TrgActivateTab8>"] :="8"
+    CommandInfo_Arr["<TrgActivateTab9>"] :="9"
+    CommandInfo_Arr["<TrgActivateTab10>"] :="0"
+    CommandInfo_Arr["<LeftActivateTab1>"] :=" Left window :  Activate the tab  1"
+    CommandInfo_Arr["<LeftActivateTab2>"] :=" Left window :  Activate the tab  2"
+    CommandInfo_Arr["<LeftActivateTab3>"] :="..."
+    CommandInfo_Arr["<LeftActivateTab4>"] :=" max 99 "
+    CommandInfo_Arr["<LeftActivateTab5>"] :="5"
+    CommandInfo_Arr["<LeftActivateTab6>"] :="6"
+    CommandInfo_Arr["<LeftActivateTab7>"] :="7"
+    CommandInfo_Arr["<LeftActivateTab8>"] :="8"
+    CommandInfo_Arr["<LeftActivateTab9>"] :="9"
+    CommandInfo_Arr["<LeftActivateTab10>"] :="0"
+    CommandInfo_Arr["<RightActivateTab1>"] :=" Right window :  Activate the tab  1"
+    CommandInfo_Arr["<RightActivateTab2>"] :=" Right window :  Activate the tab  2"
+    CommandInfo_Arr["<RightActivateTab3>"] :="..."
+    CommandInfo_Arr["<RightActivateTab4>"] :=" max 99 "
+    CommandInfo_Arr["<RightActivateTab5>"] :="5"
+    CommandInfo_Arr["<RightActivateTab6>"] :="6"
+    CommandInfo_Arr["<RightActivateTab7>"] :="7"
+    CommandInfo_Arr["<RightActivateTab8>"] :="8"
+    CommandInfo_Arr["<RightActivateTab9>"] :="9"
+    CommandInfo_Arr["<RightActivateTab10>"] :="0"
+    CommandInfo_Arr["<SrcSortByCol1>"] :=" Source window :  Sort by column 1"
+    CommandInfo_Arr["<SrcSortByCol2>"] :=" Source window :  Sort by column 2"
+    CommandInfo_Arr["<SrcSortByCol3>"] :="..."
+    CommandInfo_Arr["<SrcSortByCol4>"] :=" max 99  Column "
+    CommandInfo_Arr["<SrcSortByCol5>"] :="5"
+    CommandInfo_Arr["<SrcSortByCol6>"] :="6"
+    CommandInfo_Arr["<SrcSortByCol7>"] :="7"
+    CommandInfo_Arr["<SrcSortByCol8>"] :="8"
+    CommandInfo_Arr["<SrcSortByCol9>"] :="9"
+    CommandInfo_Arr["<SrcSortByCol10>"] :="0"
+    CommandInfo_Arr["<SrcSortByCol99>"] :="9"
+    CommandInfo_Arr["<TrgSortByCol1>"] :=" Target window :  Sort by column 1"
+    CommandInfo_Arr["<TrgSortByCol2>"] :=" Target window :  Sort by column 2"
+    CommandInfo_Arr["<TrgSortByCol3>"] :="..."
+    CommandInfo_Arr["<TrgSortByCol4>"] :=" max 99  Column "
+    CommandInfo_Arr["<TrgSortByCol5>"] :="5"
+    CommandInfo_Arr["<TrgSortByCol6>"] :="6"
+    CommandInfo_Arr["<TrgSortByCol7>"] :="7"
+    CommandInfo_Arr["<TrgSortByCol8>"] :="8"
+    CommandInfo_Arr["<TrgSortByCol9>"] :="9"
+    CommandInfo_Arr["<TrgSortByCol10>"] :="0"
+    CommandInfo_Arr["<TrgSortByCol99>"] :="9"
+    CommandInfo_Arr["<LeftSortByCol1>"] :=" Left window :  Sort by column 1"
+    CommandInfo_Arr["<LeftSortByCol2>"] :=" Left window :  Sort by column 2"
+    CommandInfo_Arr["<LeftSortByCol3>"] :="..."
+    CommandInfo_Arr["<LeftSortByCol4>"] :=" max 99  Column "
+    CommandInfo_Arr["<LeftSortByCol5>"] :="5"
+    CommandInfo_Arr["<LeftSortByCol6>"] :="6"
+    CommandInfo_Arr["<LeftSortByCol7>"] :="7"
+    CommandInfo_Arr["<LeftSortByCol8>"] :="8"
+    CommandInfo_Arr["<LeftSortByCol9>"] :="9"
+    CommandInfo_Arr["<LeftSortByCol10>"] :="0"
+    CommandInfo_Arr["<LeftSortByCol99>"] :="9"
+    CommandInfo_Arr["<RightSortByCol1>"] :=" Right window :  Sort by column 1"
+    CommandInfo_Arr["<RightSortByCol2>"] :=" Right window :  Sort by column 2"
+    CommandInfo_Arr["<RightSortByCol3>"] :="..."
+    CommandInfo_Arr["<RightSortByCol4>"] :=" max 99  Column "
+    CommandInfo_Arr["<RightSortByCol5>"] :="5"
+    CommandInfo_Arr["<RightSortByCol6>"] :="6"
+    CommandInfo_Arr["<RightSortByCol7>"] :="7"
+    CommandInfo_Arr["<RightSortByCol8>"] :="8"
+    CommandInfo_Arr["<RightSortByCol9>"] :="9"
+    CommandInfo_Arr["<RightSortByCol10>"] :="0"
+    CommandInfo_Arr["<RightSortByCol99>"] :="9"
+    CommandInfo_Arr["<SrcCustomView1>"] :=" Source window :  Customize the column view  1"
+    CommandInfo_Arr["<SrcCustomView2>"] :=" Source window :  Customize the column view  2"
+    CommandInfo_Arr["<SrcCustomView3>"] :="..."
+    CommandInfo_Arr["<SrcCustomView4>"] :=" 29 max"
+    CommandInfo_Arr["<SrcCustomView5>"] :="5"
+    CommandInfo_Arr["<SrcCustomView6>"] :="6"
+    CommandInfo_Arr["<SrcCustomView7>"] :="7"
+    CommandInfo_Arr["<SrcCustomView8>"] :="8"
+    CommandInfo_Arr["<SrcCustomView9>"] :="9"
+    CommandInfo_Arr["<LeftCustomView1>"] :=" Left window :  Customize the column view  1"
+    CommandInfo_Arr["<LeftCustomView2>"] :=" Left window :  Customize the column view  2"
+    CommandInfo_Arr["<LeftCustomView3>"] :="..."
+    CommandInfo_Arr["<LeftCustomView4>"] :=" 29 max"
+    CommandInfo_Arr["<LeftCustomView5>"] :="5"
+    CommandInfo_Arr["<LeftCustomView6>"] :="6"
+    CommandInfo_Arr["<LeftCustomView7>"] :="7"
+    CommandInfo_Arr["<LeftCustomView8>"] :="8"
+    CommandInfo_Arr["<LeftCustomView9>"] :="9"
+    CommandInfo_Arr["<RightCustomView1>"] :=" Right window :  Customize the column view  1"
+    CommandInfo_Arr["<RightCustomView2>"] :=" Right window :  Customize the column view  2"
+    CommandInfo_Arr["<RightCustomView3>"] :="..."
+    CommandInfo_Arr["<RightCustomView4>"] :=" 29 max"
+    CommandInfo_Arr["<RightCustomView5>"] :="5"
+    CommandInfo_Arr["<RightCustomView6>"] :="6"
+    CommandInfo_Arr["<RightCustomView7>"] :="7"
+    CommandInfo_Arr["<RightCustomView8>"] :="8"
+    CommandInfo_Arr["<RightCustomView9>"] :="9"
+    CommandInfo_Arr["<SrcNextCustomView>"] :=" Source window :  Next custom view "
+    CommandInfo_Arr["<SrcPrevCustomView>"] :=" Source window :  Previous view "
+    CommandInfo_Arr["<TrgNextCustomView>"] :=" Target window :  Next custom view "
+    CommandInfo_Arr["<TrgPrevCustomView>"] :=" Target window :  Previous view "
+    CommandInfo_Arr["<LeftNextCustomView>"] :=" Left window :  Next custom view "
+    CommandInfo_Arr["<LeftPrevCustomView>"] :=" Left window :  Previous view "
+    CommandInfo_Arr["<RightNextCustomView>"] :=" Right window :  Next custom view "
+    CommandInfo_Arr["<RightPrevCustomView>"] :=" Right window :  Previous view "
+    CommandInfo_Arr["<LoadAllOnDemandFields>"] :=" All files are loaded with notes as needed "
+    CommandInfo_Arr["<LoadSelOnDemandFields>"] :=" Only selected files are loading notes as needed "
+    CommandInfo_Arr["<ContentStopLoadFields>"] :=" Stop background loading notes "
+    CommandInfo_Arr["<SwitchDarkmode>"] :="Toggle dark mode on and off"
+    CommandInfo_Arr["<EnableDarkmode>"] :="Turn dark mode on"
+    CommandInfo_Arr["<DisableDarkmode>"] :="Turn dark mode off. Light mode"
 }
 
 ; ---- Action Codes{{{3
@@ -7533,14 +7590,14 @@ IsInternetConnected(flag=0x40) {
 Return DllCall("Wininet.dll\InternetGetConnectedState", "Str", flag,"Int",0)
 }
 
+
+
+
+
+
+
+
+
 ; vim: fdm=marker set foldlevel=2
-
-
-
-
-
-
-
-
 ; vim set nofoldenable  ; temporarily disables folding when opening the file, but all folds are restored as soon as you hit zc
 ;-----------------------------
