@@ -1,23 +1,24 @@
-Global Date := "2021/01/29"
-Global Version := "0.5.5en beta 31"
+Global Version := "0.5.5en"
+Global Date := "2021/04/15"
 ; Author of the original Chinese version is linxinhong https://github.com/linxinhong
 ; Translator and maintainer of the English version is magicstep https://github.com/magicstep  
-;                    you can contact me with the same nickname @gmail.com
-; This script works on Windows with AutoHotkey installed only as an addition to 
-;   "Total Commander" - the file manager from www.ghisler.com  
-; ViATc tries to resemble the work-flow of Vim and web browser plugins
-;   like Vimium or better yet SurfingKeys.
+; you can contact me with the same nickname @gmail.com
+; This script works on Windows with AutoHotkey installed, and only as an addition to 
+; "Total Commander" - the file manager from www.ghisler.com  
+; ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium 
+; or better yet SurfingKeys.
 
-; tripple underscores ___ question ??? and exclamations !!! are markers for debugging
+; tripple ___  ??? and !!! are markers for debugging
 ; tripple curly braces are for line folding in vim
-; --- the main script {{{1
+; {{{1
 #SingleInstance Force
 #Persistent
 #NoEnv
 #NoTrayIcon
 ; user.ahk file is for custom snippets and any addition to the viatc.ahk script
 ; *i = ignore any read failure
-#include *i user.ahk
+#include *i A_ScriptDir . "\user.ahk"
+;#include *i user.ahk
 
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 Setkeydelay -1
@@ -33,7 +34,7 @@ Global IconPath := A_ScriptDir . "\viatc.ico"
 Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
 Global HistoryOfRenamePath := A_ScriptDir . "\history_of_rename.txt"
 Global MarksPath := A_ScriptDir . "\marks.ini"
-Global UserFilePath :=  A_ScriptDir . "\user.ahk"
+;Global UserFilePath :=  A_ScriptDir . "\user.ahk"
 KeyTemp :=
 Repeat :=
 ViatcCommand :=
@@ -1334,7 +1335,7 @@ ListMapKey()
 	}
 
     LM = %InfoLine%%LM%
-    MsgBox  %Lm%
+    MsgBox  %LM%
     ;; show tooltip
 	;ControlGetPos,xn,yn,,hn,%TCEdit%,AHK_CLASS TTOTAL_CMD
 	;yn := yn - hn - ( ListMap0 * 8 ) - 2
@@ -1641,7 +1642,7 @@ Return
 FancyRCreateGui()
 {
 	Static WM_CHAR := 0x102
-	Global GetName
+	Global GetName :=
     Global UseSystemClipboard
 	WinClose,AHK_ID %FancyR_ID%
 	PostMessage 1075, 1007, 0,, ahk_class TTOTAL_CMD
@@ -1660,8 +1661,16 @@ FancyRCreateGui()
 	}
         ;MsgBox  ThisControl %ThisControl% ;!!!
         ;MsgBox  GetName %GetName% ;!!!
+    ;  ".." gives empty GetName
 	If Not GetName
         Return
+
+	If GetName == ".."
+    {
+       MsgBox ha ha ..
+
+       Return
+    }
 
     IniRead,HistoryOfRename,%ViatcIni%,Configuration,HistoryOfRename
     If HistoryOfRename
@@ -2171,7 +2180,7 @@ FancyR_Help()
 If you can't type, then press i to edit properly in so called "Insert mode"
 To always start in "Insert mode" open "Defaults" menu and select "Insert mode at start"
 To disable this whole "Fancy rename" open Settings->General  and uncheck "Fancy rename" near the bottom
-To avoid the fancy rename, even if it is enabled, then either use  Shift+r  or   uncomment this line in the viatc.ini file:
+To avoid the fancy rename, even if it is enabled, then either use  Shift+r  or   uncomment the following line in the viatc.ini file:
 r=<RenameSingleFile>
 )
 
@@ -2192,7 +2201,7 @@ FancyR_Keys()
 {
 	rename_keys =
 (
- -----  simple Vim emulator -----
+ ----- keys for a simple Vim emulator -----
 q :  Quit rename without saving (in Normal and Visual mode)
 i :  Insert mode
 I :  Insert at front
@@ -4219,8 +4228,9 @@ Setting() ; --- {{{1
 			LV_Add(vis,Num,Scope,Key,Action,Info)
 		}
 	}
-    ;add last line because it is often obscured by a scrollbar
-    LV_Add(vis," ","","","","empty line because it is often obscured by a scrollbar")
+    ; add last line because it is often obscured by a scrollbar
+    LV_Add(vis," ","","","","")
+    ;LV_Add(vis," ","","","","empty line because it is often obscured by a scrollbar")
 
 	Gui,Tab,3
 	Gui,Add,GroupBox,x16 y32 h480 w390, 
@@ -4252,22 +4262,22 @@ Setting() ; --- {{{1
 	;Gui,Add,GroupBox,x16 y32 h170 w390, Marks
 	Gui,Add,GroupBox,x16 y32 h480 w390, ; whole tab
 
-    Gui,Add,GroupBox,x20 y46 h37 w180 , ; marks.ini file
+    Gui,Add,GroupBox,x20 y46 h37 w174 , ; marks.ini file
     Gui,Add,Text,x33 y59 w60, marks.ini :
     Gui,Add,Button,x90 y55 w54 center g<BackupMarksFile>, &1 Backup
 	Gui,Add,Button,x150 y55 w40 g<EditMarksFile>, &2 Edit
 
-	Gui,Add,GroupBox,x226 y46 h37 w174, ;wincmd.ini
-    Gui,Add,Text,x233 y59 w50, wincmd.ini:
-    Gui,Add,Button,x292 y55 w54 center g<BackupTCIniFile>,&3 Backup
-	Gui,Add,Button,x352 y55 w40 g<EditTCIniFile>, &4 Edit
+	Gui,Add,GroupBox,x20 y86 h37 w174, ;wincmd.ini
+    Gui,Add,Text,x33 y99 w60, wincmd.ini:
+    Gui,Add,Button,x90 y95 w54 center g<BackupTCIniFile>,&3 Backup
+	Gui,Add,Button,x150 y95 w40 g<EditTCIniFile>, &4 Edit
 
-    Gui,Add,GroupBox,x20 y86 h37 w180 , ; user.ahk file
-    Gui,Add,Text,x33 y99 w60, user.ahk :
-    Gui,Add,Button,x90 y95 w54 center g<BackupUserFile>, &5 Backup
-	Gui,Add,Button,x150 y95 w40 g<EditUserFile>, &6 Edit
+    Gui,Add,GroupBox,x226 y46 h37 w174 , ; user.ahk file
+    Gui,Add,Text,x233 y59 w50, user.ahk :
+    Gui,Add,Button,x292 y55 w54 center g<BackupUserFile>, &5 Backup
+	Gui,Add,Button,x352 y55 w40 g<EditUserFile>, &6 Edit
 
-	;Gui,Add,Text,x185 y300 h16 center,  &V 
+    ;Gui,Add,Text,x185 y300 h16 center,  &V 
     Gui,Add, Picture, gGreet x170 y280 w60 h-1, %A_ScriptDir%\viatc.ico
 	Gui,Add,Button,x170 y360 w60 gWisdom, &Wisdom
 
@@ -5243,7 +5253,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["W"] :="w >> Small menu `nW >> No mapping "
     HelpInfo_arr["E"] :="e >> e...  (Combo Key, requires another key) `nec >> Compare files by content`nef >> Edit file`neh >> Toggle hidden files`nep >> Edit path in tabbar`n`n`nE >> Edit file prompt"
     HelpInfo_arr["R"] :="r >> Fancy Rename`nR >> Rename (simple default TC, not fancy ViATc) "
-    HelpInfo_arr["T"] :="t >> New tab `nT >> Create a new tab in the background  `n`nctrl+t >>  Go up in QuickSearch (opened by / or ctrl+s)  ctrl+t works the same in real Vim search"
+    HelpInfo_arr["T"] :="t >> New tab `nT >> Create a new tab in the background  `n`nctrl+t >>  Go up in QuickSearch (opened by / or ctrl+s)  ctrl+t works the same in real Vim search,   and ctrl+g is down (mnemonic hint: T is above G) "
     HelpInfo_arr["Y"] :="y >> Copy window like F5  `nY >> Copy the file name and the full path "
     HelpInfo_arr["U"] :="u >> Up a directory `nU >> Up to the root directory "
     HelpInfo_arr["I"] :="i >> Enter `nI >>  Make target = source " ;No mapping "
@@ -5251,7 +5261,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["P"] :="p >> pack files/folders `nP >> unPack "
     HelpInfo_arr["[{"] :="[ >> Select files with the same name `n{ >> Unselect files with the same name "
     HelpInfo_arr["]}"] :="] >> Select files with the same extension `n} >> Unselect files with the same extension "
-    HelpInfo_arr["\|"] :="\ >> Invert all selections for files and folders  `n| >> Clears all selections"
+    HelpInfo_arr["\|"] :="\ >> Invert all selections for files (but not folders, use * for both)  `n| >> Clears all selections"
     ; CapsLock used to sometimes quit in 'fancy rename' instead of going to Vim mode, it is mapped there again
     HelpInfo_arr["CapsLock"] :="CapsLock >> Esc (in some cases it doesn't behave identical"
     HelpInfo_arr["A"] :="a >> (Combo Key, requires another key) Mostly regarding ViATc or files`nah >> ViATc Help`nao >> ViATc Off`nas >> ViATc Setting`naq >> Quit ViATc`nar >> Reload VIATC`nam >> Show file tooltip`nan >> Create a new file`naa >> Select all files but exclude folders`n...`n`n A >>  All selected:  Files and folders "
@@ -5273,8 +5283,8 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["C"] :="c >> (Combo Key, requires another key) `ncc >> Delete `ncf >> Force Delete, like shift+delete ignores recycle bin`nC  >> Console. Run cmd.exe in the current directory"
     HelpInfo_arr["V"] :="v >> Context menu `nV >> View... (Combo Key, requires another key)`n<Shift>vb >> Toggle visibility :  toolbar `n<Shift>vd >> Toggle visibility :  Drive button `n<Shift>vo >> Toggle visibility :  Two drive button bars `n<Shift>vr >> Toggle visibility :  Drive list `n<Shift>vc >> Toggle visibility :  Current folder `n<Shift>vt >> Toggle visibility :  Sort tab `n<Shift>vs >> Toggle visibility :  Status Bar `n<Shift>vn >> Toggle visibility :  Command Line `n<Shift>vf >> Toggle visibility :  Function button `n<Shift>vw >> Toggle visibility :  Folder tab `n "
     HelpInfo_arr["B"] :="b >> Move up a page, Equivalent to PageUp`nB >> Open the tabbed browsing window, works in 32bit TConly"
-    HelpInfo_arr["N"] :="n >> Show the folder history ( a-z navigation )`nN >> No mapping "
-    HelpInfo_arr["M"] :="m >> Marking function like in Vim. Create mark by m then go to mark by single quote. For example ma will make mark a then press 'a to go to mark a `n When m is pressed the command line displays m and prompts to enter the mark letter, when this letter is entered command line closes and the current folder-path is stored as the mark. You can browse away to a different folder, and when you press ' it will show all the marks, press a and you will go to the folder where you were before.`n`n`nM >> Move to the middle of the list (the position is often not accurate, and if there are few lines the cursor might stay the same) Alternatively you can just use 11j"
+    HelpInfo_arr["N"] :="n >> Show the folder history ( a-z navigation )`nN >> Show the folder history "
+    HelpInfo_arr["M"] :="m >> Marking function like in Vim. Create mark by m then go to mark by single quote. For example ma will make mark a then press 'a to go to mark a `n When m is pressed the command line displays m and prompts to enter the mark letter, when this letter is entered command line closes and the current folder-path is stored as the mark. You can browse away to a different folder, and when you press ' it will show all the marks, press a and you will go to the folder where you were before.`n`n`nM >> Move to the middle of the list (the position is often inaccurate, and if there are few lines the cursor might stay the same) Alternatively you can just use 11j"
     HelpInfo_arr[",<"] :=", >> Drives and locations `n< >> No mapping "
     HelpInfo_arr[".>"] :=". >> Repeat the last command. For example: `n   when you enter 10j (go down 10 lines) then to repeat just press the dot .`n   when you enter gt (switch to the next tab) then to repeat you only need to press .`n`n`n> >> No mapping "
     HelpInfo_arr["/?"] :="/ >> Use quick search `n? >> Use the file search function ( advanced )"
@@ -5314,7 +5324,7 @@ SetViatcCommand()  ; --- internal ViATc commands
 ; add user commands
 for index, element in UserCommandsArr
     ViatcCommand := ViatcCommand . " " . index
-
+    ;Msgbox  Debugging index = [%index%]  on line %A_LineNumber% ;!!!
 }
 
 SetCommandInfo()  ; --- command's descriptions
@@ -5410,7 +5420,7 @@ SetCommandInfo()  ; --- command's descriptions
     CommandInfo_Arr["<SrcExecs>"] :=" Source window :  Executable file "
     CommandInfo_Arr["<SrcAllFiles>"] :=" Source window :  All files "
     CommandInfo_Arr["<SrcUserSpec>"] :=" Source window :  The last selected file "
-    CommandInfo_Arr["<SrcUserDef>"] :=" Source window :  Custom type "
+    CommandInfo_Arr["<SrcUserDef>"] :=" Source window :  User defined type "
     CommandInfo_Arr["<SrcByName>"] :=" Source window :  Sort by file name "
     CommandInfo_Arr["<SrcByExt>"] :=" Source window :  Sort by extension "
     CommandInfo_Arr["<SrcBySize>"] :=" Source window :  Sort by size "
@@ -5482,7 +5492,7 @@ SetCommandInfo()  ; --- command's descriptions
     CommandInfo_Arr["<RenameOnly>"] :=" Rename (Shift+F6)"
     CommandInfo_Arr["<RenameSingleFile>"] :=" Rename current file "
     CommandInfo_Arr["<MoveOnly>"] :=" Move (F6)"
-    CommandInfo_Arr["<Properties>"] :=" Display properties "
+    CommandInfo_Arr["<Properties>"] :=" Display file properties, or if folder then calculate space "
     CommandInfo_Arr["<CreateShortcut>"] :=" Create Shortcut "
     CommandInfo_Arr["<OpenAsUser>"] :=" Run the file under cursor as onother user "
     CommandInfo_Arr["<Split>"] :=" Split files "
@@ -5617,8 +5627,8 @@ SetCommandInfo()  ; --- command's descriptions
     CommandInfo_Arr["<FtpSelectTransferMode>"] :=" Select the transfer mode "
     CommandInfo_Arr["<FtpAddToList>"] :=" Add to download list "
     CommandInfo_Arr["<FtpDownloadList>"] :=" FtpDownloadList "
-    CommandInfo_Arr["<GotoPreviousDir>"] :=" GotoPreviousDir "
-    CommandInfo_Arr["<GotoNextDir>"] :=" GotoNextDir "
+    CommandInfo_Arr["<GotoPreviousDir>"] :=" GotoPreviousDir in tab history"
+    CommandInfo_Arr["<GotoNextDir>"] :=" GotoNextDir in tab history"
     CommandInfo_Arr["<DirectoryHistory>"] :=" Folder history "
     CommandInfo_Arr["<GotoPreviousLocalDir>"] :=" GotoPreviousLocalDir (non-FTP)"
     CommandInfo_Arr["<GotoNextLocalDir>"] :=" GotoNextLocalDir (non-FTP)"
@@ -5690,7 +5700,7 @@ SetCommandInfo()  ; --- command's descriptions
     CommandInfo_Arr["<VisCmdLine>"] :=" Toggle visibility :  Command Line "
     CommandInfo_Arr["<VisKeyButtons>"] :=" Toggle visibility :  Function button "
     CommandInfo_Arr["<ToggleViatcVim>"] :=" Toggle Viatc Vim Mode "
-    CommandInfo_Arr["<ShowHint>"] :=" Show file prompts "
+    CommandInfo_Arr["<ShowHoverTooltip>"] :=" Show file tooltip by moving cursor over it "
     CommandInfo_Arr["<ShowQuickSearch>"] :=" Show the quick search window "
     CommandInfo_Arr["<SwitchLongNames>"] :=" Toggle visibility :  Long file name display "
     CommandInfo_Arr["<RereadSource>"] :=" Refresh the source window "
@@ -6769,7 +6779,7 @@ Return
 <VisKeyButtons>:
 SendPos(2911)
 Return
-<ShowHint>:
+<ShowHoverTooltip>:
 SendPos(2914)
 Return
 <ShowQuickSearch>:
@@ -7533,7 +7543,7 @@ CheckForUpdates()
 {
     If Not IsInternetConnected()
     {
-        MsgBox, 48, WinInet.dll, Offline! Check the internet connection.
+        MsgBox, 48, ViATc, Offline! Check the internet connection.
         Return false
     }
     file_name := "latest_version.txt"
