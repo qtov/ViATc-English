@@ -34,7 +34,7 @@ Global IconPath := A_ScriptDir . "\viatc.ico"
 Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
 Global HistoryOfRenamePath := A_ScriptDir . "\history_of_rename.txt"
 Global MarksPath := A_ScriptDir . "\marks.ini"
-;Global UserFilePath :=  A_ScriptDir . "\user.ahk"
+Global UserFilePath :=  A_ScriptDir . "\user.ahk"
 KeyTemp :=
 Repeat :=
 ViatcCommand :=
@@ -4365,7 +4365,7 @@ BackupViATcIniFile()
     If Fileexist(NewFile)
         Tooltip Backup of settings succesfull
     Else
-        Tooltip Backup failed
+        MsgBox Backup of settings failed
     
     Sleep,1400
     Tooltip
@@ -4404,7 +4404,7 @@ BackupMarksFile()
     If Fileexist(NewFile)
         Tooltip Backup of marks succesfull
     Else
-        Tooltip Backup of marks failed
+        MsgBox Backup of marks failed
     
     Sleep,1400
     Tooltip
@@ -4440,8 +4440,8 @@ BackupTCIniFile()
     NewFile=%TCIni%_%CurrentDateTime%_backup.ini
     FileCopy,%TCIni%,%NewFile%
     If Fileexist(NewFile)
-        ;Tooltip Backup of wincmd.ini succesfull. `n%NewFile%
-        MsgBox,,, Backup of wincmd.ini succesfull. `n`nIt is now in`n%NewFile%
+        Tooltip Backup of wincmd.ini succesfull. `n%NewFile%
+        ;MsgBox,,, Backup of wincmd.ini succesfull. `n`nIt is now in`n%NewFile%
     Else
         MsgBox,0x10,, Backup of wincmd.ini failed. `n`nCouldn't copy %TCIni% `nto %NewFile%
     ;Sleep,1400
@@ -4481,7 +4481,7 @@ BackupUserFile()
     If Fileexist(NewFile)
         Tooltip Backup of user.ahk succesfull
     Else
-        Tooltip Backup of user.ahk failed
+        MsgBox Backup of user.ahk failed
     
     Sleep,1400
     Tooltip
