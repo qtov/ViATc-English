@@ -1,5 +1,0 @@
-This file contains all filenames that were renamed by pressing r wheather it was fancy or regular rename
-You can disable this history completely in the settings.
-ViATc doesn't save filenames renamed by double-click, shift+F6 nor multi-rename.
-For the multi-rename, TC has its own built-in "Undo" option that can restore last multi-rename.
-------------------------
