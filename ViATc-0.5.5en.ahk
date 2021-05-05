@@ -1,5 +1,5 @@
 Global Version := "0.5.5en"
-Global Date := "2021/04/15"
+Global Date := "2021/05/05"
 ; Author of the original Chinese version is linxinhong https://github.com/linxinhong
 ; Translator and maintainer of the English version is magicstep https://github.com/magicstep  
 ; you can contact me with the same nickname @gmail.com
