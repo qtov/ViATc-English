@@ -2180,8 +2180,8 @@ FancyR_Help()
 If you can't type, then press i to edit properly in so called "Insert mode"
 To always start in "Insert mode" open "Defaults" menu and select "Insert mode at start"
 To disable this whole "Fancy rename" open Settings->General  and uncheck "Fancy rename" near the bottom
-To avoid the fancy rename, even if it is enabled, then either use  Shift+r  or   uncomment the following line in the viatc.ini file:
-r=<RenameSingleFile>
+To avoid the fancy rename, even if it is enabled, then remap  Shift+r in the viatc.ini file like this 
+<Shift>r=<RenameSingleFile>     
 )
 
 	WinGetPos,,,w,h,AHK_ID %FancyR_ID%
@@ -5252,7 +5252,7 @@ SetHelpInfo()  ; --- graphical keyboard in help {{{2
     HelpInfo_arr["Q"] :="q >> Quick view `nQ >> Use the default browser to search for the current file or folder name "
     HelpInfo_arr["W"] :="w >> Small menu `nW >> No mapping "
     HelpInfo_arr["E"] :="e >> e...  (Combo Key, requires another key) `nec >> Compare files by content`nef >> Edit file`neh >> Toggle hidden files`nep >> Edit path in tabbar`n`n`nE >> Edit file prompt"
-    HelpInfo_arr["R"] :="r >> Fancy Rename`nR >> Rename (simple default TC, not fancy ViATc) "
+    HelpInfo_arr["R"] :="r >> Rename`nR >> Fancy Rename (a crude Vim emulator in a new window)"
     HelpInfo_arr["T"] :="t >> New tab `nT >> Create a new tab in the background  `n`nctrl+t >>  Go up in QuickSearch (opened by / or ctrl+s)  ctrl+t works the same in real Vim search,   and ctrl+g is down (mnemonic hint: T is above G) "
     HelpInfo_arr["Y"] :="y >> Copy window like F5  `nY >> Copy the file name and the full path "
     HelpInfo_arr["U"] :="u >> Up a directory `nU >> Up to the root directory "
