@@ -1,7 +1,7 @@
 ViATc
 =====
 ViATc - Vim mode at Total Commander  
-2021/04/15  version 0.5.5en  
+2021/05/05  version 0.5.5en  
 ![viatc_logo credit: https://github.com/linxinhong](https://magicstep.github.io/viatc/viatc_logo.jpg?raw=true "viatc_logo")  
 <sub>image credit: <A href="https://github.com/linxinhong" target="_blank">https://github.com/linxinhong</a></sub><br>  
 This software works on Windows as an addition to "Total Commander"  :floppy_disk: - the greatest file manager :100: (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
@@ -20,7 +20,7 @@ Download
 To get the most recent script (without exe), download https://github.com/magicstep/ViATc-English/archive/master.zip  
 
 The below zip file contains an exe file, very likely it is older than the above script. I promise that the exe file is clean, however compiled AHK scripts trigger antiviruses so you might have to add an exception.   
-<a href="https://magicstep.github.io/viatc/ViATc-0.5.5en_executable.zip">ViATc-0.5.5en_executable.zip</a><br>
+<a href="https://magicstep.github.io/viatc/ViATc-0.5.5en_executable.zip">ViATc-0.5.5en_executable.zip</a> 2021/04/15  <br>
 
 Yet older versions at https://magicstep.github.io/viatc/old.html  
 
@@ -62,8 +62,8 @@ an = show menu to create a new file from template
 zw = toggle one wide panel  
 gg = go top  
 G  = go bottom  
-r  = rename with a fancy vim emulator,  
-shift+r  = simple rename, same as Shift+F6  
+r  = simple rename, same as Shift+F6  
+Shift+r  = fancy rename with a vim emulator  
 Ctrl+[   = Esc  
 Capslock = Esc  
 
