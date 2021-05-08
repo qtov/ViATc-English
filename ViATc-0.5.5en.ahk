@@ -1,5 +1,5 @@
 Global Version := "0.5.5en"
-Global Date := "2021/05/05"
+Global Date := "2021/05/08"
 ; Author of the original Chinese version is linxinhong https://github.com/linxinhong
 ; Translator and maintainer of the English version is magicstep https://github.com/magicstep  
 ; you can contact me with the same nickname @gmail.com
@@ -17,8 +17,9 @@ Global Date := "2021/05/05"
 #NoTrayIcon
 ; user.ahk file is for custom snippets and any addition to the viatc.ahk script
 ; *i = ignore any read failure
-#include *i A_ScriptDir . "\user.ahk"
-;#include *i user.ahk
+;#include *i A_ScriptDir . "\user.ahk"
+;#include  A_ScriptDir . "\user.ahk"
+#include *i user.ahk
 
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 Setkeydelay -1
@@ -5319,7 +5320,7 @@ SetComboInfo() ; combo keys help {{{2
 SetViatcCommand()  ; --- internal ViATc commands
 {
     Global ViatcCommand
-    ViatcCommand := " <None> <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <SingleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <RestoreLastMark> <SetTitleAsDateTime> <CheckForUpdates> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <azTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCFullScreenAlmost> <TCFullScreen> <TCFullScreenWithExePlugin> <BackupViATcIniFile> <EditViATcIniFile> <BackupTCIniFile> <EditTCIniFile> <BackupMarksFile> <EditMarksFile> <BackupUserFile> <EditUserFile>"
+    ViatcCommand := " <None> <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <FancyR> <SingleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <RestoreLastMark> <SetTitleAsDateTime> <CheckForUpdates> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <azTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCFullScreenAlmost> <TCFullScreen> <TCFullScreenWithExePlugin> <BackupViATcIniFile> <EditViATcIniFile> <BackupTCIniFile> <EditTCIniFile> <BackupMarksFile> <EditMarksFile> <BackupUserFile> <EditUserFile>"
 
 ; add user commands
 for index, element in UserCommandsArr
@@ -5350,6 +5351,7 @@ SetCommandInfo()  ; --- command's descriptions
     CommandInfo_Arr["<ViATcVimOff>"] :=" Switch-off all ViATc functionality till Esc will switch on. This is more than <ToggleViATc>"
     CommandInfo_Arr["<Enter>"] :=" Enter does a lot of advanced checks,  use <Return> for simplicity"
     CommandInfo_Arr["<Return>"] :=" Just sends an Enter key"
+    CommandInfo_Arr["<FancyR>"] :=" Fancy Rename in a new window with a crude Vim emulator"
     CommandInfo_Arr["<SingleRepeat>"] :=" Repeat the last command "
     CommandInfo_Arr["<Esc>"] :=" Reset and send ESC"
     CommandInfo_Arr["<CapsLock>"] :=" Toggle CapsLock"
