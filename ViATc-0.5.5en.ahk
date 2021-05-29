@@ -1,5 +1,5 @@
-Global Version := "0.5.5en"
-Global Date := "2021/05/08"
+Global Version := "0.5.5.1"
+Global Date := "2021/05/29"
 ; Author of the original Chinese version is linxinhong https://github.com/linxinhong
 ; Translator and maintainer of the English version is magicstep https://github.com/magicstep  
 ; you can contact me with the same nickname @gmail.com
@@ -17,8 +17,7 @@ Global Date := "2021/05/08"
 #NoTrayIcon
 ; user.ahk file is for custom snippets and any addition to the viatc.ahk script
 ; *i = ignore any read failure
-;#include *i A_ScriptDir . "\user.ahk"
-;#include  A_ScriptDir . "\user.ahk"
+#include *i A_ScriptDir . "\user.ahk"
 #include *i user.ahk
 
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -2505,8 +2504,8 @@ SetDefaultKey()
 	HotKey,+p,<UnpackFiles>,on,UseErrorLevel
 	HotKey,q,<SrcQuickview>,on,UseErrorLevel
 	HotKey,+q,<Internetsearch>,on,UseErrorLevel
-	Hotkey,r,<FancyR>,on,UseErrorLevel
-	Hotkey,+r,<RenameSingleFile>,on,UseErrorLevel
+    Hotkey,r,<RenameSingleFile>,on,UseErrorLevel
+	Hotkey,+r,<FancyR>,on,UseErrorLevel
     ;Hotkey,+r,<MultiRenameFiles>,on,UseErrorLevel
 	HotKey,t,<OpenNewTab>,on,UseErrorLevel
 	HotKey,+t,<OpenNewTabBg>,on,UseErrorLevel
@@ -5473,7 +5472,7 @@ SetCommandInfo()  ; --- command's descriptions
     CommandInfo_Arr["<RightByDateTim>"] :=" Right window :  Sort by date and time "
     CommandInfo_Arr["<RightUnsorte>"] :=" Right window :  Not sorted "
     CommandInfo_Arr["<RightNegOrde>"] :=" Right window :  Reverse sort "
-    CommandInfo_Arr["<RightOpenDrive>"] :=" Right window :  Open the drive list "
+    CommandInfo_Arr["<RightOpenDrives>"] :=" Right window :  Open the drive list "
     CommandInfo_Arr["<RightPathFocu>"] :=" Right window :  Focus on the path "
     CommandInfo_Arr["<RightDirBranch>"] :=" Right window :  Expand all folders "
     CommandInfo_Arr["<RightDirBranchSel>"] :=" Right window :  Only the selected folder is expanded "
@@ -6079,6 +6078,7 @@ Return
 SendPos(230)
 Return
 <RightOpenDrive>:
+<RightOpenDrives>:
 SendPos(231)
 Return
 <RightPathFocu>:
