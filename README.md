@@ -17,7 +17,8 @@ What ViATc does to Total Commander (called later TC):
 
 Download
 ========
-To get the most recent script (without exe), download https://github.com/magicstep/ViATc-English/archive/master.zip  
+To get the most recent script (without exe), download  
+https://github.com/magicstep/ViATc-English/archive/master.zip  
 
 The below zip file contains an exe file, very likely it is older than the above script. I promise that the exe file is clean, however compiled AHK scripts trigger antiviruses so you might have to add an exception.   
 <a href="https://magicstep.github.io/viatc/ViATc-0.5.5.1_executable.zip">ViATc-0.5.5.1_executable.zip</a> 2021/05/29  <br>
