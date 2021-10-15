@@ -1,14 +1,14 @@
-Global Version := "0.5.5.1"
-Global Date := "2021/05/29"
-; Author of the original Chinese version is linxinhong https://github.com/linxinhong
-; Translator and maintainer of the English version is magicstep https://github.com/magicstep  
-; you can contact me with the same nickname @gmail.com
+Global Version := "0.5.5.2"
+Global Date := "2021/10/15"
 ; This script works on Windows with AutoHotkey installed, and only as an addition to 
 ; "Total Commander" - the file manager from www.ghisler.com  
 ; ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium 
 ; or better yet SurfingKeys.
+; Author of the original Chinese version is linxinhong https://github.com/linxinhong
+; Translator and maintainer of the English version is https://github.com/magicstep  
+; you can contact me with the same nickname  m.......p@gmail.com
 
-; tripple ___  ??? and !!! are markers for debugging
+; tripple ??? and !!! are markers for debugging
 ; tripple curly braces are for line folding in vim
 ; {{{1
 #SingleInstance Force
@@ -53,6 +53,8 @@ Global FancyR_IsFind := False
 Global ViatcIni
 Global GlobalCheckbox
 Global CheckForUpdatesButton
+Global EnableBuiltInHotkeys :=1
+Global EnableBuiltInComboHotkeys :=1
 ;Global LastOverwrittenMark
 ComboKey_Arr := object()
 MapKey_Arr := object()
@@ -112,7 +114,7 @@ Else
 
 GoSub,<ConfigVar>
 Menu,FancyR_DefaultsMenu,Add, Insert mode at start `tAlt+I,FancyR_SelMode
-Menu,FancyR_DefaultsMenu,Add, Unselect extension at start `tAlt+E,FancyR_SelExt
+Menu,FancyR_DefaultsMenu,Add, Extension unselected at start `tAlt+E,FancyR_SelExt
 Menu,FancyR_MENU,Add, &Defaults,:FancyR_DefaultsMenu
 Menu,FancyR_MENU,Add, &Keys,FancyR_Keys
 Menu,FancyR_MENU,Add, &Help,FancyR_Help
@@ -671,7 +673,7 @@ ListMarksTooltip()
 		Tooltiplm :=
 		IniRead,active_marks,%MarksPath%,MarkSettings,active_marks
 		h := 0
-        ; !!! ___ outdated below
+        ; !!! outdated below
 		loop, Parse , active_marks , `,
 		{
 			h++
@@ -1667,8 +1669,7 @@ FancyRCreateGui()
 
 	If GetName == ".."
     {
-       MsgBox ha ha ..
-
+       ;MsgBox Sorry cannot rename ..
        Return
     }
 
@@ -1680,13 +1681,6 @@ FancyRCreateGui()
         file.write("`n" . GetName)
         file.close()
     }
-
-    ;Abort if FancyVimRename is not enabled
-    IniRead,Enabled,%ViatcIni%,FancyVimRename,Enabled
-	If Enabled = ERROR
-        return
-	If Enabled = 0
-        return
 
 	StringRight,GetDir,GetName,1
 	If GetDir = \
@@ -1703,17 +1697,6 @@ FancyRCreateGui()
 	Gui,+HwndFancyR_ID
 	Gui,+Owner%TCID%
 	Gui,Menu,FancyR_MENU
-    ;Gui, Color, Silver
-    ;Gui, Add, Text, x9 y9 w800 h23, Edit this filename:
-    ;Gui, Color, AABB99  ;LightGreen
-/*
-    Gui,Font,s14,Arial  ;font for the rename window
-	Gui,Add,Edit,r5 x9  w800 -WantReturn gFancyR_Edit,%GetName%
-	;Gui,Add,Edit,r1 w800 -WantReturn gFancyR_Edit,%GetName%  ;original
-    Gui,Font,s12
-    Gui, Add, Text, x9 y177 w800 h23, Original filename (saved to history_of_rename.txt):
-    Gui, Add, Edit, x9 y202 w800 r5 ReadOnly, %GetName%  ;original 
-*/
 
     Gui,Font,s12,Arial  ;font for the rename window
 	Gui,Add,Edit,r3 x9 y103  w820 -WantReturn gFancyR_Edit,%GetName%
@@ -1763,7 +1746,7 @@ FancyRCreateGui()
             Menu,FancyR_DefaultsMenu,Check, Insert mode at start `tAlt+I
         else
             Menu,FancyR_DefaultsMenu,Uncheck, Insert mode at start `tAlt+I
-        Menu,FancyR_DefaultsMenu,Check, Unselect extension at start `tAlt+E
+        Menu,FancyR_DefaultsMenu,Check, Extension unselected at start `tAlt+E
 	}
 	If Ext And ( Not GetDir )
 	{
@@ -2164,9 +2147,9 @@ Return
 FancyR_SelExt:
 SetConfig("FancyVimRename","UnselectExt",!GetConfig("FancyVimRename","UnselectExt"))
 If GetConfig("FancyVimRename","UnselectExt")
-	Menu,FancyR_DefaultsMenu,Check, Unselect extension at start `tAlt+E
+	Menu,FancyR_DefaultsMenu,Check, Extension unselected at start `tAlt+E
 Else
-	Menu,FancyR_DefaultsMenu,UnCheck, Unselect extension at start `tAlt+E
+	Menu,FancyR_DefaultsMenu,UnCheck, Extension unselected at start `tAlt+E
 Return
 
 FancyR_Help:
@@ -2179,9 +2162,6 @@ FancyR_Help()
 (
 If you can't type, then press i to edit properly in so called "Insert mode"
 To always start in "Insert mode" open "Defaults" menu and select "Insert mode at start"
-To disable this whole "Fancy rename" open Settings->General  and uncheck "Fancy rename" near the bottom
-To avoid the fancy rename, even if it is enabled, then remap  Shift+r in the viatc.ini file like this 
-<Shift>r=<RenameSingleFile>     
 )
 
 	WinGetPos,,,w,h,AHK_ID %FancyR_ID%
@@ -2442,27 +2422,17 @@ SetDefaultKey()
 	Hotkey,h,<Left>    
 	Hotkey,l,<Right>    
 
-    ; ---------  keys for Settings
-    /*
-	;Hotkey,Ifwinactive,Settings   VIATC %Version%
-	;Hotkey,Ifwinactive,ClassNN:	SysListView321
-    ;ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-    ;ClassNN:	SysListView321
-    ;#If ( %ThisControl% = SysListView321)
-    ;if(winActive(Settings   VIATC %Version%) && controlActive("SysListView321")) 
+    ; --------- IsCapslockAsEscape
+    IniRead,IsCapslockAsEscape,%ViatcIni%,Configuration,IsCapslockAsEscape
+    if IsCapslockAsEscape
+	    Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
 
-
-    ;SettingsTitle := "Settings   VIATC " . Version
-    SettingsTitle =Settings   VIATC %Version%
-    ; params: ControlActive( ClassNN , WinTitle )
-    #If ControlActive("SysListView321", SettingsTitle) 
-	Hotkey,j,<Down>
-	Hotkey,k,<Up>    
-    #If
-    */
 
 
     ; -------- single keys
+IniRead,EnableBuiltInHotkeys,%ViatcIni%,Configuration,EnableBuiltInHotkeys
+if EnableBuiltInHotkeys
+{    
 	Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
 	HotKey,1,<Num1>,on,UseErrorLevel
 	HotKey,2,<Num2>,on,UseErrorLevel
@@ -2540,11 +2510,9 @@ SetDefaultKey()
 	;Hotkey,`,,<None>,On,UseErrorLevel
 	Hotkey,$Enter,<Enter>,On,UseErrorLevel
 	Hotkey,Esc,<Esc>,On,UseErrorLevel
-    IniRead,IsCapslockAsEscape,%ViatcIni%,Configuration,IsCapslockAsEscape
-    if IsCapslockAsEscape
-	    Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
+}
 
-    ; Special characters in ini files
+    ; --------- Special characters in ini files
     ; The following four characters: space ; = [   are not allowed as keys in ini files 
     ;   thus they cannot be directly remapped as hotkeys (nor be used as marks in ViATc).
     ; Below is a workaround 
@@ -2562,11 +2530,14 @@ SetDefaultKey()
 	    Hotkey,[,%command%,On,UseErrorLevel        
 
     ; ------ combo keys:
+IniRead,EnableBuiltInComboHotkeys,%ViatcIni%,Configuration,EnableBuiltInComboHotkeys
+if EnableBuiltInComboHotkeys
+{    
     ComboKeyAdd("ca","<SetAttrib>")
     ComboKeyAdd("a'","<RestoreLastMark>")
-	;ComboKeyAdd("chc","<DelCmdHistory>")
-	;ComboKeyAdd("chl","<DeleteLHistory>")
-	;ComboKeyAdd("chr","<DeleteRHistory>")
+	ComboKeyAdd("chc","<DelCmdHistory>")
+	ComboKeyAdd("chl","<DeleteLHistory>")
+	ComboKeyAdd("chr","<DeleteRHistory>")
 	ComboKeyAdd("g1","<SrcActivateTab1>")
 	ComboKeyAdd("g2","<SrcActivateTab2>")
 	ComboKeyAdd("g3","<SrcActivateTab3>")
@@ -2632,7 +2603,7 @@ SetDefaultKey()
 	ComboKeyAdd("zi","<100Percent>")
 	ComboKeyAdd("zz","<50Percent>")
 	ComboKeyAdd("zc","<CommandBrowser>")
-    
+ }   
     ; -------  keys for fancy rename 
 	Hotkey,IfWinActive,ViATc Fancy Rename
 	Hotkey,j,FancyR_Down,on,UseErrorLevel
@@ -3448,11 +3419,11 @@ There is also one in Templates folder - it might be older than the newest.
         If Key = Vim
             SetVar := 1
         If Key = Toggle
-            SetVar := "<lwin>F"
+            SetVar := "<LWin>F"
         If Key = GlobalTogg
             SetVar := 1
         If Key = Suspend
-            SetVar := "<alt>``"
+            SetVar := "<Alt>``"
         If Key = HistoryOfRename 
             SetVar := 1
         If Key = GlobalSusp
@@ -4155,7 +4126,7 @@ Setting() ; --- {{{1
     Gui,Add,Link,x135 y343 h20, - see <a href="%A_ScriptDir%\history_of_rename.txt">history_of_rename.txt</a>
     Gui, Add, Button, x270 y340 w80 h21 gFancyR_history,  Edit   &5
     ;Gui,Add,Link,x135 y363 h20, - see <a href="%EditorPath% . %EditorArguments% . %HistoryOfRenamePath%">%HistoryOfRenamePath%</a>
-    Gui,Add,CheckBox,x25 y370 h20 checked%FancyVimRename% vFancyVimRename, &Fancy Rename
+    ;Gui,Add,CheckBox,x25 y370 h20 checked%FancyVimRename% vFancyVimRename, &Fancy Rename
 
     Gui,Add,CheckBox,x25 y400 h20 checked%IsCapslockAsEscape% vIsCapslockAsEscape, Capslock as Escape   &6
 
@@ -4318,18 +4289,11 @@ Array := ["If you had a fortune cookie what would you like it to say?"
               ,"What is the ultimate goal of a human being?"
                  ,"What thing doesn't exist but should?"
                    ,"There's always time to feel good."
-                      ,"Remember to take breaks."
-                          ,"All is well." ]
+                       ,"Remember to take breaks."
+                           ,"All is well." ]
 Random, rand, 1,Array.Length()
 MsgBox  % Array[rand] %rand%
 Return
-
-;OnMessage(0x201, "ImgClic")
-;ImgClic(wParam, lParam, msg, hwnd) {
-;global MyImageHwnd   ; for HwndMyImageHwnd 
-;If (hwnd := MyImageHwnd)
-	;MsgBox Congrats
-;}
 
 GuiContextMenu:
 If A_GuiControl <> ListView
@@ -4605,19 +4569,11 @@ EditItem()
 	Global EventInfo,VIATCSetting
 	If EventInfo
 	{
-		;LV_GetText(Scope,EventInfo,1)
-		;LV_GetText(Key,EventInfo,2)
-		;LV_GetText(Action,EventInfo,3)
-		;LV_GetText(Info,EventInfo,4)
-
 		LV_GetText(Scope,EventInfo,2)
 		LV_GetText(Key,EventInfo,3)
 		LV_GetText(Action,EventInfo,4)
 		LV_GetText(Info,EventInfo,5)
 
-
-        ; Button25 is the Global chexkbox
-        ;GuiControl,,Button25,1
 		If RegExMatch(Scope,"G")
             Guicontrol,,GlobalCheckbox, 1
 		If RegExMatch(Scope,"[C|H]")
@@ -5167,12 +5123,6 @@ Help() ; --- Help {{{1
     Gui,Add,Button,x265 y146 w130 gCmdl, &4  Command Line
     Gui,Add,Button,x400 y146 w105 gAction, &5  Commands
     Gui,Add,Button,x510 y146 w67 gAbout, &6  About
-    ;Gui,Add,Button,x15 y146 w60 gIntro, &Intro
-    ;Gui,Add,Button,x80 y146 w75 gFunct, &Hotkey
-    ;Gui,Add,Button,x159 y146 w100 gCombok, Combo &Key
-    ;Gui,Add,Button,x265 y146 w130 gCmdl, Command &Line
-    ;Gui,Add,Button,x400 y146 w105 gAction, &Commands
-    ;Gui,Add,Button,x510 y146 w67 gAbout, &About
     Intro := HelpInfo_Arr["Intro"]
     Gui,Font,s11,Arial   ;font for the bottom textarea box in help window
     ;Gui,Font,s12,Georgia   ;font for the bottom textarea box in help window
@@ -5301,7 +5251,7 @@ HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `
     HelpInfo_arr["ComboK"] :="Combo Keys take multiple keys to operate. `nKeys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with the following Combo Keys: e,a,s,S,g,z,c,V and a comma. Click the keyboard above for details of what they do. On the keyboard are mostly keys built-in the script and some from ini file. For mappings that are in viatc.ini open the Settings window where you can remap everything, you can override built-in keys, you can even remap single Hotkeys into Combo Keys and vice versa."
     HelpInfo_arr["cmdl"] :="The command line in VIATC supports abbreviations :h :s :r :m :sm :e :q, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys. If you type :map in the command line then all custom hotkeys (all ini file mappings, but not built-in) will be displayed in a tooltip`n If the input is :map key command, where key represents the hotkey to map (it can be a Combo Key or a Hotkey). This feature is suitable for the scenario where there is a temporary need for a mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file.`n:smap and :map are the same except map is a global hotkey and does not support mapping Combo Keys `n:edit  Directly edit ViATc.ini file `n:q quit TC`n`nAll mappings added using the command line are temporary (one session, not saved into the ini file). Examples `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Combo Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Combo Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be interpreted by VIATC as pressing the Enter key."
     HelpInfo_arr["command"] :="All commands can be found in the Settings window on the 'Hotkeys' tab. Commands are divided into 4 categories, there are 4 buttons there that will help you to fill-in the 'Command' textbox:`n`n1.ViATc command `n`n2.TC internal command, they begin with the 'cm_' such as cm_PackFiles but will be input as <PackFiles>.`nDon't panick when the Settings window disappears, it will reappear after double-click, OK or Cancel`n`n3. Run a program or open a file. TC has similar functions built-in but ViATc way might be more convenient`n`n4. Send a string of text. If you want to input a text into the command line then you can use the Combo Key to map the command of sending a text string.`n`nThe above commands, 1 and 2 must be surrounded with <  > , 3 needs to be surrounded with (  ) , and 4 with {  }`n`n`nRight-click any item on the list to edit or delete. Double-click to edit, or select any item and press Delete `nPress the Analysis button anytime to get a tooltip info about the Hotkey`nUse the Global option only when you want Hotkey to work everywhere outside TC. The Global option is not available for ComboKey`nSave to take effect, OK will save and reload. Cancel if you mess-up. Please make backups of the ini file before any changes, there is a button for it in the bottom-left corner of Settings window"
-    HelpInfo_arr["About"] :="Author of the original Chinese version is Linxinhong `nhttps://github.com/linxinhong`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname @gmail.com    I don't speak Chinese, I've used Google translate initially and then rephrased and modified this software. `n`nYou can download a compiled executable on https://magicstep.github.io/viatc `nThe compiled version is most likely older than the current script. If you want the most recent script version then download `n https://github.com/magicstep/ViATc-English/archive/master.zip"
+    HelpInfo_arr["About"] :="Author of the original Chinese version is Linxinhong `nhttps://github.com/linxinhong`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname m.......p@gmail.com    I don't speak Chinese, I've used Google translate initially and then rephrased and modified this software. `n`nYou can download a compiled executable on https://magicstep.github.io/viatc `nThe compiled version is most likely older than the current script. If you want the most recent script version then download `n https://github.com/magicstep/ViATc-English/archive/master.zip"
 } ;}}}2
 
 SetComboInfo() ; combo keys help {{{2
