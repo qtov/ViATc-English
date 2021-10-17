@@ -1,5 +1,5 @@
-Global Version := "0.5.5.2"
-Global Date := "2021/10/15"
+Global Version := "0.5.5.3"
+Global Date := "2021/10/17"
 ; This script works on Windows with AutoHotkey installed, and only as an addition to 
 ; "Total Commander" - the file manager from www.ghisler.com  
 ; ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium 
@@ -2429,21 +2429,24 @@ SetDefaultKey()
 
 
 
+	Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
+    HotKey,1,<Num1>,on,UseErrorLevel
+    HotKey,2,<Num2>,on,UseErrorLevel
+    HotKey,3,<Num3>,on,UseErrorLevel
+    HotKey,4,<Num4>,on,UseErrorLevel
+    HotKey,5,<Num5>,on,UseErrorLevel
+    HotKey,6,<Num6>,on,UseErrorLevel
+    HotKey,7,<Num7>,on,UseErrorLevel
+    HotKey,8,<Num8>,on,UseErrorLevel
+    HotKey,9,<Num9>,on,UseErrorLevel
+    HotKey,0,<Num0>,on,UseErrorLevel
+	Hotkey,$Enter,<Enter>,On,UseErrorLevel
+	Hotkey,Esc,<Esc>,On,UseErrorLevel
+
     ; -------- single keys
 IniRead,EnableBuiltInHotkeys,%ViatcIni%,Configuration,EnableBuiltInHotkeys
 if EnableBuiltInHotkeys
 {    
-	Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
-	HotKey,1,<Num1>,on,UseErrorLevel
-	HotKey,2,<Num2>,on,UseErrorLevel
-	HotKey,3,<Num3>,on,UseErrorLevel
-	HotKey,4,<Num4>,on,UseErrorLevel
-	HotKey,5,<Num5>,on,UseErrorLevel
-	HotKey,6,<Num6>,on,UseErrorLevel
-	HotKey,7,<Num7>,on,UseErrorLevel
-	HotKey,8,<Num8>,on,UseErrorLevel
-	HotKey,9,<Num9>,on,UseErrorLevel
-	HotKey,0,<Num0>,on,UseErrorLevel
 	HotKey,+a,<SelectAllBoth>,on,UseErrorLevel
 	Hotkey,b,<PageUp>,On,UseErrorLevel
 	Hotkey,+b,<azTab>,On,UseErrorLevel
@@ -2508,8 +2511,6 @@ if EnableBuiltInHotkeys
 	Hotkey,',<ListMark>,On,UseErrorLevel
     Hotkey,+',<ListMark>,On,UseErrorLevel
 	;Hotkey,`,,<None>,On,UseErrorLevel
-	Hotkey,$Enter,<Enter>,On,UseErrorLevel
-	Hotkey,Esc,<Esc>,On,UseErrorLevel
 }
 
     ; --------- Special characters in ini files
@@ -5905,7 +5906,6 @@ Return
 <SrcPathFocus>:
 SendPos(332)
 Return
-Return
 <LeftComments>:
 SendPos(100)
 Return
@@ -5974,7 +5974,6 @@ SendPos(69)
 Return
 <LeftCustomViewMenu>:
 SendPos(70)
-Return
 Return
 <RightComments>:
 SendPos(200)
@@ -6045,7 +6044,6 @@ SendPos(169)
 Return
 <RightCustomViewMen>:
 SendPos(170)
-Return
 Return
 <List>:
 SendPos(903)
@@ -6124,7 +6122,6 @@ SendPos(565)
 Return
 <SetAttrib>:
 SendPos(502)
-Return
 Return
 <Config>:
 SendPos(490)
@@ -6213,7 +6210,6 @@ Return
 <ChangeStartMenu>:
 SendPos(700)
 Return
-Return
 <NetConnect>:
 SendPos(512)
 Return
@@ -6231,7 +6227,6 @@ SendPos(2204)
 Return
 <ShowFileUser>:
 SendPos(2203)
-Return
 Return
 <GetFileSpace>:
 SendPos(503)
@@ -6299,7 +6294,6 @@ Return
 <ReloadSelThumbs>:
 SendPos(2918)
 Return
-Return
 <DirectCableConnect>:
 SendPos(2300)
 Return
@@ -6309,7 +6303,6 @@ Return
 <NTremoveDriver>:
 SendPos(2302)
 Return
-Return
 <PrintDir>:
 SendPos(2027)
 Return
@@ -6318,7 +6311,6 @@ SendPos(2028)
 Return
 <PrintFile>:
 SendPos(504)
-Return
 Return
 <SpreadSelection>:
 SendPos(521)
@@ -6434,7 +6426,6 @@ Return
 <LoadSelectionFromClip>:
 SendPos(2033)
 Return
-Return
 <EditPermissionInfo>:
 SendPos(2200)
 Return
@@ -6443,7 +6434,6 @@ SendPos(2201)
 Return
 <EditOwnerInfo>:
 SendPos(2202)
-Return
 Return
 <CutToClipboard>:
 SendPos(2007)
@@ -6478,7 +6468,6 @@ Return
 <CopyNetFileDetailsToClip>:
 SendPos(2038)
 Return
-Return
 <FtpConnect>:
 SendPos(550)
 Return
@@ -6505,7 +6494,6 @@ SendPos(557)
 Return
 <FtpDownloadList>:
 SendPos(558)
-Return
 Return
 <GotoPreviousDir>:
 SendPos(570,True)
@@ -6621,7 +6609,6 @@ Return
 <GotoDriveZ>:
 SendPos(2086)
 Return
-Return
 <HelpIndex>:
 SendPos(610)
 Return
@@ -6637,7 +6624,6 @@ Return
 <About>:
 SendPos(690)
 Return
-Return
 <Exit>:
 SendPos(24340)
 Return
@@ -6650,7 +6636,6 @@ Return
 <Restore>:
 SendPos(2016)
 Return
-Return
 <ClearCmdLine>:
 SendPos(2004)
 Return
@@ -6662,7 +6647,6 @@ SendPos(2006)
 Return
 <AddPathToCmdline>:
 SendPos(2019)
-Return
 Return
 <MultiRenameFiles>:
 SendPos(2400)
@@ -6693,7 +6677,6 @@ SendPos(2040)
 Return
 <CommandBrowser>:
 SendPos(2924)
-Return
 Return
 <VisButtonbar>:
 SendPos(2901)
@@ -6806,7 +6789,6 @@ Return
 <ToggleSeparateTree2>:
 SendPos(3205)
 Return
-Return
 <UserMenu1>:
 SendPos(701)
 Return
@@ -6836,7 +6818,6 @@ SendPos(70)
 Return
 <UserMenu10>:
 SendPos(710)
-Return
 Return
 <OpenNewTab>:
 SendPos(3001)
@@ -6998,7 +6979,6 @@ Return
 <RightActivateTab10>:
 SendPos(5310)
 Return
-Return
 <SrcSortByCol1>:
 SendPos(6001)
 Return
@@ -7130,7 +7110,6 @@ SendPos(6310)
 Return
 <RightSortByCol99>:
 SendPos(6399)
-Return
 Return
 <SrcCustomView1>:
 SendPos(271)
