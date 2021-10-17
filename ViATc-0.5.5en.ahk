@@ -2427,8 +2427,6 @@ SetDefaultKey()
     if IsCapslockAsEscape
 	    Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
 
-
-
 	Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
     HotKey,1,<Num1>,on,UseErrorLevel
     HotKey,2,<Num2>,on,UseErrorLevel
@@ -2444,9 +2442,7 @@ SetDefaultKey()
 	Hotkey,Esc,<Esc>,On,UseErrorLevel
 
     ; -------- single keys
-IniRead,EnableBuiltInHotkeys,%ViatcIni%,Configuration,EnableBuiltInHotkeys
-if EnableBuiltInHotkeys
-{    
+	Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
 	HotKey,+a,<SelectAllBoth>,on,UseErrorLevel
 	Hotkey,b,<PageUp>,On,UseErrorLevel
 	Hotkey,+b,<azTab>,On,UseErrorLevel
@@ -2511,7 +2507,7 @@ if EnableBuiltInHotkeys
 	Hotkey,',<ListMark>,On,UseErrorLevel
     Hotkey,+',<ListMark>,On,UseErrorLevel
 	;Hotkey,`,,<None>,On,UseErrorLevel
-}
+
 
     ; --------- Special characters in ini files
     ; The following four characters: space ; = [   are not allowed as keys in ini files 
