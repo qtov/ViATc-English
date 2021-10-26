@@ -42,9 +42,9 @@ Usage
 =====
 A subset of best commands:
 
-j  = Down (5j=5lines) 
+j  = Down (5j=5lines)  
 k  = Up  
-f  = Page Down (5f=5pages)
+f  = Page Down (5f=5pages)  
 b  = Page Up  
 t  = open tab, same as Ctrl+t  
 x  = close tab, same as Ctrl+w  
