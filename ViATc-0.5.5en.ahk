@@ -15,6 +15,7 @@ Global Date := "2021/10/17"
 #Persistent
 #NoEnv
 #NoTrayIcon
+#MaxHotkeysPerInterval 999
 ; user.ahk file is for custom snippets and any addition to the viatc.ahk script
 ; *i = ignore any read failure
 #include *i A_ScriptDir . "\user.ahk"
@@ -1137,6 +1138,10 @@ If SendPos(0)
 {
 	ToggleMenu()
 	HideControl()
+	; GoSub,<VisStatusbar>
+	; GoSub,<VisTabHeader>
+	; GoSub,<VisCurDir>
+	; GoSub,<VisBreadCrumbs>
 	GoSub,<VisDirTabs>
 	If HideControl_arr["Max"]
 	{
