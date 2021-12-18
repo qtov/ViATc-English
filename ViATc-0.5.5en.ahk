@@ -1,12 +1,12 @@
 Global Version := "0.5.5.3"
 Global Date := "2021/10/17"
-; This script works on Windows with AutoHotkey installed, and only as an addition to 
-; "Total Commander" - the file manager from www.ghisler.com  
-; ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium 
+; This script works on Windows with AutoHotkey installed, and only as an addition to
+; "Total Commander" - the file manager from www.ghisler.com
+; ViATc tries to resemble the work-flow of Vim and web browser plugins like Vimium
 ; or better yet SurfingKeys.
 ; Author of the original Chinese version is linxinhong https://github.com/linxinhong
-; Translator and maintainer of the English version is https://github.com/magicstep  
-; you can contact me with the same nickname  m.......p@gmail.com
+; Translator and maintainer of the English version is https://github.com/magicstep
+; you can contact me with the same nickname m.......p@gmail.com
 
 ; tripple ??? and !!! are markers for debugging
 ; tripple curly braces are for line folding in vim
@@ -22,10 +22,10 @@ Global Date := "2021/10/17"
 #include *i user.ahk
 
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
-Setkeydelay -1
+SetKeyDelay -1
 SetControlDelay -1
-Detecthiddenwindows on
-Coordmode Menu,Window
+DetectHiddenWindows On
+CoordMode Menu,Window
 If A_IsCompiled
     Version .= " Compiled Executable"
 Global EditorPath :=            ; it is read from ini later
@@ -35,12 +35,12 @@ Global IconPath := A_ScriptDir . "\viatc.ico"
 Global IconDisabledPath := A_ScriptDir . "\viatcdis.ico"
 Global HistoryOfRenamePath := A_ScriptDir . "\history_of_rename.txt"
 Global MarksPath := A_ScriptDir . "\marks.ini"
-Global UserFilePath :=  A_ScriptDir . "\user.ahk"
+Global UserFilePath := A_ScriptDir . "\user.ahk"
 KeyTemp :=
 Repeat :=
 ViatcCommand :=
 KeyCount := 0
-Global Vim := true
+Global Vim := True
 Global InsertMode := False
 Global FancyR := True
 Global FancyR_Count
@@ -54,55 +54,55 @@ Global FancyR_IsFind := False
 Global ViatcIni
 Global GlobalCheckbox
 Global CheckForUpdatesButton
-Global EnableBuiltInHotkeys :=1
-Global EnableBuiltInComboHotkeys :=1
+Global EnableBuiltInHotkeys := 1  ; unused?
+Global EnableBuiltInComboHotkeys := 1
 ;Global LastOverwrittenMark
-ComboKey_Arr := object()
-MapKey_Arr := object()
-ExecFile_Arr := object()
-SendText_Arr := object()
-Command_Arr := object()
-CmdHistory_Arr := object()
-Mark_Arr := object()
-HideControl_Arr := object()
-CommandInfo_Arr := object()
-HelpInfo_Arr := object()
-ComboInfo_Arr := object()
-ReName_Arr := Object()
+ComboKey_Arr := Object()
+MapKey_Arr := Object()
+ExecFile_Arr := Object()
+SendText_Arr := Object()
+Command_Arr := Object()  ; unused?
+CmdHistory_Arr := Object()  ; unused?
+Mark_Arr := Object()
+HideControl_Arr := Object()
+CommandInfo_Arr := Object()
+HelpInfo_Arr := Object()
+ComboInfo_Arr := Object()
+Rename_Arr := Object()  ; unused?
 STabs := Object()
 HideControl_Arr["Toggle"] := False
-ViATcIni :=  A_ScriptDir . "\viatc.ini"
+ViATcIni := A_ScriptDir . "\viatc.ini"  ; Viatc/ViATc/VIATC?
 If Not FileExist(ViATcIni)
     RegRead,ViATcIni,HKEY_CURRENT_USER,Software\VIATC,ViATcINI
 ;RegRead,ViATcIni,HKEY_CURRENT_USER,Software\VIATC,ViATcINI
 ;If Not FileExist(ViATcIni)
-    ;ViATcIni :=  A_ScriptDir . "\viatc.ini"
+    ;ViATcIni := A_ScriptDir . "\viatc.ini"
 ;If FileExist(ViATcIni)
-    ;Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,ViATcIni,%ViATcIni%
-;else
+    ;RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,ViATcIni,%ViATcIni%
+;Else
     ;MsgBox no ViATcIni
 TcExe := FindPath("exe")
 TcIni := FindPath("ini")
-Splitpath,TcExe,,TcDir
-;Global TCBit:=
+SplitPath,TcExe,,TcDir
+;Global TCBit :=  ; TC/Tc?
 If RegExMatch(TcExe,"i)totalcmd64\.exe")
 {
-    Global TCBit := 64
-    Global TCExeOnly := "totalcmd64.exe"
+    Global TCBit := 64  ; unused?
+    Global TCExeOnly := "totalcmd64.exe"  ; unused?
     Global ahk_exe_TC = "ahk_exe totalcmd64.exe"
     Global TCListBox := "LCLListBox"
     Global TCEdit := "Edit1"  ;was Edit2, later both are considered when used
     ; TC changes "Edit1" to "Edit2" when you open any of its windows containing an edit-box
     Global TCEditRename := "Edit1"
-    GLobal TCPanel1 := "Window1"
+    Global TCPanel1 := "Window1"
     Global TCPanel2 := "Window11"
-    ;GLobal TCPanel1 := "LCLListBox2"
-    ;GLobal TCPanel2 := "LCLListBox1"
+    ;Global TCPanel1 := "LCLListBox2"
+    ;Global TCPanel2 := "LCLListBox1"
 }
 Else
 {
     Global TCBit := 32
-    Global TCExeOnly := "totalcmd.exe"
+    Global TCExeOnly := "totalcmd.exe"  ; unused?
     Global ahk_exe_TC = "ahk_exe totalcmd.exe"
     Global TCListBox := "TMyListBox"
     Global TCEdit := "Edit1"
@@ -123,7 +123,7 @@ Menu,FancyR_MENU,Add, &Help,FancyR_Help
 Menu,Tray,NoStandard
 Menu,Tray,Add, Run TC (&T),<ToggleTC>
 Menu,Tray,Add, Disable (&D),<ToggleViATc>
-Menu,Tray,Add, Reload (&R),<ReLoadVIATC>
+Menu,Tray,Add, Reload (&R),<ReloadVIATC>
 If Not A_IsCompiled
 {
     Menu,Tray,Add, Edit Script (&E),<EditScript>
@@ -147,9 +147,9 @@ SetCommandInfo()
 SetDefaultKey()
 ReadKeyFromIni()
 EmptyMem()
-Winactivate,AHK_CLASS TTOTAL_CMD
+WinActivate,ahk_class TTOTAL_CMD
 <Esc>
-return
+Return
 ; end of main script }}}1
 
 ; --- config {{{1
@@ -164,7 +164,7 @@ If GlobalTogg
 }
 Else
 {
-    HotKey,Ifwinactive,AHK_CLASS TTOTAL_CMD
+    Hotkey,IfWinActive,ahk_class TTOTAL_CMD
     Hotkey,%Toggle%,<ToggleTC>,On,UseErrorLevel
     Toggle := GetConfig("Configuration","Toggle")
 }
@@ -172,13 +172,13 @@ Susp := TransHotkey(GetConfig("Configuration","Suspend"),"ALL")
 GlobalSusp := GetConfig("Configuration","GlobalSusp")
 If GlobalSusp
 {
-    HotKey,Ifwinactive
+    Hotkey,IfWinActive
     Hotkey,%Susp%,<ToggleViATc>,On,UseErrorLevel
     Susp := GetConfig("Configuration","Suspend")
 }
 Else
 {
-    HotKey,Ifwinactive,AHK_CLASS TTOTAL_CMD
+    Hotkey,IfWinActive,ahk_class TTOTAL_CMD
     Hotkey,%Susp%,<ToggleViATc>,On,UseErrorLevel
     Susp := GetConfig("Configuration","Suspend")
 }
@@ -187,30 +187,30 @@ TrayIcon := GetConfig("Configuration","TrayIcon")
 Service := GetConfig("Configuration","Service")
 If Not Service
 {
-    IfWinExist,AHK_CLASS TTOTAL_CMD
-    Winactivate,AHK_CLASS TTOTAL_CMD
+    IfWinExist,ahk_class TTOTAL_CMD
+    WinActivate,ahk_class TTOTAL_CMD
     Else
     {
         Run,%TcExe%,,UseErrorLevel
         If ErrorLevel = ERROR
             TcExe := FindPath("exe")
     }
-    WinWait,AHK_CLASS TTOTAL_CMD
-    Settimer,<CheckTCExist>,100
+    WinWait,ahk_class TTOTAL_CMD
+    SetTimer,<CheckTCExist>,100
 }
-StartUp := GetConfig("Configuration","Startup")
-If StartUp
+Startup := GetConfig("Configuration","Startup")
+If Startup
 {
-    RegRead,IsStartup,HKEY_CURRENT_USER,SOFTWARE\Microsoft\Windows\CurrentVersion\Run,ViATc
+    RegRead,IsStartup,HKEY_CURRENT_USER,Software\Microsoft\Windows\CurrentVersion\Run,ViATc
     If Not RegExMatch(IsStartup,A_ScriptFullPath)
     {
-        RegWrite,REG_SZ,HKEY_CURRENT_USEr,SOFTWARE\Microsoft\Windows\CurrentVersion\Run,ViATc,%A_ScriptFullPath%
+        RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\Microsoft\Windows\CurrentVersion\Run,ViATc,%A_ScriptFullPath%
         If ErrorLevel
             MsgBox,16,ViATc, Set Startup failed ,3
     }
 }
 Else
-    Regdelete,HKEY_CURRENT_USER,SOFTWARE\Microsoft\Windows\CurrentVersion\Run,ViATc
+    RegDelete,HKEY_CURRENT_USER,Software\Microsoft\Windows\CurrentVersion\Run,ViATc
 ComboTooltips := GetConfig("Configuration","ComboTooltips")
 GlobalSusp := GetConfig("Configuration","GlobalSusp")
 TranspHelp := GetConfig("Configuration","TranspHelp")
@@ -220,34 +220,34 @@ DefaultSE := GetConfig("SearchEngine","Default")
 SearchEng := GetConfig("SearchEngine",DefaultSE)
 LnkToDesktop := GetConfig("Other","LnkToDesktop")
 HistoryOfRename := GetConfig("Configuration","HistoryOfRename")
-IsCapslockAsEscape := GetConfig("Configuration","IsCapslockAsEscape")
+IsCapsLockAsEscape := GetConfig("Configuration","IsCapsLockAsEscape")
 FancyVimRename := GetConfig("FancyVimRename","Enabled")
 UseSystemClipboard := GetConfig("FancyVimRename","UseSystemClipboard")
-FancyR  := GetConfig("FancyVimRename","Enabled")
+FancyR := GetConfig("FancyVimRename","Enabled")
 EditorPath := GetConfig("Paths","EditorPath")
-If Not FileExist(EditorPath)   
+If Not FileExist(EditorPath)
 {
     ;fallback to the system vim path
     RegRead,VimPath,HKEY_LOCAL_MACHINE,Software\vim\gvim,path
     EditorPath := VimPath
     If Not FileExist(EditorPath)   ;fallback to notepad++
-        EditorPath := "c:\Program Files (x86)\Notepad++\notepad++.exe" 
+        EditorPath := "c:\Program Files (x86)\Notepad++\notepad++.exe"
     If Not FileExist(EditorPath) ;fallback to the last resort
-        EditorPath := "C:\Windows\notepad.exe"  
+        EditorPath := "C:\Windows\notepad.exe"
     SetConfig("Paths","EditorPath",EditorPath)
     ;MsgBox EditorPath in the ini file was not found, it is now updated to %EditorPath%
 }
 EditorArguments := GetConfig("Paths","EditorArguments")
-;Trimming leading and trailing white space is automatic when assigning a variable with only = 
-EditorArguments = %EditorArguments% 
-EditorArguments :=A_space . EditorArguments . A_space
+;Trimming leading and trailing white space is automatic when assigning a variable with only =
+EditorArguments = %EditorArguments%
+EditorArguments := A_Space . EditorArguments . A_Space
 IniRead,ExecuteInHeader,%MarksPath%,MarkSettings,ExecuteInHeader
 Global F11TC := GetConfig("Configuration","F11TC")
 Global IrfanView := GetConfig("Configuration","IrfanView")
 Global IrfanViewKey := GetConfig("Configuration","IrfanViewKey")
 If IrfanView     ;this variable is set in the viatc.ini file
 {
-    HotKey,Ifwinactive
+    Hotkey,IfWinActive
     Hotkey,%IrfanViewKey%, <Traverse>, On, UseErrorLevel           ;Turn on the dynamic hotkey.
 }
 Return
@@ -261,8 +261,8 @@ Return
 Get32768()
 {
     Global InsertMode
-    WinGet,MenuID,ID,AHK_CLASS #32768
-    IF MenuID
+    WinGet,MenuID,ID,ahk_class #32768
+    If MenuID
         InsertMode := True
     Else
     {
@@ -275,48 +275,48 @@ Get32768()
 ComboKey(A_ThisHotkey)
 Return
 <CheckTCExist>:
-IfWinNotExist,AHK_CLASS TTOTAL_CMD
+IfWinNotExist,ahk_class TTOTAL_CMD
 ExitApp
 Return
 <RemoveTooltip>:
-SetTimer,<RemoveToolTip>, Off
-ToolTip
-return
-<RemoveToolTipEx>:
-Ifwinnotactive,AHK_CLASS TTOTAL_CMD
+SetTimer,<RemoveTooltip>, Off
+Tooltip
+Return
+<RemoveTooltipEx>:
+IfWinNotActive,ahk_class TTOTAL_CMD
 {
-    SetTimer,<RemoveToolTipEx>, Off
-    ToolTip
+    SetTimer,<RemoveTooltipEx>, Off
+    Tooltip
 }
 If A_ThisHotkey = Esc
 {
-    SetTimer,<RemoveToolTipEx>, Off
+    SetTimer,<RemoveTooltipEx>, Off
     Tooltip
 }
-return
+Return
 <Exec>:
 If SendPos(0)
     ExecFile()
-return
+Return
 <Text>:
 If SendPos(0)
     SendText()
-return
+Return
 <None>:
 SendPos(-1)
-return
+Return
 <MsgVar>:
-MsgBox % "Text=" SendText_Arr["Hotkeys"] "`n" "Exec=" ExecFile_Arr["HotKeys"] "`n" "MapKeys=" MapKey_Arr["HotKeys"] "`nCombokey=" ComboKey_Arr["Hotkeys"]
+MsgBox % "Text=" SendText_Arr["Hotkeys"] "`n" "Exec=" ExecFile_Arr["Hotkeys"] "`n" "MapKeys=" MapKey_Arr["Hotkeys"] "`nCombokey=" ComboKey_Arr["Hotkeys"]
 Return
 <ComboWarnAction>:
-Msg := ComboInfo_arr[A_ThisHotkey]
+Msg := ComboInfo_Arr[A_ThisHotkey]
 StringSplit,Len,Msg,`n
-ControlGetPos,xn,yn,,hn,%TCEdit%,AHK_CLASS TTOTAL_CMD
-yn := yn - hn  - ( Len0 - 1 ) * 17
+ControlGetPos,xn,yn,,hn,%TCEdit%,ahk_class TTOTAL_CMD
+yn := yn - hn - ( Len0 - 1 ) * 17
 Tooltip,%Msg%,%xn%,%yn%
 SetTimer,<RemoveTooltipEx>,50   ; 50 is a delay
-settimer,<ComboWarnAction>,off
-return
+SetTimer,<ComboWarnAction>,Off
+Return
 <Esc>:
 Send,{Esc}
 Vim := True
@@ -324,8 +324,8 @@ KeyCount := 0
 KeyTemp :=
 InsertMode := False
 Tooltip
-ControlSetText,%TCEdit%,,AHK_CLASS TTOTAL_CMD
-Settimer,<RemoveTooltipEx>,off
+ControlSetText,%TCEdit%,,ahk_class TTOTAL_CMD
+SetTimer,<RemoveTooltipEx>,Off
 EmptyMem()
 WinClose,ViATc_TabList
 Gui,Destroy
@@ -345,16 +345,16 @@ Return
 Return
 
 <ToggleTC>:
-Ifwinexist,AHK_CLASS TTOTAL_CMD
+IfWinExist,ahk_class TTOTAL_CMD
 {
-    WinGet,AC,MinMax,AHK_CLASS TTOTAL_CMD
+    WinGet,AC,MinMax,ahk_class TTOTAL_CMD
     If Ac = -1
-        Winactivate,AHK_ClASS TTOTAL_CMD
+        WinActivate,ahk_class TTOTAL_CMD
     Else
-        Ifwinnotactive,AHK_CLASS TTOTAL_CMD
-    Winactivate,AHK_CLASS TTOTAL_CMD
+        IfWinNotActive,ahk_class TTOTAL_CMD
+    WinActivate,ahk_class TTOTAL_CMD
     Else
-        Winminimize,AHK_CLASS TTOTAL_CMD
+        Winminimize,ahk_class TTOTAL_CMD
 }
 Else
 {
@@ -363,13 +363,13 @@ Else
         TcExe := FindPath("exe")
     Loop,6
     {
-        WinWait,AHK_CLASS TTOTAL_CMD,,3
+        WinWait,ahk_class TTOTAL_CMD,,3
         If ErrorLevel
             Run,%TcExe%,,UseErrorLevel
         Else
             Break
     }
-    Winactivate,AHK_CLASS TTOTAL_CMD
+    WinActivate,ahk_class TTOTAL_CMD
     If Transparent
         WinSet,Transparent,220,ahk_class TTOTAL_CMD
 }
@@ -389,7 +389,7 @@ If Not IsSuspended
         Else
             Menu,Tray,Icon,%IconDisabledPath%
     }
-    Settimer,<GetKey>,100
+    SetTimer,<GetKey>,100
     IsSuspended := 1
 }
 Else
@@ -403,36 +403,36 @@ Else
         Else
             Menu,Tray,Icon,%IconPath%
     }
-    Settimer,<GetKey>,off
+    SetTimer,<GetKey>,Off
     IsSuspended := 0
-    Suspend,off
+    Suspend,Off
 }
 Return
 <GetKey>:
-IfWinActive AHK_CLASS TTOTAL_CMD
+IfWinActive ahk_class TTOTAL_CMD
 Suspend,on
 Else
-    Suspend,off
+    Suspend,Off
 Return
 
-<ReLoadVIATC>:
+<ReloadVIATC>:
 ReloadVIATC()
 Return
 ReloadVIATC()
 {
-    ToolTip
+    Tooltip
     ToggleMenu(1)
-    If HideControl_arr["Toggle"]
+    If HideControl_Arr["Toggle"]
         HideControl()
     Reload
 }
 
 <EditScript>:
-    run, edit %a_scriptFullPath%    ; open in the default editor
+    run, edit %A_ScriptFullPath%    ; open in the default editor
 Return
 
 <EditScriptWithVim>:
-    run, %EditorPath% . %EditorArguments% . `"%a_scriptFullPath%`" 
+    run, %EditorPath% . %EditorArguments% . `"%A_ScriptFullPath%`"
 Return
 
 <Enter>:
@@ -443,7 +443,7 @@ If SendPos(0)
     Vim := !Vim
 Return
 <ViATcVimOff>:
-    Vim := false
+    Vim := False
 Return
 <Setting>:
 If SendPos(0)
@@ -488,10 +488,10 @@ Return
 SendNum("9")
 Return
 <Down>:
-SendKey("{down}")
+SendKey("{Down}")
 Return
 <Up>:
-SendKey("{up}")
+SendKey("{Up}")
 Return
 <Left>:
 SendKey("{Left}")
@@ -506,7 +506,7 @@ Return
 SendKey("+{Up}")
 Return
 <DownSelect>:
-SendKey("+{down}")
+SendKey("+{Down}")
 Return
 <PageUp>:
 SendKey("{PgUp}")
@@ -520,8 +520,8 @@ If SendPos(0)
 Return
 GG()
 {
-    ControlGetFocus,ctrl,AHK_CLASS TTOTAL_CMD
-    PostMessage, 0x19E, 0, 1, %CTRL%, AHK_CLASS TTOTAL_CMD
+    ControlGetFocus,ctrl,ahk_class TTOTAL_CMD
+    PostMessage, 0x19E, 0, 1, %CTRL%, ahk_class TTOTAL_CMD
 }
 <End>:
 If SendPos(0)
@@ -529,11 +529,11 @@ If SendPos(0)
 Return
 G()
 {
-    ControlGetFocus,ctrl,AHK_CLASS TTOTAL_CMD
-    ControlGet,text,List,,%ctrl%,AHK_CLASS TTOTAL_CMD
+    ControlGetFocus,ctrl,ahk_class TTOTAL_CMD
+    ControlGet,text,List,,%ctrl%,ahk_class TTOTAL_CMD
     Stringsplit,T,Text,`n
     Last := T0 - 1
-    PostMessage, 0x19E, %Last%, 1, %CTRL%, AHK_CLASS TTOTAL_CMD
+    PostMessage, 0x19E, %Last%, 1, %CTRL%, ahk_class TTOTAL_CMD
 }
 
 ; --- Marks {{{2
@@ -542,19 +542,19 @@ If SendPos(4003)
 {
     Loop,22
     {
-        ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-        If (( %ThisControl% = Edit1 ) or ( %ThisControl% = Edit2 ))
+        ControlGetFocus,ThisControl,ahk_class TTOTAL_CMD
+        If (( %ThisControl% = Edit1 ) OR ( %ThisControl% = Edit2 ))
         {
             TCEdit := ThisControl
             Break
         }
-        Sleep,50
+        Sleep, 50
     }
-    ;ControlSetText,Edit1,m,AHK_CLASS TTOTAL_CMD
-    ;ControlSetText,Edit2,m,AHK_CLASS TTOTAL_CMD
-    ControlSetText,%TCEdit%,m,AHK_CLASS TTOTAL_CMD
-    Send {right}
-    Postmessage,0xB1,2,2,%TCEdit%,AHK_CLASS TTOTAL_CMD
+    ;ControlSetText,Edit1,m,ahk_class TTOTAL_CMD
+    ;ControlSetText,Edit2,m,ahk_class TTOTAL_CMD
+    ControlSetText,%TCEdit%,m,ahk_class TTOTAL_CMD
+    Send, {Right}
+    PostMessage,0xB1,2,2,%TCEdit%,ahk_class TTOTAL_CMD
     SetTimer,<MarkTimer>,100
 }
 Return
@@ -564,39 +564,39 @@ Return
 MarkTimer()
 {
     Global Mark_Arr,VIATCINI
-    ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+    ControlGetFocus,ThisControl,ahk_class TTOTAL_CMD
 
     Loop,22
     {
-        ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
-        If (( %ThisControl% = Edit1 ) or ( %ThisControl% = Edit2 ))
+        ControlGetFocus,ThisControl,ahk_class TTOTAL_CMD
+        If (( %ThisControl% = Edit1 ) OR ( %ThisControl% = Edit2 ))
             Break
-        Sleep,50
+        Sleep, 50
     }
 
-    TCEdit =  %ThisControl%
-    ;MsgBox  Debugging ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!! 
+    TCEdit = %ThisControl%
+    ;MsgBox  Debugging ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!!
 
-    ControlGetText,OutVar,%TCEdit%,AHK_CLASS TTOTAL_CMD
+    ControlGetText,OutVar,%TCEdit%,ahk_class TTOTAL_CMD
     Match_TCEdit := "i)^" . TCEdit . "$"
     If Not RegExMatch(TCEdit,Match_TCEdit) OR Not RegExMatch(Outvar,"i)^m.?")
     {
-        Settimer,<MarkTimer>,Off
+        SetTimer,<MarkTimer>,Off
         Return
     }
     If RegExMatch(OutVar,"i)^m.$")
     {
-        SetTimer,<MarkTimer>,off
-        ControlSetText,%TCEdit%,,AHK_CLASS TTOTAL_CMD
-        if (OutVar = "m>") or (OutVar = "m<")
+        SetTimer,<MarkTimer>,Off
+        ControlSetText,%TCEdit%,,ahk_class TTOTAL_CMD
+        If (OutVar = "m>") OR (OutVar = "m<")
         {
-            Send {Esc}
+            Send, {Esc}
         }
-        else
-            ControlSend,%TCEdit%,{Esc},AHK_CLASS TTOTAL_CMD
+        Else
+            ControlSend,%TCEdit%,{Esc},ahk_class TTOTAL_CMD
         ClipSaved := ClipboardAll
         Clipboard :=
-        Postmessage 1075, 2029, 0,, ahk_class TTOTAL_CMD
+        PostMessage 1075, 2029, 0,, ahk_class TTOTAL_CMD
         ClipWait
         Path := Clipboard
         Clipboard := ClipSaved
@@ -608,22 +608,22 @@ MarkTimer()
             Path := Path1 . "..." . SubStr(Path2,1,65) "..."
         }
         m := SubStr(OutVar,2,1)
-        if (m = " ") or (m = "=") or (m = ";") or (m = "[") or (m = ";")
+        If (m = " ") OR (m = "=") OR (m = ";") OR (m = "[") OR (m = ";")
         {
-            Tooltip The space`, ';'`, '=' and '[' are not allowed as marks  
-            Settimer,<RemoveHelpTip>,3000
+            Tooltip The space`, ';'`, '=' and '[' are not allowed as marks
+            SetTimer,<RemoveHelpTip>,3000
             Return
         }
-        Iniread,LastPath,%MarksPath%,MarkList,%m%
-        if LastPath and (LastPath != ERROR)
+        IniRead,LastPath,%MarksPath%,MarkList,%m%
+        If LastPath AND (LastPath != ERROR)
         {
             ;LastOverwrittenMark := m . " >> " . LastPath
             LastOverwrittenMark := m . "=" . LastPath
             IniWrite,%LastOverwrittenMark%,%MarksPath%,MarkSettings,LastOverwrittenMark
             ;tooltip This mark is already on the list
             ;tooltip mark %m% updated`, `nearlier it was `n%LastOverwrittenMark%
-            tooltip mark updated`, earlier it was `n%LastOverwrittenMark% `nRestore with:  a'
-            Settimer,<RemoveHelpTip>,4000
+            Tooltip mark updated`, earlier it was `n%LastOverwrittenMark% `nRestore with:  a'
+            SetTimer,<RemoveHelpTip>,4000
         }
         ;saving mark to ini file
         IniWrite,%Path%,%MarksPath%,MarkList,%m%
@@ -637,17 +637,17 @@ Return
 
 RestoreLastMark()
 {
-    Iniread,LastOverwrittenMark,%MarksPath%,MarkSettings,LastOverwrittenMark
+    IniRead,LastOverwrittenMark,%MarksPath%,MarkSettings,LastOverwrittenMark
     ;If Not LastOverwrittenMark
-    If (LastOverwrittenMark = "ERROR") or (LastOverwrittenMark = "")
+    If (LastOverwrittenMark = "ERROR") OR (LastOverwrittenMark = "")
     {
         MsgBox Nothing to restore
-        Return false
+        Return False
     }
     ; LastOverwrittenMark is something like "c=C:\"
     m := SubStr(LastOverwrittenMark, 1 , 1)     ; mark is the first char
     LastPath := SubStr(LastOverwrittenMark, 3)  ; path is after =
-    Iniread,CurrentPath,%MarksPath%,MarkList,%m%
+    IniRead,CurrentPath,%MarksPath%,MarkList,%m%
 
     MsgBox, 4,, Restore mark %m% `nfrom: %CurrentPath%`nto:     %LastPath%
     ;MsgBox, 4,, Restore mark %m% ? `nEarlier it was %LastPath%
@@ -659,9 +659,9 @@ RestoreLastMark()
         IniWrite,%LastOverwrittenMark%,%MarksPath%,MarkSettings,LastOverwrittenMark
         Tooltip Restored
     }
-    else
+    Else
         Tooltip Cancelled
-    sleep 800
+    Sleep, 800
     Tooltip
 }
 
@@ -675,16 +675,16 @@ ListMarksTooltip()
         IniRead,active_marks,%MarksPath%,MarkSettings,active_marks
         h := 0
         ; !!! outdated below
-        loop, Parse , active_marks , `,
+        Loop, Parse , active_marks , `,
         {
             h++
-            Iniread,Path,%MarksPath%,MarkList,%A_LoopField%
-            if Path != ERROR
-                tooltiplm = %tooltiplm%%A_LoopField% `= %Path%`n
+            IniRead,Path,%MarksPath%,MarkList,%A_LoopField%
+            If Path != ERROR
+                Tooltiplm = %Tooltiplm%%A_LoopField% `= %Path%`n
         }
-        Controlgetpos,xe,ye,we,he,%TCEdit%,ahk_class TTOTAL_CMD
-        tooltip,%Tooltiplm%,xe,ye-h*16-5
-        return
+        ControlGetPos,xe,ye,we,he,%TCEdit%,ahk_class TTOTAL_CMD
+        Tooltip,%Tooltiplm%,xe,ye-h*16-5
+        Return
 }
 
 
@@ -692,49 +692,49 @@ ListMarksTooltip()
 <AddMark>:
 AddMark()
 Return
-;        Iniread,Location,%A_WorkingDir%viatc.ini,mark,%p%
+;        IniRead,Location,%A_WorkingDir%viatc.ini,mark,%p%
 
 AddMark()
 {
     ThisMenuItem := SubStr(A_ThisMenuItem,5,StrLen(A_ThisMenuItem))
     If RegExMatch(ThisMenuItem,"i)\\\\Desktop$")
     {
-        Postmessage 1075, 2121, 0,, ahk_class TTOTAL_CMD
+        PostMessage 1075, 2121, 0,, ahk_class TTOTAL_CMD
         Return
     }
     If RegExMatch(ThisMenuItem,"i)\\\\This PC$")
     {
-        Postmessage 1075, 2122, 0,, ahk_class TTOTAL_CMD
+        PostMessage 1075, 2122, 0,, ahk_class TTOTAL_CMD
         Return
     }
     If RegExMatch(ThisMenuItem,"i)\\\\Control Panel$")
     {
-        Postmessage 1075, 2123, 0,, ahk_class TTOTAL_CMD
+        PostMessage 1075, 2123, 0,, ahk_class TTOTAL_CMD
         Return
     }
     If RegExMatch(ThisMenuItem,"i)\\\\Fonts$")
     {
-        Postmessage 1075, 2124, 0,, ahk_class TTOTAL_CMD
+        PostMessage 1075, 2124, 0,, ahk_class TTOTAL_CMD
         Return
     }
     If RegExMatch(ThisMenuItem,"i)\\\\Network$")
     {
-        Postmessage 1075, 2125, 0,, ahk_class TTOTAL_CMD
+        PostMessage 1075, 2125, 0,, ahk_class TTOTAL_CMD
         Return
     }
     If RegExMatch(ThisMenuItem,"i)\\\\Devices and Printers\$")
     {
-        Postmessage 1075, 2126, 0,, ahk_class TTOTAL_CMD
+        PostMessage 1075, 2126, 0,, ahk_class TTOTAL_CMD
         Return
     }
     If RegExMatch(ThisMenuItem,"i)\\\\Recycle bin$")
     {
-        Postmessage 1075, 2127, 0,, ahk_class TTOTAL_CMD
+        PostMessage 1075, 2127, 0,, ahk_class TTOTAL_CMD
         Return
     }
     If RegExMatch(ThisMenuItem,"i)\\\\Recycle$")
     {
-        Postmessage 1075, 2127, 0,, ahk_class TTOTAL_CMD
+        PostMessage 1075, 2127, 0,, ahk_class TTOTAL_CMD
         Return
     }
 
@@ -742,51 +742,51 @@ AddMark()
     If ExecuteInHeader
     {
         TCEditHeader := "Edit2"
-        if TCBit = 32
+        If TCBit = 32
              TCEditHeader := "TInEdit1"
         ; execute mark in the panel header, the tabstop above the file list
-        ;PostMessage 1075, 2912, 0,, AHK_CLASS TTOTAL_CMD
+        ;PostMessage 1075, 2912, 0,, ahk_class TTOTAL_CMD
         Execute(2912)  ; 2912 is like <EditPath> it opens the tabstop above the file list
-        ;return
+        ;Return
         ;SendPos(2912)  ;<EditPath> this opens the tabstop above the file list
         ;<EditPath>
-        ;return
-        Sleep 100
-        ;Sleep 800
+        ;Return
+        Sleep, 100
+        ;Sleep, 800
 
-;loop 3
+;Loop 3
 ;{
 ;        ;-- if for some unknown me reasons the command line opens instead of the header then try to open the header again
-;        ;Msgbox  Debugging TCEditHeader = [%TCEditHeader%]  on line %A_LineNumber% ;!!!
-;        ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+;        ;MsgBox  Debugging TCEditHeader = [%TCEditHeader%]  on line %A_LineNumber% ;!!!
+;        ControlGetFocus,ThisControl,ahk_class TTOTAL_CMD
 ;        If ( %ThisControl% = TCEditHeader )
-;             break
-;        ;If (( %ThisControl% = Edit1 ) or ( %ThisControl% = Edit2 ))
+;             Break
+;        ;If (( %ThisControl% = Edit1 ) OR ( %ThisControl% = Edit2 ))
 ;        If ( %ThisControl% = Edit1 )
 ;        {
-;            tooltip Oups`, the command line opened instead of the header. ThisMenuItem = [%ThisMenuItem%]
+;            Tooltip Oups`, the command line opened instead of the header. ThisMenuItem = [%ThisMenuItem%]
 ;            ControlSend, %ThisControl%, {Esc}, ahk_class TTOTAL_CMD
-;            ;Send {Esc}
-;            Sleep 100
+;            ;Send, {Esc}
+;            Sleep, 100
 ;            SendPos(2912)  ;<EditPath> this opens the tabstop above the file list
-;            Sleep 100
+;            Sleep, 100
 ;        }
 ;}
 
         ; the header should be open by now
 
         ControlSetText, %TCEditHeader%, %ThisMenuItem%, ahk_class TTOTAL_CMD
-        Sleep 90
+        Sleep, 90
         ControlSend, %TCEditHeader%, {Enter}, ahk_class TTOTAL_CMD
 
   ;      ;make sure it was executed
-  ;      ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+  ;      ControlGetFocus,ThisControl,ahk_class TTOTAL_CMD
   ;      If ( %ThisControl% = TCEditHeader )
   ;          ControlSend, %TCEditHeader%, {Enter}, ahk_class TTOTAL_CMD
-  ;      ;Msgbox  Debugging ThisMenuItem = [%ThisMenuItem%]  on line %A_LineNumber% ;!!!
+  ;      ;MsgBox  Debugging ThisMenuItem = [%ThisMenuItem%]  on line %A_LineNumber% ;!!!
 
     }
-    else
+    Else
     {
         ; execute mark in the command line
         ControlSetText, %TCEdit%, cd %ThisMenuItem%, ahk_class TTOTAL_CMD
@@ -809,16 +809,16 @@ ListMarkFromMemory()
     If Not Mark_Arr["active_marks"]
     {
         Tooltip No marks to show
-        Settimer,<RemoveHelpTip>,950
+        SetTimer,<RemoveHelpTip>,950
         Return
     }
     ControlGetFocus,TLB,ahk_class TTOTAL_CMD
     ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
-    ;InfoMark := "Mark will be gone after reload`n" 
+    ;InfoMark := "Mark will be gone after reload`n"
     ;MarkMenu = InfoMark . MarkMenu
     Menu,MarkMenu,Show,%xn%,%yn%
     ;Menu,%InfoMark%.%MarkMenu%,Show,%xn%,%yn%
-} 
+}
 
 ListActiveMarkFromIni()
 {
@@ -828,49 +828,49 @@ ListActiveMarkFromIni()
     Tooltiplm :=
     IniRead,active_marks,%MarksPath%,MarkSettings,active_marks
     ; active_marks is a string containing a comma separated list of marks
-    if active_marks =
+    If active_marks =
     {
         Tooltip No marks to show. The active_marks variable in the marks.ini file is empty
-        Settimer,<RemoveHelpTip>,2000
+        SetTimer,<RemoveHelpTip>,2000
         Return
     }
-    if active_marks = ERROR
+    If active_marks = ERROR
     {
         Tooltip No marks to show. The active_marks variable was not found in the marks.ini file
-        Settimer,<RemoveHelpTip>,2000
+        SetTimer,<RemoveHelpTip>,2000
         Return
     }
     h := 0
     ;Loop, Parse, InputVar , Delimiters           , [OmitChars]
-    loop, Parse , active_marks , `,
+    Loop, Parse , active_marks , `,
     {
-        if A_LoopField =
+        If A_LoopField =
             continue
         h++
-        Iniread,Path,%MarksPath%,MarkList,%A_LoopField%
-        if Path != ERROR
+        IniRead,Path,%MarksPath%,MarkList,%A_LoopField%
+        If Path != ERROR
         {
             mPath := "&" . A_LoopField . ">>" . Path
             Menu,MarkMenu,Add,%mPath%,<AddMark>
         }
-    }    
+    }
 
     IniRead,menu_color,%MarksPath%,MarkSettings,menu_color
-    if menu_color != ERROR
+    If menu_color != ERROR
         Menu, MarkMenu, Color, %menu_color%
-    Controlgetpos,xe,ye,we,he,%TCEdit%,ahk_class TTOTAL_CMD
+    ControlGetPos,xe,ye,we,he,%TCEdit%,ahk_class TTOTAL_CMD
     ControlGetFocus,TLB,ahk_class TTOTAL_CMD
     ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
-    if h = 0
+    If h = 0
     {
         Tooltip No marks to show. Nothing was on the active_marks list
-        Settimer,<RemoveHelpTip>,2000
+        SetTimer,<RemoveHelpTip>,2000
         ;Return
     }
-    else
+    Else
         Menu,MarkMenu,Show,%xn%,%yn%
         ;Menu,MarkMenu,Show,xe,ye-h*16-5
-    return
+    Return
 }
 */
 
@@ -879,42 +879,42 @@ ListAllMarksFromIni()
     Menu,MarkMenu,Add,-----,<AddMark>
     Menu,MarkMenu,DeleteAll
     Tooltiplm :=
-    Iniread,all_marks,%MarksPath%,MarkList
+    IniRead,all_marks,%MarksPath%,MarkList
     h := 0
     ;Loop, Parse, InputVar , Delimiters           , [OmitChars]
-    loop, Parse ,all_marks ,`n
+    Loop, Parse ,all_marks ,`n
     {
-        ;if A_LoopField =
+        ;If A_LoopField =
             ;continue
         ;MsgBox %A_LoopField%
         ;Menu,MarkMenu,Add,%A_LoopField%,<AddMark>        ; the "C:\" is lost in marks
         h++
         m := SubStr(A_LoopField,1,1)
         ;MsgBox %m%
-        Iniread,Path,%MarksPath%,MarkList,%m%
-        if Path and (Path != ERROR)
+        IniRead,Path,%MarksPath%,MarkList,%m%
+        If Path AND (Path != ERROR)
         {
             mPath := "&" . m . ">>" . Path
             Menu,MarkMenu,Add,%mPath%,<AddMark>
         }
-    }    
+    }
 
     IniRead,menu_color,%MarksPath%,MarkSettings,menu_color
-    if menu_color != ERROR
+    If menu_color != ERROR
         Menu, MarkMenu, Color, %menu_color%
-    Controlgetpos,xe,ye,we,he,%TCEdit%,ahk_class TTOTAL_CMD
+    ControlGetPos,xe,ye,we,he,%TCEdit%,ahk_class TTOTAL_CMD
     ControlGetFocus,TLB,ahk_class TTOTAL_CMD
     ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
-    if h = 0
+    If h = 0
     {
         Tooltip No marks to show. Nothing was on the active_marks list
-        Settimer,<RemoveHelpTip>,2000
+        SetTimer,<RemoveHelpTip>,2000
         ;Return
     }
-    else
+    Else
         Menu,MarkMenu,Show,%xn%,%yn%
         ;Menu,MarkMenu,Show,xe,ye-h*16-5
-    return
+    Return
 }
 ; ----- end of marks ----- }}}2
 
@@ -939,10 +939,10 @@ azCmdHistory()
         If TempField = ERROR
             Break
         n++
-        item := chr(A_Index+64) . ">>" . TempField 
+        item := chr(A_Index+64) . ">>" . TempField
         Menu,SH,add,%item%,azSelectCmdHistory
     }
-    ;Send {Esc}
+    ;Send, {Esc}
     ControlGetFocus,TLB,ahk_class TTOTAL_CMD
     ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
     Menu,SH,show,%xn%,%yn%
@@ -957,21 +957,21 @@ azSelectCmdHistory()
     nPos := Asc(Substr(nPos,1,1)) - 64 -1
     Global TCINI
     IniRead,cmd,%TCINI%,Command line history,%nPos%
-    Send {left}         ;get into command line
-    sleep 50
+    Send, {Left}         ;get into command line
+    Sleep, 50
     delay := A_KeyDelay
-    SetKeyDelay, -1   ;no delay 
+    SetKeyDelay, -1   ;no delay
     SendInput {Raw} %cmd%
     ;SendRaw %cmd%
     SetKeyDelay, %delay%
-    Send {enter}
+    Send, {Enter}
 
-    ; if {enter} was missed then try again
-    sleep 400
-    ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+    ; if {Enter} was missed then try again
+    Sleep, 400
+    ControlGetFocus,ThisControl,ahk_class TTOTAL_CMD
     If ThisControl = %TCEdit%  ;Edit1
     {
-        Send {enter}
+        Send, {Enter}
         ;tooltip enter was doubled
     }
 }
@@ -984,11 +984,11 @@ Return
 azhistory()
 {
     Sleep, 100
-    if WinExist("ahk_class #32768")
+    If WinExist("ahk_class #32768")
     {
         SendMessage,0x01E1
         hmenu := ErrorLevel
-        if hmenu!=0
+        If hmenu!=0
         {
             If Not RegExMatch(GetMenuString(Hmenu,1),".*[\\|/]$")
                 Return
@@ -1001,7 +1001,7 @@ azhistory()
                 a := chr(A_Index+64) . ">>" .  GetMenuString(Hmenu,A_Index-1)
                 Menu,SH,add,%a%,azSelect
             }
-            Send {Esc}
+            Send, {Esc}
             ControlGetFocus,TLB,ahk_class TTOTAL_CMD
             ControlGetPos,xn,yn,,,%TLB%,ahk_class TTOTAL_CMD
             Menu,SH,show,%xn%,%yn%
@@ -1018,7 +1018,7 @@ GetMenuString(hMenu, nPos)
 , "Str", lpString
 , "Int", 255
 , "UInt", 0x0400)
-    return lpString
+    Return lpString
 }
 
 
@@ -1029,21 +1029,21 @@ azSelect()
 {
     nPos := A_ThisMenuItem
     nPos := Asc(Substr(nPos,1,1)) - 64
-    Winactivate,ahk_class TTOTAL_CMD
-    Postmessage,1075,572,0,,ahk_class TTOTAL_CMD
-    Sleep,100
-    if WinExist("ahk_class #32768")
+    WinActivate,ahk_class TTOTAL_CMD
+    PostMessage,1075,572,0,,ahk_class TTOTAL_CMD
+    Sleep, 100
+    If WinExist("ahk_class #32768")
     {
         Loop %nPos%
             SendInput {Down}
-        Send {enter}
+        Send, {Enter}
     }
 }
-<Internetsearch>:
+<InternetSearch>:
 If SendPos(0)
-    Internetsearch()
+    InternetSearch()
 Return
-Internetsearch()
+InternetSearch()
 {
     Global SearchEng
     If CheckMode()
@@ -1056,7 +1056,7 @@ Internetsearch()
         clipboard := ClipSaved
         StringRight,lastchar,rFileName,1
         If(lastchar = "\" )
-            Stringleft,rFileName,rFileName,Strlen(rFileName)-1
+            StringLeft,rFileName,rFileName,Strlen(rFileName)-1
         rFileName := RegExReplace(SearchEng,"{%1}",rFileName)
         Run %rFileName%
     }
@@ -1065,8 +1065,8 @@ Internetsearch()
 <GoDesktop>:
 If SendPos(0)
 {
-    ControlSetText,%TCEdit%,CD %A_Desktop%,AHK_CLASS TTOTAL_CMD
-    ControlSend,%TCEdit%,{Enter},AHK_CLASS TTOTAL_CMD
+    ControlSetText,%TCEdit%,CD %A_Desktop%,ahk_class TTOTAL_CMD
+    ControlSend,%TCEdit%,{Enter},ahk_class TTOTAL_CMD
 }
 Return
 <GotoParentEx>:
@@ -1078,16 +1078,16 @@ IsRootDir()
 {
     ClipSaved := ClipboardAll
     clipboard :=
-    PostMessage,1075,2029,0,,AHK_CLASS TTOTAL_CMD
+    PostMessage,1075,2029,0,,ahk_class TTOTAL_CMD
     ClipWait,1
     Path := Clipboard
     Clipboard := ClipSaved
     If RegExMatch(Path,"^.:\\$")
     {
-        PostMessage,1075,2122,0,,AHK_CLASS TTOTAL_CMD
+        PostMessage,1075,2122,0,,ahk_class TTOTAL_CMD
         Path := "i)" . RegExReplace(Path,"\\","")
-        ControlGetFocus,focus_control,AHK_CLASS TTOTAL_CMD
-        ControlGet,outvar,list,,%focus_control%,AHK_CLASS TTOTAL_CMD
+        ControlGetFocus,focus_control,ahk_class TTOTAL_CMD
+        ControlGet,outvar,list,,%focus_control%,ahk_class TTOTAL_CMD
         Loop,Parse,Outvar,`n
         {
             If Not A_LoopField
@@ -1098,7 +1098,7 @@ IsRootDir()
                 Break
             }
         }
-        PostMessage, 0x19E, %Focus%, 1, %focus_control%, AHK_CLASS TTOTAL_CMD
+        PostMessage, 0x19E, %Focus%, 1, %focus_control%, ahk_class TTOTAL_CMD
     }
 }
 <SingleRepeat>:
@@ -1121,14 +1121,14 @@ If SendPos(0)
 {
     ; an external exe program is required
     program = %A_ScriptDir%\TcFullScreen.exe
-    if FileExist(program)
-        Run %program% 
-    else
+    If FileExist(program)
+        Run %program%
+    Else
     {
         link = https://magicstep.github.io/viatc/TcFullScreen/
         MsgBox, 4, , %program% is required. You can download it from %link% `nOpen link?
         IfMsgBox Yes
-            Run %link% 
+            Run %link%
     }
 }
 Return
@@ -1143,23 +1143,23 @@ If SendPos(0)
     ; GoSub,<VisCurDir>
     ; GoSub,<VisBreadCrumbs>
     GoSub,<VisDirTabs>
-    If HideControl_arr["Max"]
+    If HideControl_Arr["Max"]
     {
         PostMessage 1075, 2016, 0,, ahk_class TTOTAL_CMD
-        HideControl_arr["Max"] := 0
+        HideControl_Arr["Max"] := 0
         Return
     }
-    WinGet,AC,MinMax,AHK_CLASS TTOTAL_CMD
+    WinGet,AC,MinMax,ahk_class TTOTAL_CMD
     If AC = 1
     {
         PostMessage 1075, 2016, 0,, ahk_class TTOTAL_CMD
         PostMessage 1075, 2015, 0,, ahk_class TTOTAL_CMD
-        HideControl_arr["Max"] := 0
+        HideControl_Arr["Max"] := 0
     }
     If AC = 0
     {
         PostMessage 1075, 2015, 0,, ahk_class TTOTAL_CMD
-        HideControl_arr["Max"] := 1
+        HideControl_Arr["Max"] := 1
     }
 }
 Return
@@ -1169,7 +1169,7 @@ If SendPos(0)
 Return
 
 <GOLastTab>:
-if SendPos(0)
+If SendPos(0)
 {
     PostMessage 1075, 5001, 0,, ahk_class TTOTAL_CMD
     PostMessage 1075, 3006, 0,, ahk_class TTOTAL_CMD
@@ -1189,7 +1189,7 @@ DeleteHistory(A)
     If A
     {
         H := "LeftHistory"
-        DelMsg := " Delete the left folder history ?  TC will be terminated and reloaded"
+        DelMsg := " Delete the left folder history ? TC will be terminated and reloaded"
     }
     Else
     {
@@ -1199,7 +1199,7 @@ DeleteHistory(A)
     MsgBox,4,ViATC,%DelMsg%
     IfMsgBox YES
     {
-        Winkill,AHK_CLASS TTOTAL_CMD
+        WinKill,ahk_class TTOTAL_CMD
         n := 0
         Loop
         {
@@ -1212,12 +1212,12 @@ DeleteHistory(A)
         Run,%TCEXE%,,UseErrorLevel
         If ErrorLevel = ERROR
             TcExe := FindPath("exe")
-            ;TCEXE := findpath(1)
-        WinWait,AHK_CLASS TTOTAL_CMD,3
-        Winactivate,AHK_CLASS TTOTAL_CMD
+            ;TCEXE := FindPath(1)
+        WinWait,ahk_class TTOTAL_CMD,3
+        WinActivate,ahk_class TTOTAL_CMD
     }
     Else
-        Winactivate,AHK_CLASS TTOTAL_CMD
+        WinActivate,ahk_class TTOTAL_CMD
 }
 <DelCmdHistory>:
 If SendPos(0)
@@ -1230,7 +1230,7 @@ DeleteCMD()
     MsgBox,4,ViATc, Delete command line history ?
     IfMsgBox YES
     {
-        Winkill ahk_class TTOTAL_CMD
+        WinKill ahk_class TTOTAL_CMD
         n := 0
         TempField :=
         Loop
@@ -1244,12 +1244,12 @@ DeleteCMD()
         Run,%TCEXE%,,UseErrorLevel
         If ErrorLevel = ERROR
             TcExe := FindPath("exe")
-            ;TCEXE := findpath(1)
-        WinWait,AHK_CLASS TTOTAL_CMD,3
-        Winactivate,AHK_CLASS TTOTAL_CMD
+            ;TCEXE := FindPath(1)
+        WinWait,ahk_class TTOTAL_CMD,3
+        WinActivate,ahk_class TTOTAL_CMD
     }
     Else
-        Winactivate ahk_class TTOTAL_CMD
+        WinActivate ahk_class TTOTAL_CMD
 }
 
 <ListMapKey>:
@@ -1260,7 +1260,7 @@ Return
 If SendPos(0)
     ListMapKeyMultiColumn()
 Return
-ListMapKeyMultiColumn()  
+ListMapKeyMultiColumn()
 {
     Global MapKey_Arr,CommandInfo_Arr,ExecFile_Arr,SendText_Arr
     Map := MapKey_Arr["Hotkeys"]
@@ -1283,20 +1283,20 @@ ListMapKeyMultiColumn()
                 Action := "{" . SendText_Arr[TX] . "}"
             }
             line := SubStr(ListMap%A_Index%,1,1) . "  " . SubStr(ListMap%A_Index%,2) . "  " . Action
-            loop 10*ColumnCount
+            Loop 10*ColumnCount
             {
-                if StrLen(line) < 20*ColumnCount
+                If StrLen(line) < 20*ColumnCount
                     line .= " "
-                else
-                    break
+                Else
+                    Break
             }
-            loop 4
+            Loop 4
             {
-                if StrLen(line) < 25*ColumnCount
+                If StrLen(line) < 25*ColumnCount
                     line .= "`t"
                     ;line .= " " ;"`t"
-                else
-                    break
+                Else
+                    Break
             }
 
 
@@ -1304,14 +1304,14 @@ ListMapKeyMultiColumn()
             LM .= line
             ;LM .= SubStr(ListMap%A_Index%,1,1) . "  " . SubStr(ListMap%A_Index%,2) . "  " . Action  . "`t`t"
             ItemCount ++
-            if Mod(ItemCount, ColumnCount) = 0
+            If Mod(ItemCount, ColumnCount) = 0
                 LM .= "`n"
         }
     }
-    ControlGetPos,xn,yn,,hn,%TCEdit%,AHK_CLASS TTOTAL_CMD
+    ControlGetPos,xn,yn,,hn,%TCEdit%,ahk_class TTOTAL_CMD
     yn := yn - hn - ( ListMap0 * 8 ) - 2
     Tooltip,%LM%,%xn%,%yn%
-    Settimer,<RemoveToolTipEx>,100
+    SetTimer,<RemoveTooltipEx>,100
 }
 
 ;ListMapKeySingleColumn()
@@ -1344,18 +1344,18 @@ ListMapKey()
     LM = %InfoLine%%LM%
     MsgBox  %LM%
     ;; show tooltip
-    ;ControlGetPos,xn,yn,,hn,%TCEdit%,AHK_CLASS TTOTAL_CMD
+    ;ControlGetPos,xn,yn,,hn,%TCEdit%,ahk_class TTOTAL_CMD
     ;yn := yn - hn - ( ListMap0 * 8 ) - 2
     ;Tooltip,%LM%,%xn%,%yn%
-    ;Settimer,<RemoveToolTipEx>,100
+    ;SetTimer,<RemoveTooltipEx>,100
 }
 
 <FocusCmdLineEx>:
 If SendPos(4003)
 {
-    ControlSetText,%TCEdit%,:,AHK_CLASS TTOTAL_CMD
-    ControlSetText,Edit1,:,AHK_CLASS TTOTAL_CMD
-    ControlSetText,Edit2,:,AHK_CLASS TTOTAL_CMD
+    ControlSetText,%TCEdit%,:,ahk_class TTOTAL_CMD
+    ControlSetText,Edit1,:,ahk_class TTOTAL_CMD
+    ControlSetText,Edit2,:,ahk_class TTOTAL_CMD
     Send,{end}
 }
 Return
@@ -1370,7 +1370,7 @@ WinMaxLeft()
     ControlGetPos,tm1x,tm1y,tm1W,tm1H,%TCPanel1%,ahk_class TTOTAL_CMD
     If (tm1w < tm1h) ; Is it vertical or horizontal  True for vertical  False for horizontal
     {
-        ; vertical  (so Left and Right)
+        ; vertical (so Left and Right)
         ;MsgBox P1 tm1x,tm1y=%tm1x%,%tm1y%    tm1W,tm1H=%tm1W%,%tm1H%    `nP2 x,y=%x%,%y%   w,h=%w%,%h%
         ; it seems that numbers for both and especially Panel2 are incorrect
         ; original line below, perhaps it should be tm1x+w but is doesn't work either
@@ -1380,7 +1380,7 @@ WinMaxLeft()
         ; another way to fix it would be set both panels to 50% and then double the first panel
         ;SendPos(909) ;<cm_50Percent>
     }
-    else    ;horizontal (so Upper and Lower)
+    Else    ;horizontal (so Upper and Lower)
         ; original line below but doesn't work as numbers for Panel2 are incorrect
         ;ControlMove,%TCPanel1%,0,y+h,,,ahk_class TTOTAL_CMD
         ; 2000 is just a big numer to make Panel1 tall, pushing panel2 out of screen
@@ -1405,8 +1405,8 @@ AlwayOnTop()
 {
     WinGet,ExStyle,ExStyle,ahk_class TTOTAL_CMD
     If (ExStyle & 0x8)
-        WinSet,AlwaysOnTop,off,ahk_class TTOTAL_CMD
-    else
+        WinSet,AlwaysOnTop,Off,ahk_class TTOTAL_CMD
+    Else
         WinSet,AlwaysOnTop,on,ahk_class TTOTAL_CMD
 }
 <Transparent>:
@@ -1434,33 +1434,33 @@ Transparent()
 If SendPos(0)
 {
     ToggleMenu(1)
-    If HideControl_arr["Toggle"]
+    If HideControl_Arr["Toggle"]
         HideControl()
-    WinKill,AHK_CLASS TTOTAL_CMD
+    WinKill,ahk_class TTOTAL_CMD
     Loop,100
     {
-        IfWinNotExist,AHK_CLASS TTOTAL_CMD
+        IfWinNotExist,ahk_class TTOTAL_CMD
         Break
     }
     GoSub,<ToggleTC>
 }
 Return
 <QuitTc>:
-WinClose,AHK_CLASS TTOTAL_CMD
-return
+WinClose,ahk_class TTOTAL_CMD
+Return
 <Half>:
 If SendPos(0)
     Half()
 Return
 
-; this function didn't work, always returned 0, now dirty fixed, but not fully 
+; this function didn't work, always returned 0, now dirty fixed, but not fully
 Half()
 {
-    winget,tid,id,ahk_class TTOTAL_CMD
-    controlgetfocus,ctrl,ahk_id %tid%
-    controlget,cid,hwnd,,%ctrl%,ahk_id %tid%
-    controlgetpos,x1,y1,w1,h1,THeaderClick2,ahk_id %tid%  ;not setting any variables
-    controlgetpos,x,y,w,h,%ctrl%,ahk_id %tid%   ;seems good
+    WinGet,tid,id,ahk_class TTOTAL_CMD
+    ControlGetFocus,ctrl,ahk_id %tid%
+    ControlGet,cid,hwnd,,%ctrl%,ahk_id %tid%
+    ControlGetPos,x1,y1,w1,h1,THeaderClick2,ahk_id %tid%  ;not setting any variables
+    ControlGetPos,x,y,w,h,%ctrl%,ahk_id %tid%   ;seems good
     SendMessage,0x01A1,1,0,,ahk_id %cid%
     Height := ErrorLevel
     SendMessage,0x018E,0,0,,ahk_id %cid%
@@ -1468,10 +1468,10 @@ Half()
     h1 := 0 ;this line was needed as h1 was not set
     HalfLine := Ceil( ((h-h1)/Height)/2 ) + Top
     ;Recalculate again, a bit innacurate, it's a quick dirty fix
-    ;HalfLine := Ceil( Height/2 ) + Top - 1   
+    ;HalfLine := Ceil( Height/2 ) + Top - 1
     ;debug info in the line below !!!
     ;MsgBox, h=%h% h1=%h1% Top=%Top% HalfLine=%HalfLine%   Height=%Height%  x1=%x1% y1=%y1% w1=%w1% x=%x% y=%y% w=%w%
-    PostMessage, 0x19E, %HalfLine%, 1,, AHK_id %cid%
+    PostMessage, 0x19E, %HalfLine%, 1,, ahk_id %cid%
 }
 
 <azTab>:
@@ -1483,20 +1483,20 @@ azTab()
     Global TabsBreak,TcExe
     If RegExMatch(TcExe,"i)totalcmd64\.exe")
     {
-       MsgBox This doesn't work with totalcmd64, 64bit not supported. 
-       Return 
+       MsgBox This doesn't work with totalcmd64, 64bit not supported.
+       Return
     }
-    TCid := WinExist("AHK_CLASS TTOTAL_CMD")
+    TCid := WinExist("ahk_class TTOTAL_CMD")
     ;MsgBox  Debugging TCid = [%TCid%]  on line %A_LineNumber% ;!!!
     WinClose,ViATc_TabList
-    ControlGetPos,xe,ye,we,he,Edit1,AHK_CLASS TTOTAL_CMD
+    ControlGetPos,xe,ye,we,he,Edit1,ahk_class TTOTAL_CMD
     Gui,New
-    Gui,+HwndTabsHwnd -Caption  +Owner%TCid%
+    Gui,+HwndTabsHwnd -Caption +Owner%TCid%
     Gui,Add,ListBox,x2 y2 w%we% gSetTab
     Index := 1
     try  ; Attempts to execute code.
     {
-        tabs = ControlGetTabs("TMyTabControl1","AHK_CLASS TTOTAL_CMD")
+        tabs = ControlGetTabs("TMyTabControl1","ahk_class TTOTAL_CMD")
     }
       catch e  ; Handles the first error/exception raised by the block above.
       {
@@ -1504,19 +1504,19 @@ azTab()
       }
 
     ; !!! the ControlGetTabs is causing a nasty error on first use
-    for i,tab in ControlGetTabs("TMyTabControl1","AHK_CLASS TTOTAL_CMD")
+    for i,tab in ControlGetTabs("TMyTabControl1","ahk_class TTOTAL_CMD")
     {
         vTab := Chr(Index+64) . ":" . Tab
-        STabs[vTab] := "L" . A_index
+        STabs[vTab] := "L" . A_Index
         If A_Index = 1
         {
-            ControlGet,TMyT2,hwnd,,TMyTabControl2,AHK_CLASS TTOTAL_CMD
+            ControlGet,TMyT2,hwnd,,TMyTabControl2,ahk_class TTOTAL_CMD
             If TMyT2
                 GuiControl,,ListBox1,===== left ===================
             Else
             {
-                ControlGetPos,x1,y1,,,TPanel1,AHK_CLASS TTOTAL_CMD
-                ControlGetPos,x2,y2,,,TMyTabControl1,AHK_CLASS TTOTAL_CMD
+                ControlGetPos,x1,y1,,,TPanel1,ahk_class TTOTAL_CMD
+                ControlGetPos,x2,y2,,,TMyTabControl1,ahk_class TTOTAL_CMD
                 If ( x2 < x1 ) OR ( y2 < y1 )
                     GuiControl,,ListBox1,===== left ===================
                 Else
@@ -1527,11 +1527,11 @@ azTab()
         Index++
     }
     TabsBreak := Index
-    for i,tab in ControlGetTabs("TMyTabControl2","AHK_CLASS TTOTAL_CMD")
+    for i,tab in ControlGetTabs("TMyTabControl2","ahk_class TTOTAL_CMD")
     {
         vTab := Chr(Index+64) . ":" . Tab
-        STabs[vTab] := "R" . A_index
-        If A_index = 1
+        STabs[vTab] := "R" . A_Index
+        If A_Index = 1
         {
             GuiControl,,ListBox1,===== right ===================
         }
@@ -1540,14 +1540,14 @@ azTab()
     }
     h := (Index+1)*13
     GuiControl,Move,ListBox1,h%h%
-    WinGetPos,wx,wy,ww,wh,AHK_CLASS TTOTAL_CMD
+    WinGetPos,wx,wy,ww,wh,ahk_class TTOTAL_CMD
     x := xe + wx - 1
-    w := we +  4
+    w := we + 4
     h := h + 4
     y := ye - h + wy
-    GUiControl,Focus,ListBox2
+    GuiControl,Focus,ListBox2
     Gui,Show,h%h% w%w% x%x% y%y%,ViATc_TabList
-    Postmessage,0xB1,7,7,%TCEdit%,AHK_CLASS TTOTAL_CMD
+    PostMessage,0xB1,7,7,%TCEdit%,ahk_class TTOTAL_CMD
 }
 
 SetTab:
@@ -1559,28 +1559,28 @@ If Not RegExMatch(Pos,"=")
     TabsBreak--
     If ( Pos < TabsBreak )
     {
-        PostMessage,0x1330,%Pos%,0,TMyTabControl1,AHK_CLASS TTOTAL_CMD
+        PostMessage,0x1330,%Pos%,0,TMyTabControl1,ahk_class TTOTAL_CMD
         If Not LeftRight()
-            PostMessage,1075,4001,0,,AHK_CLASS TTOTAL_CMD
+            PostMessage,1075,4001,0,,ahk_class TTOTAL_CMD
     }
     TabsBreak--
     If ( Pos > TabsBreak )
     {
         Pos := Pos - TabsBreak - 1
-        PostMessage,0x1330,%Pos%,0,TMyTabControl2,AHK_CLASS TTOTAL_CMD
+        PostMessage,0x1330,%Pos%,0,TMyTabControl2,ahk_class TTOTAL_CMD
         If Not LeftRight()
-            PostMessage,1075,4002,0,,AHK_CLASS TTOTAL_CMD
+            PostMessage,1075,4002,0,,ahk_class TTOTAL_CMD
     }
-    WinClose,AHK_ID %TabsHwnd%
+    WinClose,ahk_id %TabsHwnd%
     Return
 }
-return
+Return
 
 LeftRight()
 {
-    ControlGetPos,x1,y1,,,TPanel1,AHK_CLASS TTOTAL_CMD
-    ControlGetFocus,TLB,AHK_CLASS TTOTAL_CMD
-    ControlGetPos,x2,y2,,,%TLB%,AHK_CLASS TTOTAL_CMD
+    ControlGetPos,x1,y1,,,TPanel1,ahk_class TTOTAL_CMD
+    ControlGetFocus,TLB,ahk_class TTOTAL_CMD
+    ControlGetPos,x2,y2,,,%TLB%,ahk_class TTOTAL_CMD
     If ( x2 < x1 ) OR ( y2 < y1 )
         Return True
     Else
@@ -1601,17 +1601,17 @@ ControlGetTabs(Control, WinTitle="", WinText="")
 , MEM_COMMIT := 0x1000
 , MEM_RELEASE := 0x8000
 , PAGE_READWRITE := 4
-    if Control is not integer
+    If Control is Not integer
     {
         ControlGet Control, Hwnd,, %Control%, %WinTitle%, %WinText%
-        if ErrorLevel
-            return
+        If ErrorLevel
+            Return
     }
     WinGet pid, PID, ahk_id %Control%
     hproc := DllCall("OpenProcess", "uint", READ_WRITE_ACCESS
-, "int", false, "uint", pid, "ptr")
-    if !hproc
-        return
+, "int", False, "uint", pid, "ptr")
+    If !hproc
+        Return
     remote_item := DllCall("VirtualAllocEx", "ptr", hproc, "ptr", 0
 , "uptr", TCITEM_SIZE + MAX_TEXT_SIZE
 , "uint", MEM_COMMIT, "uint", PAGE_READWRITE, "ptr")
@@ -1628,17 +1628,17 @@ ControlGetTabs(Control, WinTitle="", WinText="")
     Loop % (ErrorLevel != "FAIL") ? ErrorLevel : 0
     {
         SendMessage TCM_GETITEM, A_Index-1, remote_item,, ahk_id %Control%
-        if (ErrorLevel = 1)
+        If (ErrorLevel = 1)
             DllCall("ReadProcessMemory", "ptr", hproc, "ptr", remote_text
 , "ptr", &local_text, "uptr", MAX_TEXT_SIZE, "ptr", 0)
-        else
+        Else
             local_text := ""
         tabs[A_Index] := local_text
     }
     DllCall("VirtualFreeEx", "ptr", hproc, "ptr", remote_item
 , "uptr", 0, "uint", MEM_RELEASE)
     DllCall("CloseHandle", "ptr", hproc)
-    return tabs
+    Return tabs
 }
 
 ; ----- fancy rename {{{1
@@ -1651,20 +1651,20 @@ FancyRCreateGui()
     Static WM_CHAR := 0x102
     Global GetName :=
     Global UseSystemClipboard
-    WinClose,AHK_ID %FancyR_ID%
+    WinClose,ahk_id %FancyR_ID%
     PostMessage 1075, 1007, 0,, ahk_class TTOTAL_CMD
-    ;loop 8 times to wait till the little rename line opens, so we can copy content
+    ;Loop 8 times to wait till the little rename line opens, so we can copy content
     Loop,8
     {
-        ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+        ControlGetFocus,ThisControl,ahk_class TTOTAL_CMD
         ;If ThisControl = Edit1
         If ThisControl = %TCEditRename%
         {
-            ;ControlGetText,GetName,TInEdit1,AHK_CLASS TTOTAL_CMD
-            ControlGetText,GetName,%ThisControl%,AHK_CLASS TTOTAL_CMD
+            ;ControlGetText,GetName,TInEdit1,ahk_class TTOTAL_CMD
+            ControlGetText,GetName,%ThisControl%,ahk_class TTOTAL_CMD
             Break
         }
-        Sleep,50
+        Sleep, 50
     }
         ;MsgBox  ThisControl %ThisControl% ;!!!
         ;MsgBox  GetName %GetName% ;!!!
@@ -1681,7 +1681,7 @@ FancyRCreateGui()
     IniRead,HistoryOfRename,%ViatcIni%,Configuration,HistoryOfRename
     If HistoryOfRename
     {
-        ; save to file the original filename for possible undo rename, 
+        ; save to file the original filename for possible undo rename,
         file := FileOpen(HistoryOfRenamePath ,"a")
         file.write("`n" . GetName)
         file.close()
@@ -1697,7 +1697,7 @@ FancyRCreateGui()
         GetDir := False
 
 
-    WinGet,TCID,ID,AHK_CLASS TTOTAL_CMD
+    WinGet,TCID,ID,ahk_class TTOTAL_CMD
     Gui,New
     Gui,+HwndFancyR_ID
     Gui,+Owner%TCID%
@@ -1708,12 +1708,12 @@ FancyRCreateGui()
     ;Gui,Add,Edit,r1 w800 -WantReturn gFancyR_Edit,%GetName%  ;original
     Gui,Font,s9
     If HistoryOfRename
-        Gui, Add, Text, x9 y10 w800 h23, Original filename saved to the "history_of_rename.txt"  
-    else
-        Gui, Add, Text, x9 y10 w800 h23, Original filename     not saving "history_of_rename.txt"  
+        Gui, Add, Text, x9 y10 w800 h23, Original filename saved to the "history_of_rename.txt"
+    Else
+        Gui, Add, Text, x9 y10 w800 h23, Original filename     not saving "history_of_rename.txt"
     Gui, Add, Button, x310 y6 w70 h21 gFancyR_history,  &Browse it
     Gui,Font,s12
-    Gui, Add, Edit, x9 y30 w820 r3 ReadOnly, %GetName%  ;original 
+    Gui, Add, Edit, x9 y30 w820 r3 ReadOnly, %GetName%  ;original
 
 
     Gui,Font,s18
@@ -1724,36 +1724,36 @@ FancyRCreateGui()
     Gui, Add, Button, x690 y4 w140 h22 Default gFancyR_Enter, &OK ;= Enter
     ;Gui,Show,h400,ViATc Fancy Rename
     Gui,Show,,ViATc Fancy Rename
-    PostMessage,0x00C5,255,,%ThisControl%,AHK_ID %FancyR_ID%  ;LIMITTEXT to 255
-    ;PostMessage,0x00C5,256,,%ThisControl%,AHK_ID %FancyR_ID%  ;LIMITTEXT to 256
+    PostMessage,0x00C5,255,,%ThisControl%,ahk_id %FancyR_ID%  ;LIMITTEXT to 255
+    ;PostMessage,0x00C5,256,,%ThisControl%,ahk_id %FancyR_ID%  ;LIMITTEXT to 256
 
     FancyR_Insert := GetConfig("FancyVimRename","InsertMode")
     If FancyR_Insert
     {
         Menu,FancyR_DefaultsMenu,Check, Insert mode at start `tAlt+I
         Status := "  mode : Insert                                 "
-        FancyR := false
-           FancyR_Vis := false
+        FancyR := False
+           FancyR_Vis := False
     }
     Else
     {
         Menu,FancyR_DefaultsMenu,Uncheck, Insert mode at start `tAlt+I
         ;Status := "  mode : Vim Normal                             "
         Status := "  mode : Visual                                 "
-           FancyR_Vis := true
-        FancyR := true    ; normal mode commands will work too
+           FancyR_Vis := True
+        FancyR := True    ; normal mode commands will work too
     }
-    ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
+    ControlSetText,msctls_statusbar321,%status%,ahk_id %FancyR_ID%
     If GetConfig("FancyVimRename","UnselectExt")
     {
         SplitPath,GetName,,,Ext
         If FancyR_Insert
             Menu,FancyR_DefaultsMenu,Check, Insert mode at start `tAlt+I
-        else
+        Else
             Menu,FancyR_DefaultsMenu,Uncheck, Insert mode at start `tAlt+I
         Menu,FancyR_DefaultsMenu,Check, Extension unselected at start `tAlt+E
     }
-    If Ext And ( Not GetDir )
+    If Ext AND ( Not GetDir )
     {
         StartPos := 0
         EndPos := StrLen(GetName) - strlen(Ext) - 1
@@ -1775,7 +1775,7 @@ GetFindText(byRef w, byRef l)
     If FancyR_IsFind
     {
         ThisChar := Chr(w)
-        ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
+        ControlGetText,Text,Edit1,ahk_id %FancyR_ID%
         GetPos := FancyR_GetPos()
         StartPos := GetPos[2] + 1
         Pos := RegExMatch(Text,RegExReplace(ThisChar,"\+|\?|\.|\*|\{|\}|\(|\)|\||\^|\$|\[|\]|\\","\$0"),"",StartPos)
@@ -1838,33 +1838,33 @@ Return
 FancyR_DeselectSimple:
     ;If FancyR_SendKey("")
     {
-        Send {Right}{Left}   ; deselect
+        Send, {Right}{Left}   ; deselect
     }
 Return
 FancyR_DeselectStart:
-    if FancyR    
+    If FancyR
     {
         Pos := FancyR_GetPos()
         Pos := Pos[1]
         FancyR_DefaultsMenuPos(Pos,Pos)
     }
-    else
-       FancyR_SendKey("")    
-return
+    Else
+       FancyR_SendKey("")
+Return
 FancyR_DeselectEnd:
-    if FancyR    
+    If FancyR
     {
         Pos := FancyR_GetPos()
         Pos := Pos[2]
         FancyR_DefaultsMenuPos(Pos,Pos)
     }
-    else
-       FancyR_SendKey("")    
+    Else
+       FancyR_SendKey("")
 Return
 FancyR_Selectall:
 If FancyR_SendKey("")
 {
-    ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
+    ControlGetText,Text,Edit1,ahk_id %FancyR_ID%
     Pos := Strlen(Text)
     FancyR_DefaultsMenuPos(0,Pos)
 }
@@ -1872,8 +1872,8 @@ Return
 FancyR_SelectFileName:
 If FancyR_SendKey("")
 {
-    ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
-    splitpath,Text,,,,FileName
+    ControlGetText,Text,Edit1,ahk_id %FancyR_ID%
+    SplitPath,Text,,,,FileName
     Pos := Strlen(FileName)
     FancyR_DefaultsMenuPos(0,Pos)
 }
@@ -1881,8 +1881,8 @@ Return
 FancyR_SelectExt:
 If FancyR_SendKey("")
 {
-    ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
-    splitpath,Text,,,FileExt,FileName
+    ControlGetText,Text,Edit1,ahk_id %FancyR_ID%
+    SplitPath,Text,,,FileExt,FileName
     Pos1 := Strlen(FileName)
     Pos2 := Strlen(FileExt)
     FancyR_DefaultsMenuPos(Pos1+1,Pos1+Pos2+1)
@@ -1911,7 +1911,7 @@ Return
 FancyR_End:
 If FancyR_SendKey("")
 {
-    ;ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
+    ;ControlGetText,Text,Edit1,ahk_id %FancyR_ID%
     ;Pos := Strlen(Text)
     ;FancyR_DefaultsMenuPos(Pos,Pos)
     Key := FancyR_Vis ? "+{End}" : "{End}"
@@ -1922,7 +1922,7 @@ FancyR_Copy:
 If FancyR_SendKey("")
 {
     Pos := FancyR_GetPos()
-    ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
+    ControlGetText,Text,Edit1,ahk_id %FancyR_ID%
     FancyR_Temp := SubStr(Text,Pos[1]+1,Pos[2]-Pos[1])
     If UseSystemClipboard
         Clipboard = %FancyR_Temp%
@@ -1932,24 +1932,24 @@ FancyR_Backspace:
 If FancyR_SendKey("")
 {
     FancyR_Cut(-1)
-    Send {Backspace}
+    Send, {Backspace}
 }
 Return
 FancyR_Substitute:
 If FancyR
 {
     FancyR_Cut(0)
-    Send {Delete}
-    gosub FancyR_InsertMode
+    Send, {Delete}
+    GoSub FancyR_InsertMode
 }
-else
+Else
     If FancyR_SendKey("")
 
 FancyR_Delete:
 If FancyR_SendKey("")
 {
     FancyR_Cut(0)
-    Send {Delete}
+    Send, {Delete}
 }
 Return
 FancyR_Paste:
@@ -1960,13 +1960,13 @@ FancyR_Transpose:
 If FancyR_SendKey("")
 {
     Pos := FancyR_GetPos()
-    ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
+    ControlGetText,Text,Edit1,ahk_id %FancyR_ID%
     If Pos[1] > 0
     {
         TextA := SubStr(Text,Pos[1],1)
         TextB := SubStr(Text,Pos[1]+1,1)
         SetText := SubStr(Text,1,Pos[1]-1) . TextB . TextA . SubStr(Text,Pos[1]+2)
-        ControlSetText,Edit1,%SetText%,AHK_ID %FancyR_ID%
+        ControlSetText,Edit1,%SetText%,ahk_id %FancyR_ID%
         FancyR_DefaultsMenuPos(Pos[1],Pos[2])
         FancyR_Edit()
     }
@@ -1976,7 +1976,7 @@ FancyR_Replace:
 If FancyR_SendKey("")
 {
     FancyR_IsReplace := True
-    gosub FancyR_DeselectSimple
+    GoSub FancyR_DeselectSimple
     Pos := FancyR_GetPos()
     If Pos[1] = Pos[2]
     {
@@ -1992,10 +1992,10 @@ If FancyR_SendKey("")
     FancyR_Vis := False
     FancyR_IsMultiReplace := True
     Status := "  mode : Replace                                "
-    gosub FancyR_DeselectSimple
-    ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
-    gosub FancyR_DeselectSimple
-    Send +{Right}        ; select one char
+    GoSub FancyR_DeselectSimple
+    ControlSetText,msctls_statusbar321,%status%,ahk_id %FancyR_ID%
+    GoSub FancyR_DeselectSimple
+    Send, +{Right}        ; select one char
     Pos := FancyR_GetPos()
     If Pos[1] = Pos[2]
     {
@@ -2004,37 +2004,37 @@ If FancyR_SendKey("")
     }
 }
 Return
-FancyR_visual:
+FancyR_Visual:
 If FancyR_SendKey("")
 {
     FancyR_Vis := !FancyR_Vis
     If FancyR_Vis
     {
         Status := "  mode : Visual                                 "
-        ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
+        ControlSetText,msctls_statusbar321,%status%,ahk_id %FancyR_ID%
         ;!!! experimental below
-        ;Gui, HwndFancyR_ID:Color, red , ahk_id %FancyR_ID% 
-        Gui, Edit1:Color, cRed 
+        ;Gui, HwndFancyR_ID:Color, red , ahk_id %FancyR_ID%
+        Gui, Edit1:Color, cRed
         ;Gui, Color, %CustomColor%
         RGB := 0xFF66AA
-        ;GuiControl, %FancyR_ID%: +c%RGB%, ahk_id %FancyR_ID% 
+        ;GuiControl, %FancyR_ID%: +c%RGB%, ahk_id %FancyR_ID%
         Gui, Edit1:Font, cBlue Bold
         Gui, Font, s18 cRed Bold, Verdana
         GuiControl, Font, msctls_statusbar321
         GuiControl, Font, Edit1
-        GuiControl, HwndFancyR_ID: +c%RGB%, Edit1, color red ;ahk_id %FancyR_ID% 
+        GuiControl, HwndFancyR_ID: +c%RGB%, Edit1, color red ;ahk_id %FancyR_ID%
         Gui, msctls_statusbar321:Font, cBlue Bold
         Gui, Hotstring:Color, Red, Green
         Gui, HwndFancyR_ID:Color, Red, Green
-        ;Tooltip v 
+        ;Tooltip v
     }
     Else
     {
-        ;gosub FancyR_DeselectEnd
-        gosub FancyR_DeselectSimple
+        ;GoSub FancyR_DeselectEnd
+        GoSub FancyR_DeselectSimple
         WinSet, Region,, ahk_id %FancyR_ID% ; Restore the window to its original/default display area. !!!!
         Status := "  mode : Vim Normal                             "
-        ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
+        ControlSetText,msctls_statusbar321,%status%,ahk_id %FancyR_ID%
     }
 }
 Return
@@ -2045,64 +2045,64 @@ FancyR_InsertMode:
     FancyR := False
     FancyR_Vis := False
     Status := "  mode : Insert                                 "
-    ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
+    ControlSetText,msctls_statusbar321,%status%,ahk_id %FancyR_ID%
 }
 Return
 
 FancyR_Insert:
-if FancyR
+If FancyR
 {
-    gosub FancyR_DeselectStart
-    gosub FancyR_InsertMode
+    GoSub FancyR_DeselectStart
+    GoSub FancyR_InsertMode
 }
-else
-   FancyR_SendKey("")    
+Else
+   FancyR_SendKey("")
 Return
 
 FancyR_InsertHome:
-if FancyR
+If FancyR
 {
-    gosub FancyR_InsertMode
-    gosub FancyR_DeselectSimple
-    Send {Home}
+    GoSub FancyR_InsertMode
+    GoSub FancyR_DeselectSimple
+    Send, {Home}
 }
-else
-   FancyR_SendKey("")    
+Else
+   FancyR_SendKey("")
 Return
 FancyR_Append:
-if FancyR
+If FancyR
 {
-    gosub FancyR_DeselectEnd
-    gosub FancyR_InsertMode
-    Send {Right}
+    GoSub FancyR_DeselectEnd
+    GoSub FancyR_InsertMode
+    Send, {Right}
 }
-else
-   FancyR_SendKey("")    
+Else
+   FancyR_SendKey("")
 Return
 FancyR_AppendEnd:
-if FancyR
+If FancyR
 {
-    gosub FancyR_DeselectEnd
-    gosub FancyR_InsertMode
-    Send {End}
+    GoSub FancyR_DeselectEnd
+    GoSub FancyR_InsertMode
+    Send, {End}
 }
-else
-   FancyR_SendKey("")    
+Else
+   FancyR_SendKey("")
 Return
 FancyR_Esc:
-    ;gosub FancyR_DeselectEnd
+    ;GoSub FancyR_DeselectEnd
     FancyR := True
     FancyR_IsReplace := False
     FancyR_IsMultiReplace := False
     FancyR_Count := 0
     Status := "  mode : Vim Normal                             "
     Tooltip
-    Settimer,<RemoveHelpTip>,off
-    ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
+    SetTimer,<RemoveHelpTip>,Off
+    ControlSetText,msctls_statusbar321,%status%,ahk_id %FancyR_ID%
 Return
 FancyR_Quit:
 If FancyR_SendKey("")
-    WinClose,AHK_ID %FancyR_ID%
+    WinClose,ahk_id %FancyR_ID%
 Return
 FancyR_Undo:
 If FancyR_SendKey("")
@@ -2112,30 +2112,30 @@ FancyR_history:
     Global HistoryOfRenamePath
     match = `"$0
     file := Regexreplace(HistoryOfRenamePath,".*",match)
-    If Fileexist(EditorPath)
+    If FileExist(EditorPath)
         editfile := EditorPath . EditorArguments . file
     Else
-        editfile := "notepad.exe" . a_space . file
+        editfile := "notepad.exe" . A_Space . file
     Run,%editfile%,,UseErrorLevel
 Return
 
 FancyR_Enter:
 GuiControlGet,NewName,,Edit1
 Gui,Destroy
-Postmessage,1075,1007,0,,AHK_CLASS TTOTAL_CMD
+PostMessage,1075,1007,0,,ahk_class TTOTAL_CMD
 Loop,40
 {
-    ControlGetFocus,This,AHK_CLASS TTOTAL_CMD
+    ControlGetFocus,This,ahk_class TTOTAL_CMD
     If This = %TCEditRename%
     {
-        ControlGetText,ConfirName,%TCEditRename%,AHK_CLASS TTOTAL_CMD
-        ControlSetText,%TCEditRename%,%NewName%,AHK_CLASS TTOTAL_CMD
+        ControlGetText,ConfirName,%TCEditRename%,ahk_class TTOTAL_CMD
+        ControlSetText,%TCEditRename%,%NewName%,ahk_class TTOTAL_CMD
         Break
     }
-    Sleep,50
+    Sleep, 50
 }
 If Diff(ConfirName,GetName)
-    ControlSend,%TCEditRename%,{enter},AHK_CLASS TTOTAL_CMD
+    ControlSend,%TCEditRename%,{Enter},ahk_class TTOTAL_CMD
 Else
     Return
 Return
@@ -2169,11 +2169,11 @@ If you can't type, then press i to edit properly in so called "Insert mode"
 To always start in "Insert mode" open "Defaults" menu and select "Insert mode at start"
 )
 
-    WinGetPos,,,w,h,AHK_ID %FancyR_ID%
+    WinGetPos,,,w,h,ahk_id %FancyR_ID%
     ;MsgBox, 262144, MyTitle, My Text Here   ;Always-on-top is  262144
     MsgBox , 262144, Help for Fancy Rename , %rename_help%
     ;tooltip,%rename_help%,0,%h%
-    ;Settimer,<RemoveHelpTip>,50
+    ;SetTimer,<RemoveHelpTip>,50
     Return
 }
 
@@ -2190,13 +2190,13 @@ FancyR_Keys()
 q :  Quit rename without saving (in Normal and Visual mode)
 i :  Insert mode
 I :  Insert at front
-a :  Append 
+a :  Append
 A :  Append at end
 v :  Visual select mode, v again to toggle to Vim Normal mode
 Esc :  Vim's Normal mode
 ^[  :  Same as Esc
-Capslock : Same as Esc (only if this is enabled in the settings)
-                   Use Ctrl+Capslock to get Capslock 
+CapsLock : Same as Esc (only if this is enabled in the settings)
+                   Use Ctrl+CapsLock to get CapsLock
 Alt+c = Cancel button : Quit rename without saving (in any mode)
 Enter = OK button :  Save rename
 
@@ -2215,7 +2215,7 @@ X :  Delete backward (like backspace or X in vim)
 d :  Delete backward (like backspace or X in vim)
 s :  Substitute character or selection
 y :  Copy selection (Visual mode)
-p :  Paste 
+p :  Paste
 f :  Find characters, E.g 'f' then 'a' to find 'a'
 t :  Transpose two characters at the cursor
 r :  Replace one character at the cursor
@@ -2231,21 +2231,21 @@ n :  Select the file name
 < or , :  Deselect with cursor at selection start
 > or . :  Deselect with cursor at selection end
 )
-    WinGetPos,,,w,h,AHK_ID %FancyR_ID%
+    WinGetPos,,,w,h,ahk_id %FancyR_ID%
     ;MsgBox, 262144, MyTitle, My Text Here   ;Always-on-top is  262144
     MsgBox , 262144, Keys for Fancy Rename , %rename_keys%
     ;tooltip,%rename_help%,0,%h%
-    ;Settimer,<RemoveHelpTip>,50
+    ;SetTimer,<RemoveHelpTip>,50
     Return
 }
 
 <RemoveHelpTip>:
-Ifwinnotactive,AHK_ID %FancyR_ID%
+IfWinNotActive,ahk_id %FancyR_ID%
 {
     SetTimer,<RemoveHelpTip>, Off
-    ToolTip
+    Tooltip
 }
-return
+Return
 FancyR_SendKey(ThisKey)
 {
     If FancyR
@@ -2253,17 +2253,17 @@ FancyR_SendKey(ThisKey)
         FancyR_Count := FancyR_Count ? FancyR_Count : 1
         Loop % FancyR_Count
         {
-            Send %ThisKey%
+            Send, %ThisKey%
         }
         FancyR_Count := 0
-        ControlGetText,status,msctls_statusbar321,AHK_ID %FancyR_ID%
+        ControlGetText,status,msctls_statusbar321,ahk_id %FancyR_ID%
         status := SubStr(status,1,Strlen(status)-3) . "   "
-        ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
+        ControlSetText,msctls_statusbar321,%status%,ahk_id %FancyR_ID%
         Return True
     }
     Else
     {
-        Send %A_ThisHotkey%
+        Send, %A_ThisHotkey%
         Return False
     }
 }
@@ -2285,11 +2285,11 @@ FancyR_SendNum()
                 FancyR_SendKey(key)
                 Return False
             }
-            else
+            Else
                FancyR_Count := ThisNum + 0
-        if FancyR_Count > 256
+        If FancyR_Count > 256
             FancyR_Count := 256
-        ControlGetText,status,msctls_statusbar321,AHK_ID %FancyR_ID%
+        ControlGetText,status,msctls_statusbar321,ahk_id %FancyR_ID%
         StringRight,isNumber,status,3
         If RegExMatch(isNumber,"\s\s\s")
             Status := RegExReplace(Status,"\s\s\s$") . FancyR_Count . "  "
@@ -2299,12 +2299,12 @@ FancyR_SendNum()
             Status := RegExReplace(Status,"\d\d\s$") . FancyR_Count
         If RegExMatch(isNumber,"\d\d\d")
             Status := RegExReplace(Status,"\d\d\d$") . FancyR_Count
-        ControlSetText,msctls_statusbar321,%status%,AHK_ID %FancyR_ID%
+        ControlSetText,msctls_statusbar321,%status%,ahk_id %FancyR_ID%
         Return True
     }
     Else
     {
-        Send %A_ThisHotkey%
+        Send, %A_ThisHotkey%
         Return False
     }
 }
@@ -2320,7 +2320,7 @@ FancyR_Undo()
     ;Stringsplit,Pos,Change,`,   ;When fancy-renaming a name including a comma, the undo function truncates till the comma.
     Stringsplit,Pos,Change,|    ; "|" is a divider because it is not allowed in filenames
     If Not DontSetText
-        ControlSetText,Edit1,%Pos3%,AHK_ID %FancyR_ID%
+        ControlSetText,Edit1,%Pos3%,ahk_id %FancyR_ID%
     FancyR_DefaultsMenuPos(Pos1,Pos2)
     FancyR_History["s"] := Serial
     FancyR_History["String"] := Pos3
@@ -2328,16 +2328,16 @@ FancyR_Undo()
 FancyR_Edit()
 {
     Match := "^" . RegExReplace(FancyR_History["String"],"\+|\?|\.|\*|\{|\}|\(|\)|\||\^|\$|\[|\]|\\","\$0") . "$"
-    ControlGetText,Change,Edit1,AHK_ID %FancyR_ID%
-    if Not RegExMatch(Change,Match)
+    ControlGetText,Change,Edit1,ahk_id %FancyR_ID%
+    If Not RegExMatch(Change,Match)
     {
         Serial := FancyR_History["s"]
         Serial++
         pos := FancyR_GetPos()
         StartPos := pos[1]
         EndtPos  := pos[2]
-        ;FancyR_History[Serial] :=  StartPos . "," . EndPos . "," .  Change
-        FancyR_History[Serial] :=  StartPos . "|" . EndPos . "|" .  Change
+        ;FancyR_History[Serial] := StartPos . "," . EndPos . "," .  Change
+        FancyR_History[Serial] := StartPos . "|" . EndPos . "|" .  Change
         FancyR_History["s"] := Serial
         FancyR_History["String"] := change
         If FancyR_IsReplace
@@ -2358,7 +2358,7 @@ FancyR_Edit()
 FancyR_Cut(Length)
 {
     Pos := FancyR_GetPos()
-    ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
+    ControlGetText,Text,Edit1,ahk_id %FancyR_ID%
     If Pos[1] = Pos[2]
     {
         Pos1 := Pos[1] + 1 + Length
@@ -2377,27 +2377,27 @@ FancyR_Paste(Direction="")
     If UseSystemClipboard
         FancyR_Temp := Clipboard
     Pos := FancyR_GetPos()
-    ControlGetText,Text,Edit1,AHK_ID %FancyR_ID%
+    ControlGetText,Text,Edit1,ahk_id %FancyR_ID%
     SetText := SubStr(Text,1,Pos[1]) . FancyR_Temp . SubStr(Text,Pos[1]+1)
     Pos1 := Pos[1] + Strlen(FancyR_Temp)
-    ControlSetText,Edit1,%SetText%,AHK_ID %FancyR_ID%
+    ControlSetText,Edit1,%SetText%,ahk_id %FancyR_ID%
     FancyR_DefaultsMenuPos(Pos1,Pos1)
     FancyR_Edit()
 }
 FancyR_GetPos()
 {
     Pos := []
-    ControlGet,Edit_ID,hwnd,,Edit1,AHK_ID %FancyR_ID%
+    ControlGet,Edit_ID,hwnd,,Edit1,ahk_id %FancyR_ID%
     Varsetcapacity(StartPos,2)
     Varsetcapacity(EndPos,2)
-    Sendmessage,0x00B0,&StartPos,&EndPos,,AHK_ID %Edit_ID%
+    SendMessage,0x00B0,&StartPos,&EndPos,,ahk_id %Edit_ID%
     Pos[1] := NumGet(StartPos)
     Pos[2] := NumGet(EndPos)
     Return Pos
 }
 FancyR_DefaultsMenuPos(Pos1,Pos2)
 {
-    PostMessage,0x00B1,%Pos1%,%Pos2%,Edit1,AHK_ID %FancyR_ID%
+    PostMessage,0x00B1,%Pos1%,%Pos2%,Edit1,ahk_id %FancyR_ID%
 }
 
 
@@ -2405,15 +2405,15 @@ FancyR_DefaultsMenuPos(Pos1,Pos2)
 SetDefaultKey()
 {
     ; ---------  keys for quick-search (\ or ctrl+s)
-    Hotkey,Ifwinactive,ahk_class TQUICKSEARCH
+    Hotkey,IfWinActive,ahk_class TQUICKSEARCH
     Hotkey,+j,<Down>
-    Hotkey,+k,<Up>    
+    Hotkey,+k,<Up>
     Hotkey,!j,<Down>
     Hotkey,!k,<Up>
     Hotkey,^g,<Down>
     Hotkey,^t,<Up>
     ; ---------  keys for search (? or alt+F7)
-    Hotkey,Ifwinactive,ahk_class TFindFile
+    Hotkey,IfWinActive,ahk_class TFindFile
     Hotkey,!j,<Down>
     Hotkey,!k,<Up>
     Hotkey,^g,<Down>
@@ -2421,70 +2421,70 @@ SetDefaultKey()
     Hotkey,^e,<Down>
     Hotkey,^y,<Up>
     ; ---------  keys for Help
-    Hotkey,Ifwinactive,Help   VIATC %Version%
+    Hotkey,IfWinActive,Help   VIATC %Version%
     Hotkey,j,<Down>
-    Hotkey,k,<Up>    
-    Hotkey,h,<Left>    
-    Hotkey,l,<Right>    
+    Hotkey,k,<Up>
+    Hotkey,h,<Left>
+    Hotkey,l,<Right>
 
-    ; --------- IsCapslockAsEscape
-    IniRead,IsCapslockAsEscape,%ViatcIni%,Configuration,IsCapslockAsEscape
-    if IsCapslockAsEscape
+    ; --------- IsCapsLockAsEscape
+    IniRead,IsCapsLockAsEscape,%ViatcIni%,Configuration,IsCapsLockAsEscape
+    If IsCapsLockAsEscape
         Hotkey,$CapsLock,<Esc>,On,UseErrorLevel
 
-    Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
-    HotKey,1,<Num1>,on,UseErrorLevel
-    HotKey,2,<Num2>,on,UseErrorLevel
-    HotKey,3,<Num3>,on,UseErrorLevel
-    HotKey,4,<Num4>,on,UseErrorLevel
-    HotKey,5,<Num5>,on,UseErrorLevel
-    HotKey,6,<Num6>,on,UseErrorLevel
-    HotKey,7,<Num7>,on,UseErrorLevel
-    HotKey,8,<Num8>,on,UseErrorLevel
-    HotKey,9,<Num9>,on,UseErrorLevel
-    HotKey,0,<Num0>,on,UseErrorLevel
+    Hotkey,IfWinActive,ahk_class TTOTAL_CMD
+    Hotkey,1,<Num1>,on,UseErrorLevel
+    Hotkey,2,<Num2>,on,UseErrorLevel
+    Hotkey,3,<Num3>,on,UseErrorLevel
+    Hotkey,4,<Num4>,on,UseErrorLevel
+    Hotkey,5,<Num5>,on,UseErrorLevel
+    Hotkey,6,<Num6>,on,UseErrorLevel
+    Hotkey,7,<Num7>,on,UseErrorLevel
+    Hotkey,8,<Num8>,on,UseErrorLevel
+    Hotkey,9,<Num9>,on,UseErrorLevel
+    Hotkey,0,<Num0>,on,UseErrorLevel
     Hotkey,$Enter,<Enter>,On,UseErrorLevel
     Hotkey,Esc,<Esc>,On,UseErrorLevel
 
     ; -------- single keys
-    Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
-    HotKey,+a,<SelectAllBoth>,on,UseErrorLevel
+    Hotkey,IfWinActive,ahk_class TTOTAL_CMD
+    Hotkey,+a,<SelectAllBoth>,on,UseErrorLevel
     Hotkey,b,<PageUp>,On,UseErrorLevel
     Hotkey,+b,<azTab>,On,UseErrorLevel
-    ;HotKey,c,<CloseCurrentTab>,on,UseErrorLevel
-    HotKey,+c,<ExecuteDOS>,on,UseErrorLevel
-    HotKey,d,<DirectoryHotlist>,on,UseErrorLevel
-    HotKey,+d,<GoDesktop>,on,UseErrorLevel
-    ;HotKey,e,<ContextMenu>,on,UseErrorLevel
-    HotKey,+e,<Edit>,on,UseErrorLevel
+    ;Hotkey,c,<CloseCurrentTab>,on,UseErrorLevel
+    Hotkey,+c,<ExecuteDOS>,on,UseErrorLevel
+    Hotkey,d,<DirectoryHotlist>,on,UseErrorLevel
+    Hotkey,+d,<GoDesktop>,on,UseErrorLevel
+    ;Hotkey,e,<ContextMenu>,on,UseErrorLevel
+    Hotkey,+e,<Edit>,on,UseErrorLevel
     Hotkey,f,<PageDown>,On,UseErrorLevel
     Hotkey,+g,<End>,On,UseErrorLevel
-    HotKey,h,<left>,on,UseErrorLevel
-    HotKey,+h,<GotoPreviousDir>,on,UseErrorLevel
+    Hotkey,h,<Left>,on,UseErrorLevel
+    Hotkey,+h,<GotoPreviousDir>,on,UseErrorLevel
     Hotkey,i,<Return>,on,UseErrorLevel
-    HotKey,j,<Down>,on,UseErrorLevel
-    HotKey,+j,<DownSelect>,on,UseErrorLevel
-    HotKey,k,<up>,on,UseErrorLevel
-    HotKey,+k,<UpSelect>,on,UseErrorLevel
-    HotKey,l,<right>,on,UseErrorLevel
-    HotKey,+l,<GotoNextDir>,on,UseErrorLevel
+    Hotkey,j,<Down>,on,UseErrorLevel
+    Hotkey,+j,<DownSelect>,on,UseErrorLevel
+    Hotkey,k,<Up>,on,UseErrorLevel
+    Hotkey,+k,<UpSelect>,on,UseErrorLevel
+    Hotkey,l,<Right>,on,UseErrorLevel
+    Hotkey,+l,<GotoNextDir>,on,UseErrorLevel
     Hotkey,m,<Mark>,On,UseErrorLevel
     Hotkey,+m,<Half>,On,UseErrorLevel
     Hotkey,n,<azhistory>,On,UseErrorLevel
     Hotkey,+n,<DirectoryHistory>,On,UseErrorLevel
-    HotKey,o,<SrcOpenDrives>,on,UseErrorLevel
-    HotKey,+o,<OpenDrives>,on,UseErrorLevel
-    HotKey,p,<PackFiles>,on,UseErrorLevel
-    HotKey,+p,<UnpackFiles>,on,UseErrorLevel
-    HotKey,q,<SrcQuickview>,on,UseErrorLevel
-    HotKey,+q,<Internetsearch>,on,UseErrorLevel
+    Hotkey,o,<SrcOpenDrives>,on,UseErrorLevel
+    Hotkey,+o,<OpenDrives>,on,UseErrorLevel
+    Hotkey,p,<PackFiles>,on,UseErrorLevel
+    Hotkey,+p,<UnpackFiles>,on,UseErrorLevel
+    Hotkey,q,<SrcQuickview>,on,UseErrorLevel
+    Hotkey,+q,<InternetSearch>,on,UseErrorLevel
     Hotkey,r,<RenameSingleFile>,on,UseErrorLevel
     Hotkey,+r,<FancyR>,on,UseErrorLevel
     ;Hotkey,+r,<MultiRenameFiles>,on,UseErrorLevel
-    HotKey,t,<OpenNewTab>,on,UseErrorLevel
-    HotKey,+t,<OpenNewTabBg>,on,UseErrorLevel
-    HotKey,u,<GotoParentEx>,on,UseErrorLevel
-    HotKey,+u,<GotoRoot>,on,UseErrorLevel
+    Hotkey,t,<OpenNewTab>,on,UseErrorLevel
+    Hotkey,+t,<OpenNewTabBg>,on,UseErrorLevel
+    Hotkey,u,<GotoParentEx>,on,UseErrorLevel
+    Hotkey,+u,<GotoRoot>,on,UseErrorLevel
     Hotkey,v,<ContextMenu>,On,UseErrorLevel
     Hotkey,w,<SrcCustomViewMenu>,On,UseErrorLevel
     Hotkey,+w,<Enter>,On,UseErrorLevel
@@ -2515,26 +2515,26 @@ SetDefaultKey()
 
 
     ; --------- Special characters in ini files
-    ; The following four characters: space ; = [   are not allowed as keys in ini files 
+    ; The following four characters: space ; = [   are not allowed as keys in ini files
     ;   thus they cannot be directly remapped as hotkeys (nor be used as marks in ViATc).
-    ; Below is a workaround 
+    ; Below is a workaround
     IniRead,command,%ViatcIni%,SpecialHotkey,Char_space
-    if %command%
+    If %command%
         Hotkey, $space,%command%,On,UseErrorLevel
     IniRead,command,%ViatcIni%,SpecialHotkey,Char_semicolon
-    if %command%
+    If %command%
         Hotkey,`;,%command%,On,UseErrorLevel
     IniRead,command,%ViatcIni%,SpecialHotkey,Char_equals
-    if %command%
+    If %command%
         Hotkey,=,%command%,On,UseErrorLevel
     IniRead,command,%ViatcIni%,SpecialHotkey,Char_[
-    if %command%
-        Hotkey,[,%command%,On,UseErrorLevel        
+    If %command%
+        Hotkey,[,%command%,On,UseErrorLevel
 
     ; ------ combo keys:
 IniRead,EnableBuiltInComboHotkeys,%ViatcIni%,Configuration,EnableBuiltInComboHotkeys
-if EnableBuiltInComboHotkeys
-{    
+If EnableBuiltInComboHotkeys
+{
     ComboKeyAdd("ca","<SetAttrib>")
     ComboKeyAdd("a'","<RestoreLastMark>")
     ComboKeyAdd("chc","<DelCmdHistory>")
@@ -2570,7 +2570,7 @@ if EnableBuiltInComboHotkeys
     ComboKeyAdd("s9","<SrcSortByCol9>")
     ComboKeyAdd("sd","<SrcByDateTime>")
     ComboKeyAdd("se","<SrcByExt>")
-    ComboKeyAdd("sg","<Internetsearch>")
+    ComboKeyAdd("sg","<InternetSearch>")
     ComboKeyAdd("sn","<SrcByName>")
     ComboKeyAdd("sr","<SrcNegOrder>")
     ComboKeyAdd("ss","<SrcBySize>")
@@ -2605,8 +2605,8 @@ if EnableBuiltInComboHotkeys
     ComboKeyAdd("zi","<100Percent>")
     ComboKeyAdd("zz","<50Percent>")
     ComboKeyAdd("zc","<CommandBrowser>")
- }   
-    ; -------  keys for fancy rename 
+ }
+    ; -------  keys for fancy rename
     Hotkey,IfWinActive,ViATc Fancy Rename
     Hotkey,j,FancyR_Down,on,UseErrorLevel
     Hotkey,k,FancyR_Up,on,UseErrorLevel
@@ -2652,9 +2652,9 @@ if EnableBuiltInComboHotkeys
     Hotkey,p,FancyR_Paste,on,UseErrorLevel
     Hotkey,Esc,FancyR_Esc,on,UseErrorLevel
     Hotkey,^[,FancyR_Esc,on,UseErrorLevel
-    if IsCapslockAsEscape
-        Hotkey,Capslock,FancyR_Esc,on,UseErrorLevel
-    ;Hotkey,^Capslock,Capslock,on,UseErrorLevel
+    If IsCapsLockAsEscape
+        Hotkey,CapsLock,FancyR_Esc,on,UseErrorLevel
+    ;Hotkey,^CapsLock,CapsLock,on,UseErrorLevel
     Hotkey,1,FancyR_Num,on,UseErrorLevel
     Hotkey,2,FancyR_Num,on,UseErrorLevel
     Hotkey,3,FancyR_Num,on,UseErrorLevel
@@ -2671,8 +2671,8 @@ if EnableBuiltInComboHotkeys
 ;; usage: If controlActive("SomeClassName")
 ;controlActive(controlClassName,winName:="a")
 ;{
-;    controlGetFocus,focusedControl,% winName
-;    return controlClassName=focusedControl?1:0
+;    ControlGetFocus,focusedControl,% winName
+;    Return controlClassName=focusedControl?1:0
 ;}
 
 ControlActive(ClassNN, WinTitle) {
@@ -2681,7 +2681,7 @@ ControlActive(ClassNN, WinTitle) {
 }
 
 ; ---  operation {{{
-SendKey(HotKey)
+SendKey(Hotkey)
 {
     Global KeyCount,KeyTemp,Repeat,MaxCount
     If CheckMode()
@@ -2693,28 +2693,28 @@ SendKey(HotKey)
         }
         If KeyCount
         {
-            ControlSetText,%TCEdit%,,AHK_CLASS TTOTAL_CMD
+            ControlSetText,%TCEdit%,,ahk_class TTOTAL_CMD
             If KeyCount > %MaxCount%
                 keyCount := MaxCount
-            Repeat := KeyCount . ">>" . hotkey
+            Repeat := KeyCount . ">>" . Hotkey
             Loop,%KeyCount%
-                Send %hotkey%
+                Send, %Hotkey%
             KeyCount := 0
         }
         Else
         {
-            Send %hotkey%
-            Repeat := 1 . ">>" . hotkey
+            Send, %Hotkey%
+            Repeat := 1 . ">>" . Hotkey
         }
     }
     Else
     {
-        hotkey := TransSendKey(A_ThisHotkey)
-        Send %hotkey%
+        Hotkey := TransSendKey(A_ThisHotkey)
+        Send, %Hotkey%
     }
 }
 
-SendNum(HotKey)
+SendNum(Hotkey)
 {
     Global KeyCount,KeyTemp,GetNum
     If CheckMode()
@@ -2727,13 +2727,13 @@ SendNum(HotKey)
         If KeyCount
             KeyCount := Hotkey + (KeyCount * 10 )
         Else
-            KeyCount := HotKey + 0
-        ControlSetText,%TCEdit%,%KeyCount%,AHK_CLASS TTOTAL_CMD
+            KeyCount := Hotkey + 0
+        ControlSetText,%TCEdit%,%KeyCount%,ahk_class TTOTAL_CMD
     }
     Else
     {
-        hotkey := TransSendKey(A_ThisHotkey)
-        Send %hotkey%
+        Hotkey := TransSendKey(A_ThisHotkey)
+        Send, %Hotkey%
     }
 }
 
@@ -2752,21 +2752,21 @@ SendPos(Num,IsCount=False)
             ComboKey(A_ThisHotkey)
             Return False
         }
-        ControlSetText,%TCEdit%,,AHK_CLASS TTOTAL_CMD
+        ControlSetText,%TCEdit%,,ahk_class TTOTAL_CMD
         If Num < 0
             Return True
         If Num
         {
             Repeat := Count . "@" . Num
             Loop,%Count%
-                PostMessage 1075, %Num%, 0,, AHK_CLASS TTOTAL_CMD
+                PostMessage 1075, %Num%, 0,, ahk_class TTOTAL_CMD
         }
         Return True
     }
     Else
     {
-        hotkey := TransSendKey(A_ThisHotkey)
-        Send %hotkey%
+        Hotkey := TransSendKey(A_ThisHotkey)
+        Send, %Hotkey%
         Return False
     }
 }
@@ -2774,13 +2774,13 @@ SendPos(Num,IsCount=False)
 ; Execute TC's commands, you can find them in TOTALCMD.INC file in TC dir
 Execute(command)
 {
-        PostMessage 1075, %command%, 0,, AHK_CLASS TTOTAL_CMD
+        PostMessage 1075, %command%, 0,, ahk_class TTOTAL_CMD
 }
 
 ExecFile()
 {
     Global ExecFile_Arr,KeyTemp,GoExec,Repeat
-    IfWinActive,AHK_CLASS TTOTAL_CMD
+    IfWinActive,ahk_class TTOTAL_CMD
     {
         Key := "H" . A_ThisHotkey
         If Not ExecFile_Arr[Key]
@@ -2798,8 +2798,8 @@ ExecFile()
         MsgBox  run %File% failure
         Return
     }
-    WinWait,AHK_PID %ExecID%,,3
-    WinActivate,AHK_PID %ExecID%
+    WinWait,ahk_pid %ExecID%,,3
+    WinActivate,ahk_pid %ExecID%
     Repeat := "(" . File . ")"
     GoExec :=
 }
@@ -2807,7 +2807,7 @@ ExecFile()
 SendText()
 {
     Global SendText_Arr,KeyTemp,Repeat,GoText
-    IfWinActive,AHK_CLASS TTOTAL_CMD
+    IfWinActive,ahk_class TTOTAL_CMD
     {
         Key := "H" . A_ThisHotkey
         If Not SendText_Arr[Key]
@@ -2819,17 +2819,17 @@ SendText()
         Text := SendText_Arr[GoText]
     Else
         Text := SendText_Arr[Key]
-    IfWinActive,AHK_CLASS TTOTAL_CMD
+    IfWinActive,ahk_class TTOTAL_CMD
     {
-        ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+        ControlGetFocus,ThisControl,ahk_class TTOTAL_CMD
         If RegExMatch(Text,"^[#!\^\+]\{.*}.*")
-            ControlSend,%ThisControl%,%Text%,AHK_CLASS TTOTAL_CMD
+            ControlSend,%ThisControl%,%Text%,ahk_class TTOTAL_CMD
         Else
         {
-            ControlSetText,%TCEdit%,%Text%,AHK_CLASS TTOTAL_CMD
-            Postmessage,1075,4003,0,,AHK_CLASS TTOTAL_CMD
+            ControlSetText,%TCEdit%,%Text%,ahk_class TTOTAL_CMD
+            PostMessage,1075,4003,0,,ahk_class TTOTAL_CMD
             PosEnd := Strlen(Text)
-            PostMessage,0x00B1,%PosEnd%,%PosEnd%,%TCEdit%,AHK_CLASS TTOTAL_CMD
+            PostMessage,0x00B1,%PosEnd%,%PosEnd%,%TCEdit%,ahk_class TTOTAL_CMD
         }
     }
     Else
@@ -2840,23 +2840,23 @@ SendText()
 
 Combokey(Hotkey)  ; {{{1
 {
-    Global ComboKey_Arr,KeyTemp,KeyCount,ComboInfo_arr,ComboTooltips,Repeat,SendText_Arr,ExecFile_Arr,GoExec,GoText
-    If ComboTooltips And ( Not KeyTemp ) And CheckMode() And ComboInfo_Arr[A_ThisHotkey]
-        Settimer,<ComboWarnAction>,50   ; 50 is a delay
+    Global ComboKey_Arr,KeyTemp,KeyCount,ComboInfo_Arr,ComboTooltips,Repeat,SendText_Arr,ExecFile_Arr,GoExec,GoText
+    If ComboTooltips AND ( Not KeyTemp ) AND CheckMode() AND ComboInfo_Arr[A_ThisHotkey]
+        SetTimer,<ComboWarnAction>,50   ; 50 is a delay
     If checkMode()
     {
         KeyCount := 0
         KeyTemp .= A_ThisHotkey
-        AllCK := Combokey_Arr["Hotkeys"]
+        AllCK := ComboKey_Arr["Hotkeys"]
         MatchString := "[^&]\s" . RegExReplace(KeyTemp,"\+|\?|\.|\*|\{|\}|\(|\)|\||\^|\$|\[|\]|\\","\$0")
         If RegExMatch(AllCK,MatchString)
         {
             MatchString .= "\s"
             If RegExMatch(AllCk,MatchString)
             {
-                Settimer,<RemoveToolTipEx>,off
+                SetTimer,<RemoveTooltipEx>,Off
                 Tooltip
-                ControlSetText,%TCEdit%,,AHK_CLASS TTOTAL_CMD
+                ControlSetText,%TCEdit%,,ahk_class TTOTAL_CMD
                 Action := ComboKey_Arr[KeyTemp]
                 If RegExMatch(Action,"<Text>")
                     GoText := "C" . KeyTemp
@@ -2872,11 +2872,11 @@ Combokey(Hotkey)  ; {{{1
                     MsgBox % KeyTemp " command " Action " Error "
             }
             Else
-                ControlSetText,%TCEdit%,%KeyTemp%,AHK_CLASS TTOTAL_CMD
+                ControlSetText,%TCEdit%,%KeyTemp%,ahk_class TTOTAL_CMD
         }
         Else
         {
-            ControlSetText,%TCEdit%,,AHK_CLASS TTOTAL_CMD
+            ControlSetText,%TCEdit%,,ahk_class TTOTAL_CMD
             KeyTemp :=
             Tooltip
         }
@@ -2907,23 +2907,23 @@ ComboKeyAdd(Key,Action,IsGlobal=False)
     Key_T := TransHotkey(key,"First")
     ComboInfo_Arr[Key_T] .= Info . "`n"
     If IsGlobal
-        Hotkey,Ifwinactive
+        Hotkey,IfWinActive
     Else
-        Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
+        Hotkey,IfWinActive,ahk_class TTOTAL_CMD
     Hotkey,%Key_T%,<ComboKey>,On,UseErrorLevel
 }
 CombokeyDelete(Key,IsGlobal=False)
 {
     Global ComboKey_Arr
     Key_T := "\s" . TransHotkey(Key,"ALL") . "\s"
-    ComboKey_Arr["Hotkeys"] := RegExReplace(Combokey_Arr["Hotkeys"],Key_T)
+    ComboKey_Arr["Hotkeys"] := RegExReplace(ComboKey_Arr["Hotkeys"],Key_T)
     Key_T := "\s" . TransHotkey(Key,"First")
     If RegExMatch(ComboKey_Arr["Hotkeys"],Key_T)
         Return
     If IsGlobal
-        Hotkey,Ifwinactive
+        Hotkey,IfWinActive
     Else
-        Hotkey,Ifwinactive,AHK_CLASS TTOTAL_CMD
+        Hotkey,IfWinActive,ahk_class TTOTAL_CMD
     Key_T := TransHotkey(Key,"First")
     Hotkey,%Key_T%,Off
 }
@@ -2947,7 +2947,7 @@ SingleRepeat()
     {
         Stringsplit,Num,Repeat,@
         Loop % Num1
-            Postmessage 1075, %Num2%, 0,, ahk_class TTOTAL_CMD
+            PostMessage 1075, %Num2%, 0,, ahk_class TTOTAL_CMD
     }
     If RegExMatch(Repeat,"^\(.*\)$")
     {
@@ -2955,8 +2955,8 @@ SingleRepeat()
         If FileExist(File)
         {
             Run,%File%,,UseErrorLevel,ExecID
-            WinWait,AHK_PID %ExecID%,,3
-            WinActivate,AHK_PID %ExecID%
+            WinWait,ahk_pid %ExecID%,,3
+            WinActivate,ahk_pid %ExecID%
         }
     }
     If RegExMatch(Repeat,"^\{.*\}$")
@@ -2967,15 +2967,15 @@ SingleRepeat()
 }
 CheckMode()
 {
-    IfWinNotActive,AHK_CLASS TTOTAL_CMD
+    IfWinNotActive,ahk_class TTOTAL_CMD
     Return True
-    WinGet,MenuID,ID,AHK_CLASS #32768
-    IF MenuID
+    WinGet,MenuID,ID,ahk_class #32768
+    If MenuID
         Return False
     ControlGetFocus,ListBox,ahk_class TTOTAL_CMD
-    Ifinstring,ListBox,%TCListBox%
+    IfInString,ListBox,%TCListBox%
     If Vim
-        Return true
+        Return True
     Else
         Return False
     Else
@@ -3064,7 +3064,7 @@ TransHotkey(Hotkey,pos="ALL")
                 Break
             }
             If RegExMatch(Hotkey,"^.*")
-                NewHotkey := Substr(hotkey,1,1)
+                NewHotkey := Substr(Hotkey,1,1)
             Break
         }
     }
@@ -3078,9 +3078,9 @@ CheckScope(key)
         Scope := "C"
     If RegExMatch(Key,"i)^<(shift|lshift|rshift|ctrl|lctrl|rctrl|control|lcontrol|rcontrol|lwin|rwin|alt|lalt|ralt)>.$")
         Scope := "H"
-    return Scope
+    Return Scope
 }
-TransSendKey(hotkey)
+TransSendKey(Hotkey)
 {
     Loop
     {
@@ -3089,17 +3089,17 @@ TransSendKey(hotkey)
             Hotkey := "{Esc}"
             Break
         }
-        If StrLen(hotkey) > 1 AND Not RegExMatch(Hotkey,"^\+.$")
+        If StrLen(Hotkey) > 1 AND Not RegExMatch(Hotkey,"^\+.$")
         {
-            Hotkey := "{" . hotkey . "}"
-            If RegExMatch(hotkey,"i)(shift|lshift|rshift)(\s\&\s)?.+$")
-                Hotkey := "+" . RegExReplace(hotkey,"i)(shift|lshift|rshift)(\s\&\s)?")
-            If RegExMatch(hotkey,"i)(ctrl|lctrl|rctrl|control|lcontrol|rcontrol)(\s\&\s)?.+$")
-                Hotkey := "^" . RegExReplace(hotkey,"i)(ctrl|lctrl|rctrl|control|lcontrol|rcontrol)(\s\&\s)?")
-            If RegExMatch(hotkey,"i)(lwin|rwin)(\s\&\s)?.+$")
-                Hotkey := "#" . RegExReplace(hotkey,"i)(lwin|rwin)(\s\&\s)?")
-            If RegExMatch(hotkey,"i)(alt|lalt|ralt)(\s\&\s)?.+$")
-                Hotkey := "!" . RegExReplace(hotkey,"i)(alt|lalt|ralt)(\s\&\s)?")
+            Hotkey := "{" . Hotkey . "}"
+            If RegExMatch(Hotkey,"i)(shift|lshift|rshift)(\s\&\s)?.+$")
+                Hotkey := "+" . RegExReplace(Hotkey,"i)(shift|lshift|rshift)(\s\&\s)?")
+            If RegExMatch(Hotkey,"i)(ctrl|lctrl|rctrl|control|lcontrol|rcontrol)(\s\&\s)?.+$")
+                Hotkey := "^" . RegExReplace(Hotkey,"i)(ctrl|lctrl|rctrl|control|lcontrol|rcontrol)(\s\&\s)?")
+            If RegExMatch(Hotkey,"i)(lwin|rwin)(\s\&\s)?.+$")
+                Hotkey := "#" . RegExReplace(Hotkey,"i)(lwin|rwin)(\s\&\s)?")
+            If RegExMatch(Hotkey,"i)(alt|lalt|ralt)(\s\&\s)?.+$")
+                Hotkey := "!" . RegExReplace(Hotkey,"i)(alt|lalt|ralt)(\s\&\s)?")
         }
         If RegExMatch(Hotkey,"^\+.$")
         {
@@ -3126,21 +3126,21 @@ TransSendKey(hotkey)
         }
         Break
     }
-    Return hotkey
+    Return Hotkey
 }
 
 ; --- configuration {{{1
 FindPath(File)
 {
     Global TCEXE, ViatcIni
-    FileSF_FileName:= "C:\"
+    FileSF_FileName := "C:\"
     If RegExMatch(File,"exe")
     {
         GetPath32 := "C:\Program Files (x86)\totalcmd\totalcmd.exe"
         GetPath64 := "C:\Program Files\totalcmd\totalcmd64.exe"
         Reg := "InstallDir"
         FileSF_Option := 3
-        FileSF_FileName:= "C:\Program Files\totalcmd\"
+        FileSF_FileName := "C:\Program Files\totalcmd\"
         FileSF_Prompt := "TOTALCMD.EXE"
         FileSF_Filter := "*.EXE"
         FileSF_Error := "Could not find TOTALCMD.EXE nor TOTALCMD64.EXE"
@@ -3152,15 +3152,15 @@ FindPath(File)
             Return GetPath
         RegRead,Dir,HKEY_CURRENT_USER,Software\Ghisler\Total Commander,%Reg%
         StringRight, LastChar, Dir, 1
-        if !(LastChar="\")
+        If !(LastChar="\")
             Dir := Dir . "\"
         GetPath := Dir . "TOTALCMD64.EXE"
         If FileExist(GetPath)
         {
-            ;Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            ;RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
             SetConfig("Paths","TCPath",GetPath)
             Return GetPath
-        } 
+        }
         GetPath := "C:\totalcmd\TOTALCMD64.EXE"
         If FileExist(GetPath)
         {
@@ -3178,8 +3178,8 @@ FindPath(File)
         {
             SetConfig("Paths","TCPath",GetPath)
             Return GetPath
-        } 
-        
+        }
+
     }
     If RegExMatch(File,"ini")
     {
@@ -3190,13 +3190,13 @@ FindPath(File)
         RegRead,GetPath,HKEY_CURRENT_USER,Software\Ghisler\Total Commander,"IniFileName"
         If FileExist(GetPath)
         {
-            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
             Return GetPath
-        } 
+        }
         GetPath := "C:\Users\" . A_UserName . "\AppData\Roaming\GHISLER\wincmd.ini"
         If FileExist(GetPath)
         {
-            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
             ;SetConfig("Paths","TCIni",GetPath)
             ;MsgBox, "Found the wincmd.ini file"
             Return GetPath
@@ -3204,23 +3204,23 @@ FindPath(File)
         GetPath := "C:\Users\" . A_UserName . "\Documents\wincmd.ini"
         If FileExist(GetPath)
         {
-            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
             Return GetPath
         }
-        Splitpath,TcExe,,TcDir
+        SplitPath,TcExe,,TcDir
         GetPath = %TcDir%\wincmd.ini
         If FileExist(GetPath)
         {
-            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
             Return GetPath
         }
-        ;MsgBox, "Could not find the wincmd.ini file in the typical places"            
+        ;MsgBox, "Could not find the wincmd.ini file in the typical places"
         FileSF_Option := 3
-        FileSF_FileName:= "C:\Users\" . A_UserName . "\AppData\Roaming\GHISLER\"
+        FileSF_FileName := "C:\Users\" . A_UserName . "\AppData\Roaming\GHISLER\"
         FileSF_Prompt := " Select the wincmd.ini file "
         FileSF_Filter := "*.INI"
         FileSF_Error := "Could not find wincmd.ini"
-        
+
     }
 
     If FileExist(GetPath)
@@ -3233,14 +3233,14 @@ FindPath(File)
     }
     If FileExist(GetPath64)
     {
-        ;Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath64%
+        ;RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath64%
         TCEXE = %GetPath64%
         SetConfig("Paths","TCPath",TCEXE)
         Return GetPath64
     }
     If FileExist(GetPath32)
     {
-        ;Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath32%
+        ;RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath32%
         TCEXE = %GetPath32%
         SetConfig("Paths","TCPath",TCEXE)
         Return GetPath32
@@ -3259,7 +3259,7 @@ FindPath(File)
             SetConfig("Paths","TCPath",TCEXE)
         }
         If RegExMatch(File,"ini")
-            Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
+            RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,%Reg%,%GetPath%
     }
     Return GetPath
 }
@@ -3322,31 +3322,31 @@ MapKeyAdd(Key,Action,Scope)
         Return False
     If Not IsLabel(Action) AND RegExMatch(Action,"^<.*>$")
     {
-        return False
+        Return False
     }
     If RegExMatch(Action,"^\(.*\)$")
     {
         Key_T := Scope . TransHotkey(Key)
-        ExecFile_Arr["HotKeys"] .= A_Space . Key_T . A_Space
+        ExecFile_Arr["Hotkeys"] .= A_Space . Key_T . A_Space
         ExecFile_Arr[Key_T] := Substr(Action,2,Strlen(Action)-2)
         Action := "<Exec>"
     }
     If RegExMatch(Action,"^\{.*\}$")
     {
         Key_T := Scope . TransHotkey(Key)
-        SendText_Arr["HotKeys"] .= A_Space . Key_T . A_Space
+        SendText_Arr["Hotkeys"] .= A_Space . Key_T . A_Space
         SendText_Arr[Key_T] := Substr(Action,2,Strlen(Action)-2)
         Action := "<Text>"
     }
     If Scope = G
     {
-        HotKey,IfWinActive
+        Hotkey,IfWinActive
         Key_T := TransHotkey(Key)
         Hotkey,%Key_T%,%Action%,On,UseErrorLevel
     }
     If Scope = H
     {
-        Hotkey,IfWinActive,AHK_CLASS TTOTAL_CMD
+        Hotkey,IfWinActive,ahk_class TTOTAL_CMD
         Key_T := TransHotkey(Key)
         Hotkey,%Key_T%,%Action%,On,UseErrorLevel
     }
@@ -3354,14 +3354,14 @@ MapKeyAdd(Key,Action,Scope)
         ComboKeyAdd(Key,Action)
     Key_T := "i)\s" . Scope . RegExReplace(Key,"\+|\?|\.|\*|\{|\}|\(|\)|\||\^|\$|\[|\]|\\","\$0") . "\s"
     If RegExMatch(MapKey_Arr["Hotkeys"],Key_T)
-        Return true
+        Return True
     Else
     {
         Key := Scope . Key
-        MapKey_Arr["Hotkeys"] .= A_space . Key . A_Space
+        MapKey_Arr["Hotkeys"] .= A_Space . Key . A_Space
     }
     MapKey_Arr[Key] := Action
-    Return true
+    Return True
 }
 MapKeyDelete(Key,Scope)
 {
@@ -3375,13 +3375,13 @@ MapKeyDelete(Key,Scope)
     If Scope = H
     {
         Key_T := TransHotkey(Key)
-        Hotkey,IfWinActive,AHK_CLASS TTOTAL_CMD
+        Hotkey,IfWinActive,ahk_class TTOTAL_CMD
         Hotkey,%Key_T%,Off
     }
     If Scope = G
         CombokeyDelete(Key)
     DelKey := "\s" . Scope . RegExReplace(Key,"\+|\?|\.|\*|\{|\}|\(|\)|\||\^|\$|\[|\]|\\","\$0") . "\s"
-    Mapkey_Arr["Hotkeys"] := RegExReplace(MapKey_Arr["Hotkeys"],DelKey)
+    MapKey_Arr["Hotkeys"] := RegExReplace(MapKey_Arr["Hotkeys"],DelKey)
 }
 GetConfig(Section,Key)
 {
@@ -3389,8 +3389,8 @@ GetConfig(Section,Key)
     IniRead,Getvar,%ViatcIni%,%Section%,%Key%
     If RegExMatch(Getvar,"^ERROR$")
         GetVar := CreateConfig(Section,key)
-    ;Trimming leading and trailing white space is automatic when assigning a variable with only = 
-    GetVar = %GetVar% 
+    ;Trimming leading and trailing white space is automatic when assigning a variable with only =
+    GetVar = %GetVar%
     Return GetVar
 }
 SetConfig(Section,Key,Var)
@@ -3403,13 +3403,13 @@ CreateConfig(Section,Key)
     Global ViatcIni
     If Not FileExist(ViATcIni)
     {
-        ViATcIni :=  A_ScriptDir . "\viatc.ini"
-        Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,ViATcIni,%ViATcIni%
-        MsgBox, 
+        ViATcIni := A_ScriptDir . "\viatc.ini"
+        RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,ViATcIni,%ViATcIni%
+        MsgBox,
         (
 A new, limited viatc.ini file was just created because the real file
-was not found. You can search for the real one and put it into place. 
-You can also download a default one. 
+was not found. You can search for the real one and put it into place.
+You can also download a default one.
 There is also one in Templates folder - it might be older than the newest.
         )
     }
@@ -3426,7 +3426,7 @@ There is also one in Templates folder - it might be older than the newest.
             SetVar := 1
         If Key = Suspend
             SetVar := "<Alt>``"
-        If Key = HistoryOfRename 
+        If Key = HistoryOfRename
             SetVar := 1
         If Key = GlobalSusp
             SetVar := 0
@@ -3446,7 +3446,7 @@ There is also one in Templates folder - it might be older than the newest.
             SetVar := 999
         If Key = HistoryOfRename
             SetVar := 0
-        If Key = IsCapslockAsEscape
+        If Key = IsCapsLockAsEscape
             SetVar := 0
     }
 
@@ -3456,7 +3456,7 @@ There is also one in Templates folder - it might be older than the newest.
             SetVar := "C:\Program Files\totalcmd\TOTALCMD64.EXE"
         If Key = TCINI
             SetVar := "C:\Users\" . %A_UserName% . "\AppData\Roaming\GHISLER\wincmd.ini"
-        If Key = EditorArguments 
+        If Key = EditorArguments
             SetVar := " -p --remote-tab-silent "
     }
 
@@ -3481,7 +3481,7 @@ There is also one in Templates folder - it might be older than the newest.
     If Section = Other
         If Key = LnkToDesktop
             SetVar := 1
-    
+
     IniRead,GetVar,%ViatcIni%,%Section%,%Key%
     If Getvar = ERROR
         Iniwrite,%SetVar%,%ViatcIni%,%Section%,%Key%
@@ -3490,7 +3490,7 @@ There is also one in Templates folder - it might be older than the newest.
 ToggleMenu(a=0)
 {
     Global TCMenuHandle
-    WinGet,hwin,Id,AHK_CLASS TTOTAL_CMD
+    WinGet,hwin,Id,ahk_class TTOTAL_CMD
     If hwin
         MenuHandle := DllCall("GetMenu", "uint", hWin)
     If MenuHandle
@@ -3500,120 +3500,120 @@ ToggleMenu(a=0)
     }
     Else
         DllCall("SetMenu", "uint", hWin, "uint", TCmenuHandle )
-    if a
+    If a
     {
-        WinSet,Style,+0xC10000,AHK_CLASS TTOTAL_CMD
+        WinSet,Style,+0xC10000,ahk_class TTOTAL_CMD
         DllCall("SetMenu", "uint", hWin, "uint", TCmenuHandle )
     }
 }
 HideControl()
 {
-    Global HideControl_arr,TcIni,TCmenuHandle
-    if HideControl_arr["Toggle"]
+    Global HideControl_Arr,TcIni,TCmenuHandle
+    If HideControl_Arr["Toggle"]
     {
-        HideControl_arr["Toggle"] := False
-        if HideControl_arr["KeyButtons"]
-            PostMessage 1075, 2911, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["drivebar1"]
-            PostMessage 1075, 2902, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["DriveBar2"]
-            PostMessage 1075, 2903, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["DriveBarFlat"]
-            PostMessage 1075, 2904, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["InterfaceFlat"]
-            PostMessage 1075, 2905, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["DriveCombo"]
-            PostMessage 1075, 2906, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["DirectoryTabs"]
-            PostMessage 1075, 2916, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["XPthemeBg"]
-            PostMessage 1075, 2923, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["CurDir"]
-            PostMessage 1075, 2907, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["TabHeader"]
-            PostMessage 1075, 2908, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["StatusBar"]
-            PostMessage 1075, 2909, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["CmdLine"]
-            PostMessage 1075, 2910, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["HistoryHotlistButtons"]
-            PostMessage 1075, 2919, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["BreadCrumbBar"]
-            PostMessage 1075, 2926, 0,, AHK_CLASS TTOTAL_CMD
-        if HideControl_arr["ButtonBar"]
-            PostMessage 1075,2901, 0,, AHK_CLASS TTOTAL_CMD
-        WinSet,Style,+0xC10000,AHK_CLASS TTOTAL_CMD
-        winActivate,AHK_CLASS TTOTAL_CMD
-        Settimer,FS,off
-        WinGet,hwin,Id,AHK_CLASS TTOTAL_CMD
+        HideControl_Arr["Toggle"] := False
+        If HideControl_Arr["KeyButtons"]
+            PostMessage 1075, 2911, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["drivebar1"]
+            PostMessage 1075, 2902, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["DriveBar2"]
+            PostMessage 1075, 2903, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["DriveBarFlat"]
+            PostMessage 1075, 2904, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["InterfaceFlat"]
+            PostMessage 1075, 2905, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["DriveCombo"]
+            PostMessage 1075, 2906, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["DirectoryTabs"]
+            PostMessage 1075, 2916, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["XPthemeBg"]
+            PostMessage 1075, 2923, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["CurDir"]
+            PostMessage 1075, 2907, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["TabHeader"]
+            PostMessage 1075, 2908, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["StatusBar"]
+            PostMessage 1075, 2909, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["CmdLine"]
+            PostMessage 1075, 2910, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["HistoryHotlistButtons"]
+            PostMessage 1075, 2919, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["BreadCrumbBar"]
+            PostMessage 1075, 2926, 0,, ahk_class TTOTAL_CMD
+        If HideControl_Arr["ButtonBar"]
+            PostMessage 1075,2901, 0,, ahk_class TTOTAL_CMD
+        WinSet,Style,+0xC10000,ahk_class TTOTAL_CMD
+        WinActivate,ahk_class TTOTAL_CMD
+        SetTimer,FS,Off
+        WinGet,hwin,Id,ahk_class TTOTAL_CMD
         If hwin
             DllCall("SetMenu", "uint", hWin, "uint", TCmenuHandle )
     }
     Else
     {
-        HideControl_arr["Toggle"] := True
+        HideControl_Arr["Toggle"] := True
         IniRead,v_KeyButtons,%TCINI%,LayOut,KeyButtons
-        HideControl_arr["KeyButtons"] := v_KeyButtons
+        HideControl_Arr["KeyButtons"] := v_KeyButtons
         If v_KeyButtons
-            PostMessage 1075, 2911, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2911, 0,, ahk_class TTOTAL_CMD
         IniRead,v_drivebar1,%TcIni%,layout,drivebar1
-        HideControl_arr["drivebar1"] := v_drivebar1
+        HideControl_Arr["drivebar1"] := v_drivebar1
         If v_DriveBar1
-            PostMessage 1075, 2902, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2902, 0,, ahk_class TTOTAL_CMD
         IniRead,v_DriveBar2,%TcIni%,Layout,DriveBar2
-        HideControl_arr["DriveBar2"] := v_DriveBar2
+        HideControl_Arr["DriveBar2"] := v_DriveBar2
         If v_DriveBar2
-            PostMessage 1075, 2903, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2903, 0,, ahk_class TTOTAL_CMD
         IniRead,v_DriveBarFlat,%TcIni%,Layout,DriveBarFlat
-        HideControl_arr["DriveBarFlat"] := v_DriveBarFlat
+        HideControl_Arr["DriveBarFlat"] := v_DriveBarFlat
         If v_DriveBarFlat
-            PostMessage 1075, 2904, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2904, 0,, ahk_class TTOTAL_CMD
         IniRead,v_InterfaceFlat,%TcIni%,Layout,InterfaceFlat
-        HideControl_arr["InterfaceFlat"] := v_InterfaceFlat
+        HideControl_Arr["InterfaceFlat"] := v_InterfaceFlat
         If v_InterfaceFlat
-            PostMessage 1075, 2905, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2905, 0,, ahk_class TTOTAL_CMD
         IniRead,v_DriveCombo,%TcIni%,Layout,DriveCombo
-        HideControl_arr["DriveCombo"] := v_DriveCombo
+        HideControl_Arr["DriveCombo"] := v_DriveCombo
         If v_DriveCombo
-            PostMessage 1075, 2906, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2906, 0,, ahk_class TTOTAL_CMD
         IniRead,v_DirectoryTabs,%TcIni%,Layout,DirectoryTabs
-        HideControl_arr["DirectoryTabs"] := v_DirectoryTabs
+        HideControl_Arr["DirectoryTabs"] := v_DirectoryTabs
         If v_DirectoryTabs
-            PostMessage 1075, 2916, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2916, 0,, ahk_class TTOTAL_CMD
         IniRead,v_XPthemeBg,%TcIni%,Layout,XPthemeBg
-        HideControl_arr["XPthemeBg"] := v_XPthemeBg
+        HideControl_Arr["XPthemeBg"] := v_XPthemeBg
         If v_XPthemeBg
-            PostMessage 1075, 2923, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2923, 0,, ahk_class TTOTAL_CMD
         IniRead,v_CurDir,%TcIni%,Layout,CurDir
-        HideControl_arr["CurDir"] := v_CurDir
+        HideControl_Arr["CurDir"] := v_CurDir
         If v_CurDir
-            PostMessage 1075, 2907, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2907, 0,, ahk_class TTOTAL_CMD
         IniRead,v_TabHeader,%TcIni%,Layout,TabHeader
-        HideControl_arr["TabHeader"] := v_TabHeader
+        HideControl_Arr["TabHeader"] := v_TabHeader
         If v_TabHeader
-            PostMessage 1075, 2908, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2908, 0,, ahk_class TTOTAL_CMD
         IniRead,v_StatusBar,%TcIni%,Layout,StatusBar
-        HideControl_arr["StatusBar"] := v_StatusBar
+        HideControl_Arr["StatusBar"] := v_StatusBar
         If v_StatusBar
-            PostMessage 1075, 2909, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2909, 0,, ahk_class TTOTAL_CMD
         IniRead,v_CmdLine,%TcIni%,Layout,CmdLine
-        HideControl_arr["CmdLine"] := v_CmdLine
+        HideControl_Arr["CmdLine"] := v_CmdLine
         If v_CmdLine
-            PostMessage 1075, 2910, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2910, 0,, ahk_class TTOTAL_CMD
         IniRead,v_HistoryHotlistButtons,%TcIni%,Layout,HistoryHotlistButtons
-        HideControl_arr["HistoryHotlistButtons"] := v_HistoryHotlistButtons
+        HideControl_Arr["HistoryHotlistButtons"] := v_HistoryHotlistButtons
         If v_HistoryHotlistButtons
-            PostMessage 1075, 2919, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2919, 0,, ahk_class TTOTAL_CMD
         IniRead,v_BreadCrumbBar,%TcIni%,Layout,BreadCrumbBar
-        HideControl_arr["BreadCrumbBar"] := v_BreadCrumbBar
+        HideControl_Arr["BreadCrumbBar"] := v_BreadCrumbBar
         If v_BreadCrumbBar
-            PostMessage 1075, 2926, 0,, AHK_CLASS TTOTAL_CMD
+            PostMessage 1075, 2926, 0,, ahk_class TTOTAL_CMD
         IniRead,v_ButtonBar    ,%TcIni%,Layout,ButtonBar
-        HideControl_arr["ButtonBar"] := v_ButtonBar
+        HideControl_Arr["ButtonBar"] := v_ButtonBar
         If v_ButtonBar
-            PostMessage 1075,2901, 0,, AHK_CLASS TTOTAL_CMD
-        WinSet,Style,-0xC00000,AHK_CLASS TTOTAL_CMD
-        winActivate,AHK_CLASS TTOTAL_CMD
+            PostMessage 1075,2901, 0,, ahk_class TTOTAL_CMD
+        WinSet,Style,-0xC00000,ahk_class TTOTAL_CMD
+        WinActivate,ahk_class TTOTAL_CMD
     }
 }
 FS:
@@ -3621,11 +3621,11 @@ FS()
 Return
 FS()
 {
-    WinGet,hwin,Id,AHK_CLASS TTOTAL_CMD
+    WinGet,hwin,Id,ahk_class TTOTAL_CMD
     If hwin
         MenuHandle := DllCall("GetMenu", "uint", hWin)
     Else
-        Settimer,FS,off
+        SetTimer,FS,Off
     If MenuHandle
         DllCall("SetMenu", "uint", hWin, "uint", 0)
 }
@@ -3636,28 +3636,28 @@ Enter() ;  on Enter pressed {{{2
 
     Loop,8
     {
-        ControlGetFocus,ThisControl,AHK_CLASS TTOTAL_CMD
+        ControlGetFocus,ThisControl,ahk_class TTOTAL_CMD
         ;The bar with path above file list has ID = Window17 11 or 12  TInEdit1 in 32bit TC ClassNN: PathPanel1
         ;You can edit this bar if you click on it's empty space, or if you rename ".." at the top of the list
-        If (( %ThisControl% = Edit1) or ( %ThisControl% = Edit2) or ( %ThisControl% = Window17))  ;!!!
+        If (( %ThisControl% = Edit1) OR ( %ThisControl% = Edit2) OR ( %ThisControl% = Window17))  ;!!!
         {
             ;MsgBox  ThisControl = [%ThisControl%]  on line %A_LineNumber% ;!!!
             Break
         }
-        Sleep,50
+        Sleep, 50
     }
 
     ;Match_TCEdit := "^" . TCEdit . "$"   ;<-------good working
     ;If RegExMatch(ThisControl,Match_TCEdit)
-    If (( %ThisControl% = Edit1) or ( %ThisControl% = Edit2) or ( %ThisControl% = Window17))  ;!!!
+    If (( %ThisControl% = Edit1) OR ( %ThisControl% = Edit2) OR ( %ThisControl% = Window17))  ;!!!
     {
         TCEdit = %ThisControl%  ;!!! added
         ; ----- command line (like the ex mode in Vim)
-        ControlGetText,CMD,%TCEdit%,AHK_CLASS TTOTAL_CMD
+        ControlGetText,CMD,%TCEdit%,ahk_class TTOTAL_CMD
         If RegExMatch(CMD,"^:.*")
         {
-            ControlGetPos,xn,yn,,hn,%TCEdit%,AHK_CLASS TTOTAL_CMD
-            ControlSetText,%TCEdit%,,AHK_CLASS TTOTAL_CMD
+            ControlGetPos,xn,yn,,hn,%TCEdit%,ahk_class TTOTAL_CMD
+            ControlSetText,%TCEdit%,,ahk_class TTOTAL_CMD
             CMD := SubStr(CMD,2)
             If RegExMatch(CMD,"i)^se?t?t?i?n?g?\s*$")
             {
@@ -3698,7 +3698,7 @@ Enter() ;  on Enter pressed {{{2
                 }
                 yn := yn - hn - ( ListMap0 * 8 )
                 Tooltip,%LM%,%xn%,%yn%
-                Settimer,<RemoveToolTipEx>,100
+                SetTimer,<RemoveTooltipEx>,100
                 Return
             }
             If RegExMatch(CMD,"i)^ma?p?\s*[^\s]*")
@@ -3706,7 +3706,7 @@ Enter() ;  on Enter pressed {{{2
                 CMD1 := RegExReplace(CMD,"i)^ma?p?\s*")
                 Key := SubStr(CMD1,1,RegExMatch(CMD1,"\s")-1)
                 Action := SubStr(CMD1,RegExMatch(CMD1,"\s[^\s]")+1)
-                yn := yn -  hn - 9
+                yn := yn - hn - 9
                 If RegExMatch(CheckScope(key),"C")
                     If Not MapKeyAdd(Key,Action,"C")
                         Tooltip, The mapping failed `, action %Action% mistaken ,%xn%,%yn%
@@ -3717,7 +3717,7 @@ Enter() ;  on Enter pressed {{{2
                         Tooltip, The mapping failed ,%xn%,%yn%
                 Else
                     Tooltip, The mapping is successful ,%xn%,%yn%
-                Sleep,2000
+                Sleep, 2000
                 Tooltip
                 Return
             }
@@ -3726,7 +3726,7 @@ Enter() ;  on Enter pressed {{{2
                 CMD1 := RegExReplace(CMD,"i)^sma?p?\s*")
                 Key := SubStr(CMD1,1,RegExMatch(CMD1,"\s")-1)
                 Action := SubStr(CMD1,RegExMatch(CMD1,"\s[^\s]")+1)
-                yn := yn -  hn - 9
+                yn := yn - hn - 9
                 If RegExMatch(Key,"^[^<][^>]+$|^<[^<>]*>[^<>][^<>]+$|^<[^<>]+><[^<>]+>.+$")
                     Tooltip, The mapping failed `, Global hotkeys do not support Combo Keys ,%xn%,%yn%
                 Else
@@ -3734,7 +3734,7 @@ Enter() ;  on Enter pressed {{{2
                         Tooltip, The mapping failed ,%xn%,%yn%
                 Else
                     Tooltip, The mapping is successful ,%xn%,%yn%
-                Sleep,2000
+                Sleep, 2000
                 Tooltip
                 Return
             }
@@ -3748,19 +3748,19 @@ Enter() ;  on Enter pressed {{{2
                 EditViATcIniFile()
                 Return
             }
-            yn := yn -  hn - 9
+            yn := yn - hn - 9
             Tooltip, Invalid command line ,%xn%,%yn%
-            ControlSetText,Edit1,:,AHK_CLASS TTOTAL_CMD
-            ControlSetText,Edit2,:,AHK_CLASS TTOTAL_CMD
-            Send {Right}
-            Sleep,2000
+            ControlSetText,Edit1,:,ahk_class TTOTAL_CMD
+            ControlSetText,Edit2,:,ahk_class TTOTAL_CMD
+            Send, {Right}
+            Sleep, 2000
             Tooltip
         }
         Else
-            ControlSend,%TCEdit%,{Enter},AHK_CLASS TTOTAL_CMD
+            ControlSend,%TCEdit%,{Enter},ahk_class TTOTAL_CMD
     }
     Else
-        ControlSend,%ThisControl%,{Enter},AHK_CLASS TTOTAL_CMD
+        ControlSend,%ThisControl%,{Enter},ahk_class TTOTAL_CMD
 } ; Enter() end }}}2
 
 ; --- ini file {{{2
@@ -3777,7 +3777,7 @@ CreateNewFile()
             IniRead,file,%ViatcIni%,TemplateList,%A_Index%
             If file <> ERROR
             {
-                Splitpath,file,,,ext
+                SplitPath,file,,,ext
                 ext := "." . ext
                 Icon_file :=
                 Icon_idx :=
@@ -3791,10 +3791,10 @@ CreateNewFile()
                 RegRead,iconfile,HKEY_CLASSES_ROOT,%filetype%\DefaultIcon
                 Loop,% StrLen(iconfile)
                 {
-                    If RegExMatch(SubStr(iconfile,Strlen(iconfile)-A_index+1,1),",")
+                    If RegExMatch(SubStr(iconfile,Strlen(iconfile)-A_Index+1,1),",")
                     {
-                        icon_file := SubStr(iconfile,1,Strlen(iconfile)-A_index)
-                        icon_idx := Substr(iconfile,Strlen(iconfile)-A_index+2,A_index)
+                        icon_file := SubStr(iconfile,1,Strlen(iconfile)-A_Index)
+                        icon_idx := Substr(iconfile,Strlen(iconfile)-A_Index+2,A_Index)
                         Break
                     }
                 }
@@ -3829,23 +3829,23 @@ Return
 Shortcut:
 PostMessage 1075, 1004, 0,, ahk_class TTOTAL_CMD
 If LnkToDesktop
-    Settimer,SetLnkToDesktop,50
+    SetTimer,SetLnkToDesktop,50
 Return
 SetLnkToDesktop:
 Loop,4
 {
-    If WinExist("AHK_CLASS TInpComboDlg")
+    If WinExist("ahk_class TInpComboDlg")
     {
-        ControlGetText,Path,TAltEdit1,AHK_CLASS TInpComboDlg
-        Splitpath,Path,FileName
+        ControlGetText,Path,TAltEdit1,ahk_class TInpComboDlg
+        SplitPath,Path,FileName
         NewFileName := A_Desktop . "\" . FileName
-        ControlSetText,TAltEdit1,%NewFileName%,AHK_CLASS TInpComboDlg
+        ControlSetText,TAltEdit1,%NewFileName%,ahk_class TInpComboDlg
         Break
     }
-    Sleep,500
+    Sleep, 500
 }
-Settimer,SetLnkToDesktop,off
-return
+SetTimer,SetLnkToDesktop,Off
+Return
 
 template:
 template()
@@ -3868,8 +3868,8 @@ template()
         MsgBox ,, Add a new template, Please select the file
         Return
     }
-    Splitpath,temp_file,,,Ext
-    WinGet,hwndtc,id,AHK_CLASS TTOTAL_CMD
+    SplitPath,temp_file,,,Ext
+    WinGet,hwndtc,id,ahk_class TTOTAL_CMD
     Gui,new,+Theme +Owner%hwndtc% +HwndCNF
     Gui,Add,Text,x10 y10, Template name
     Gui,Add,Edit,x90 y8 w275,%ext%
@@ -3878,8 +3878,8 @@ template()
     Gui,Add,button,x140 y68 default gTemp_save, OK (&O)
     Gui,Add,button,x200 y68 g<Cancel>, Cancel (&C)
     Gui,Show,, Create a new template
-    Controlsend,edit1,{ctrl a},ahk_id %CNF%
-    Controlsend,edit2,{end},ahk_id %CNF%
+    ControlSend,edit1,{ctrl a},ahk_id %CNF%
+    ControlSend,edit2,{end},ahk_id %CNF%
 }
 Temp_save:
 temp_save()
@@ -3891,10 +3891,10 @@ Temp_save()
     ControlGettext,tempPath,edit2,ahk_id %cnf%
     ShellNew := A_ScriptDir . "\Templates"
     ;ShellNew := TCDir . "\ShellNew"
-    If Not InStr(Fileexist(ShellNew),"D")
+    If Not InStr(FileExist(ShellNew),"D")
         FileCreateDir,%ShellNew%
     Filecopy,%tempPath%,%ShellNew%,1
-    Splitpath,tempPath,FileName
+    SplitPath,tempPath,FileName
     New := 1
     Loop,23
     {
@@ -3938,32 +3938,32 @@ CreateFile(item)
     {
         IniRead,file,%ViatcIni%,TemplateList,%A_Index%
         Match := Substr(file,2,RegExMatch(file,"\)")-2)
-        if RegExMatch(Match,item) Or RegExMatch(Item,"\(&V\)$")
+        If RegExMatch(Match,item) OR RegExMatch(Item,"\(&V\)$")
         {
             If RegExMatch(Item,"\(&V\)$")
             {
                 File := A_Temp . "\viatcTemp"
-                If Fileexist(file)
+                If FileExist(file)
                     Filedelete,%File%
                 FileAppend,,%File%,UTF-8
             }
             Else
                 file := A_ScriptDir . "\Templates" . Substr(file,RegExMatch(file,"\)")+1,Strlen(file))
                 ;file := TCDir . "\ShellNew" . Substr(file,RegExMatch(file,"\)")+1,Strlen(file))
-            If Fileexist(file)
+            If FileExist(file)
             {
-                Splitpath,file,filename,,fileext
-                WinGet,hwndtc,id,AHK_CLASS TTOTAL_CMD
+                SplitPath,file,filename,,fileext
+                WinGet,hwndtc,id,ahk_class TTOTAL_CMD
                 Gui,new,+Theme +Owner%hwndtc% +HwndCNF_New
                 Gui,Add,Text,hidden ,%file%
                 Gui,Add,Edit,x10 y10 w340 h22 -Multi,%filename%
                 Gui,Add,button,x200 y40 w70 gTemp_create Default, OK (&O)
                 Gui,Add,button,x280 y40 w70 g<Cancel>, Cancel (&C)
                 Gui,Show,w360 h70, create a new file
-                Controlsend,edit1,{ctrl a},ahk_id %CNF_New%
+                ControlSend,edit1,{ctrl a},ahk_id %CNF_New%
                 If Fileext
                     Loop,% strlen(fileext)+1
-                        Controlsend,edit1,+{left},ahk_id %CNF_New%
+                        ControlSend,edit1,+{Left},ahk_id %CNF_New%
             }
             Else
             {
@@ -3980,8 +3980,8 @@ Return
 Temp_Create()
 {
     Global CNF_New
-    ControlGetText,FilePath,Static1,AHK_ID %CNF_New%
-    ControlGetText,NewFile,Edit1,AHK_ID %CNF_New%
+    ControlGetText,FilePath,Static1,ahk_id %CNF_New%
+    ControlGetText,NewFile,Edit1,ahk_id %CNF_New%
     ClipSaved := ClipboardAll
     Clipboard :=
     SendMessage 1075, 2029, 0,, ahk_class TTOTAL_CMD
@@ -3993,7 +3993,7 @@ Temp_Create()
     If RegExmatch(NewPath,"^\\\\Desktop$")
         NewPath := A_Desktop
     NewFile := NewPath . "\" . NewFile
-    If Fileexist(NewPath)
+    If FileExist(NewPath)
     {
         Filecopy,%FilePath%,%NewFile%,1
         If ErrorLevel
@@ -4002,15 +4002,15 @@ Temp_Create()
         EmptyMem()
     }
     Clipboard := ClipSaved
-    ControlGetFocus,focus_control,AHK_CLASS TTOTAL_CMD
+    ControlGetFocus,focus_control,ahk_class TTOTAL_CMD
     MatchCtrl := "^" . TCListBox
     If RegExMatch(focus_control,MatchCtrl)
     {
-        Splitpath,NewFile,NewFileName,,NewFileExt
+        SplitPath,NewFile,NewFileName,,NewFileExt
         Matchstr := RegExReplace(newfileName,"\+|\?|\.|\*|\{|\}|\(|\)|\||\^|\$|\[|\]|\\","\$0")
         Loop,100
         {
-            ControlGet,outvar,list,,%focus_control%,AHK_CLASS TTOTAL_CMD
+            ControlGet,outvar,list,,%focus_control%,ahk_class TTOTAL_CMD
             If RegExMatch(outvar,Matchstr)
             {
                 Matchstr := "^" . Matchstr
@@ -4022,16 +4022,16 @@ Temp_Create()
                         Break
                     }
                 }
-                PostMessage, 0x19E, %Focus%, 1, %focus_control%, AHK_CLASS TTOTAL_CMD
+                PostMessage, 0x19E, %Focus%, 1, %focus_control%, ahk_class TTOTAL_CMD
                 Break
             }
-            Sleep,50
+            Sleep, 50
         }
     }
     If NewFileExt
         Run,%newFile%,,UseErrorLevel
     Else
-        Postmessage,1075,904,0,,AHK_CLASS TTOTAL_CMD
+        PostMessage,1075,904,0,,ahk_class TTOTAL_CMD
     Return
 }
 
@@ -4056,13 +4056,13 @@ Diff(String1,String2)
 
 Setting() ; --- {{{1
 {
-    Global StartUp,Service,TrayIcon,Vim,GlobalTogg,Toggle,GlobalSusp,Susp,ComboTooltips,TranspHelp,Transparent,SearchEng,DefaultSE,ViATcIni,TCExe,TCINI,NeedReload,LnkToDesktop,HistoryOfRename,FancyVimRename, IsCapslockAsEscape,UseSystemClipboard
+    Global Startup,Service,TrayIcon,Vim,GlobalTogg,Toggle,GlobalSusp,Susp,ComboTooltips,TranspHelp,Transparent,SearchEng,DefaultSE,ViATcIni,TCExe,TCINI,NeedReload,LnkToDesktop,HistoryOfRename,FancyVimRename, IsCapsLockAsEscape,UseSystemClipboard
     NeedReload := 1
     Global ListView
     Global MapKey_Arr,CommandInfo_Arr,ExecFile_Arr,SendText_Arr
     Vim := GetConfig("Configuration","Vim")
     Gui,Destroy
-    Gui,+Theme +hwndviatcsetting 
+    Gui,+Theme +hwndviatcsetting
     ;Gui,+SBARS_SIZEGRIP
     Gui,+0x100A +0x40000
     Gui, +Resize  ; Make the window resizable.
@@ -4076,13 +4076,13 @@ Setting() ; --- {{{1
     Gui,Add,Text,x24 y539 w60, viatc.ini :
     Gui,Add,Button,x70 y535 w54 center g<BackupViATcIniFile>, &Backup
     Gui,Add,Button,x130 y535 w40 g<EditViATcIniFile>, &Edit
-    Gui,Add,Button,x240 y535 w80 center Default g<GuiEnter>, &OK 
-    Gui,Add,Button,x330 y535 w80 center g<GuiCancel>, &Cancel 
+    Gui,Add,Button,x240 y535 w80 center Default g<GuiEnter>, &OK
+    Gui,Add,Button,x330 y535 w80 center g<GuiCancel>, &Cancel
     ;Gui,Add,Tab2,x10 y6 +theme h520 w405 center choose2, &General (&G) | Hotkeys (&H) | Paths (&P)
     Gui,Add,Tab2,x10 y6 +theme h520 w405 center choose2, &General  | &Hotkeys  | &Paths  | &Misc
     Gui,Add,GroupBox,x16 y32 H170 w390, Global Settings
-    Gui,Add,CheckBox,x25 y50 h20 checked%startup% vStartup, &Startup VIATC
-    Gui,Add,CheckBox,x180 y50 h20 checked%Service% vService, Background process  &1  
+    Gui,Add,CheckBox,x25 y50 h20 checked%Startup% vStartup, &Startup VIATC
+    Gui,Add,CheckBox,x180 y50 h20 checked%Service% vService, Background process  &1
     Gui,Add,CheckBox,x25 y70 h20 checked%TrayIcon% vTrayIcon, System-tray &icon
     Gui,Add,CheckBox,x180 y70 h40 checked%Vim% vVim, Enable &ViATc mode at start, `nif unchecked, all is disabled till first Esc
     Gui,Add,Text,x25 y100 h20, Hotkey to &Activate/Minimize TC
@@ -4122,7 +4122,7 @@ Setting() ; --- {{{1
     Gui,Add,Button,x356 y246 h20 w22 g<AddSearchEng>,&+
     Gui,Add,Button,x380 y246 h20 w22 g<DelSearchEng>,&-
     Gui,Add,CheckBox,x25 y280 h20 checked%ComboTooltips% vComboTooltips, Show tooltips after the first key of Combo Key  &3
-    Gui,Add,CheckBox,x25 y309 h20 checked%transpHelp% vTranspHelp, &Transparent help interface (needs reload as all)
+    Gui,Add,CheckBox,x25 y309 h20 checked%TranspHelp% vTranspHelp, &Transparent help interface (needs reload as all)
     Gui,Add,Button,x270 y305 h27 w120 Center g<Help>, Open VIATC Help   &4
     Gui,Add,CheckBox,x25 y340 h20 checked%HistoryOfRename% vHistoryOfRename, HistoryOf&Rename ; - see history_of_rename.txt
     Gui,Add,Link,x135 y343 h20, - see <a href="%A_ScriptDir%\history_of_rename.txt">history_of_rename.txt</a>
@@ -4130,7 +4130,7 @@ Setting() ; --- {{{1
     ;Gui,Add,Link,x135 y363 h20, - see <a href="%EditorPath% . %EditorArguments% . %HistoryOfRenamePath%">%HistoryOfRenamePath%</a>
     ;Gui,Add,CheckBox,x25 y370 h20 checked%FancyVimRename% vFancyVimRename, &Fancy Rename
 
-    Gui,Add,CheckBox,x25 y400 h20 checked%IsCapslockAsEscape% vIsCapslockAsEscape, Capslock as Escape   &6
+    Gui,Add,CheckBox,x25 y400 h20 checked%IsCapsLockAsEscape% vIsCapsLockAsEscape, CapsLock as Escape   &6
 
     ;Gui,Add,Button,x270 y405 h30 w120 Center g<BackupViATcIniFile>, &Backup viatc.ini file
     ;  (this checkbox not working yet)
@@ -4138,13 +4138,13 @@ Setting() ; --- {{{1
 
     Gui,Tab,2
 
-    Gui,Add,GroupBox,x16 y32 h488 w390, 
+    Gui,Add,GroupBox,x16 y32 h488 w390,
     Gui,Add,text,x20 y340 h50, * column legend:`n  G - Global Key`n  H - Hotkey`n  C - Combo Key
     Gui,Add,text,x130 y336 h50, Right-click any item on the list to edit or delete, `nor select any item and press ---> ;the Delete button
     Gui,Add,Button,x285 y350 h20 w65 g<DeleItem>, &Delete
     Gui,Add,text,x130 y361 h20,      Double-click to edit.
     ;Gui,Add,Button,x350 y370 h40 w65 g<DeleItem>, Delete (&D)
-    Gui,Add,text,x130 y375 h20, Add items below. How? Open the help window 
+    Gui,Add,text,x130 y375 h20, Add items below. How? Open the help window
     Gui,Add,Button,x130 y390 h20 w50 Center g<Help>, &Help
     Gui,Add,text,x180 y390 h20,      and choose the fifth tab: Commands
     ;Gui,Add,Button,x350 y420 h20 w50 Center g<Help>, (&Help)
@@ -4206,7 +4206,7 @@ Setting() ; --- {{{1
     ;LV_Add(vis," ","","","","empty line because it is often obscured by a scrollbar")
 
     Gui,Tab,3
-    Gui,Add,GroupBox,x16 y32 h480 w390, 
+    Gui,Add,GroupBox,x16 y32 h480 w390,
     Gui,Add,Text,x18 y35 h16 center,TC executable "TOTALCMD64.EXE" or "TOTALCMD.EXE" location :
     Gui,Add,Edit,x18 y55 h20 +ReadOnly w350,%TCEXE%
     Gui,Add,Button,x375 y53 w30 g<GuiTCEXE>, &1 ...
@@ -4220,15 +4220,15 @@ Setting() ; --- {{{1
     Gui,Add,Edit,x18 y250 h20 vGuiEditorPath +ReadOnly w350,%EditorPath%
     Gui,Add,Button,x375 y250 w30 g<GuiEditorPath> , &4 ...
     Gui,Add,Text,x140 y280 h16 center, for a new tab in vim use:
-    Gui,Add,Text,x381 y278 h16 center,  &5 
-    Gui,Add,Edit,x262 y278 h18 +ReadOnly w105, -p --remote-tab-silent 
+    Gui,Add,Text,x381 y278 h16 center,  &5
+    Gui,Add,Edit,x262 y278 h18 +ReadOnly w105, -p --remote-tab-silent
     Gui,Add,Text,x18 y280 h16 center,Editor's arguments :
-    Gui,Add,Text,x381 y300 h16 center,  &6 
+    Gui,Add,Text,x381 y300 h16 center,  &6
     Gui,Add,Edit,x18 y300 h20 w350 vGuiEditorArguments,%EditorArguments%
-    Gui,Add,Text,x381 y350 h16 center,  &7 
-    Gui,Add,Link,x315 y350 h20, <a href="C:\Windows\regedit.exe">regedit.exe</a> 
-    Gui,Add,Text,x18 y350 h20 , Paths of ini files 2 and 3 are saved to the registry ;if changed 
-    Gui,Add,Text,x381 y370 h16 center,  &8 
+    Gui,Add,Text,x381 y350 h16 center,  &7
+    Gui,Add,Link,x315 y350 h20, <a href="C:\Windows\regedit.exe">regedit.exe</a>
+    Gui,Add,Text,x18 y350 h20 , Paths of ini files 2 and 3 are saved to the registry ;if changed
+    Gui,Add,Text,x381 y370 h16 center,  &8
     Gui,Add,Edit,x18 y370 h20 +ReadOnly w350,Computer\HKEY_CURRENT_USER\Software\VIATC
 
     Gui,Tab,4
@@ -4250,7 +4250,7 @@ Setting() ; --- {{{1
     Gui,Add,Button,x292 y55 w54 center g<BackupUserFile>, &5 Backup
     Gui,Add,Button,x352 y55 w40 g<EditUserFile>, &6 Edit
 
-    ;Gui,Add,Text,x185 y300 h16 center,  &V 
+    ;Gui,Add,Text,x185 y300 h16 center,  &V
     Gui,Add, Picture, gGreet x170 y280 w60 h-1, %A_ScriptDir%\viatc.ico
     Gui,Add,Button,x170 y360 w60 gWisdom, &Wisdom
 
@@ -4258,22 +4258,22 @@ Setting() ; --- {{{1
     ;Gui,Add,GroupBox,x26 y400 h112 w370, Internet
     Gui,Add,GroupBox,x46 y400 h100 w330, Internet
     Gui,Add,Button,x130 y420 w140 vCheckForUpdatesButton gCheckForUpdates, Check for &updates
-    ;Gui,Add,Text,x72 y450 h16 center,  &ViATc Website: 
-    ;Gui,Add,Link,x149 y450 h20, <a href="https://magicstep.github.io/viatc/">magicstep.github.io/viatc</a> 
-    Gui,Add,Text,x120 y450 h16 center,  &Visit: 
-    Gui,Add,Link,x145 y450 h20, <a href="https://magicstep.github.io/viatc/">magicstep.github.io/viatc</a> 
-    ;Gui,Add,Text,x120 y480 h16 center,  &What's New: 
-    ;Gui,Add,Link,x185 y480 h20, <a href="https://magicstep.github.io/viatc/WhatsNew/">Version Log</a> 
+    ;Gui,Add,Text,x72 y450 h16 center,  &ViATc Website:
+    ;Gui,Add,Link,x149 y450 h20, <a href="https://magicstep.github.io/viatc/">magicstep.github.io/viatc</a>
+    Gui,Add,Text,x120 y450 h16 center,  &Visit:
+    Gui,Add,Link,x145 y450 h20, <a href="https://magicstep.github.io/viatc/">magicstep.github.io/viatc</a>
+    ;Gui,Add,Text,x120 y480 h16 center,  &What's New:
+    ;Gui,Add,Link,x185 y480 h20, <a href="https://magicstep.github.io/viatc/WhatsNew/">Version Log</a>
     Gui,Add,Text,x120 y480 h16 center, Version &Log:
-    Gui,Add,Link,x185 y480 h20, <a href="https://magicstep.github.io/viatc/WhatsNew/">What's New</a> 
-    
+    Gui,Add,Link,x185 y480 h20, <a href="https://magicstep.github.io/viatc/WhatsNew/">What's New</a>
+
 
     Gui,Tab
     Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&G
     Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&H
     Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&P
     Gui,Add,Button,x280 y5 w30 h20 center hidden g<ChangeTab>,&M
-    Gui,Show,h570 w420,Settings   VIATC %Version% 
+    Gui,Show,h570 w420,Settings   VIATC %Version%
 }
 
 ;gGreet
@@ -4286,7 +4286,7 @@ Return
 Wisdom:
 Array := ["If you had a fortune cookie what would you like it to say?"
          ,"If you could speak for 1 minute and be heard by everybody in the world, what would you say?"
-            ,"If you could make one thing come true for all the souls on the planet what would it be?" 
+            ,"If you could make one thing come true for all the souls on the planet what would it be?"
              ,"What is it that you love the most about yourself?"
               ,"What is the ultimate goal of a human being?"
                  ,"What thing doesn't exist but should?"
@@ -4328,12 +4328,12 @@ BackupViATcIniFile()
     FormatTime, CurrentDateTime,, yyyy-MM-dd_hh;mm.ss
     NewFile=%VIATCINI%_%CurrentDateTime%_backup.ini
     FileCopy,%VIATCINI%,%NewFile%
-    If Fileexist(NewFile)
+    If FileExist(NewFile)
         Tooltip Backup of settings succesfull
     Else
         MsgBox Backup of settings failed
-    
-    Sleep,1400
+
+    Sleep, 1400
     Tooltip
     Return
     ;GuiControlGet,VarPos,Pos,Edit4
@@ -4350,10 +4350,10 @@ EditViATcIniFile()
     Global viatcini
     match = `"$0
     INI := Regexreplace(viatcini,".*",match)
-    If Fileexist(EditorPath)
-        editini := EditorPath . EditorArguments . ini 
+    If FileExist(EditorPath)
+        editini := EditorPath . EditorArguments . ini
     Else
-        editini := "notepad.exe" . a_space . ini
+        editini := "notepad.exe" . A_Space . ini
     Run,%editini%,,UseErrorLevel
     Return
 }
@@ -4367,12 +4367,12 @@ BackupMarksFile()
     FormatTime, CurrentDateTime,, yyyy-MM-dd_hh;mm.ss
     NewFile=%MarksPath%_%CurrentDateTime%_backup.ini
     FileCopy,%MarksPath%,%NewFile%
-    If Fileexist(NewFile)
+    If FileExist(NewFile)
         Tooltip Backup of marks succesfull
     Else
         MsgBox Backup of marks failed
-    
-    Sleep,1400
+
+    Sleep, 1400
     Tooltip
     Return
 }
@@ -4387,10 +4387,10 @@ EditMarksFile()
     Global MarksPath
     match = `"$0
     file := Regexreplace(MarksPath,".*",match)
-    If Fileexist(EditorPath)
+    If FileExist(EditorPath)
         editfile := EditorPath . EditorArguments . file
     Else
-        editfile := "notepad.exe" . a_space . file
+        editfile := "notepad.exe" . A_Space . file
     Run,%editfile%,,UseErrorLevel
     Return
 }
@@ -4401,16 +4401,16 @@ Return
 
 BackupTCIniFile()
 {
-    global TCIni
+    Global TCIni
     FormatTime, CurrentDateTime,, yyyy-MM-dd_hh;mm.ss
     NewFile=%TCIni%_%CurrentDateTime%_backup.ini
     FileCopy,%TCIni%,%NewFile%
-    If Fileexist(NewFile)
+    If FileExist(NewFile)
         Tooltip Backup of wincmd.ini succesfull. `n%NewFile%
         ;MsgBox,,, Backup of wincmd.ini succesfull. `n`nIt is now in`n%NewFile%
     Else
         MsgBox,0x10,, Backup of wincmd.ini failed. `n`nCouldn't copy %TCIni% `nto %NewFile%
-    ;Sleep,1400
+    ;Sleep, 1400
     ;Tooltip
     Return
 }
@@ -4429,7 +4429,7 @@ EditTCIniFile()
     If FileExist(EditorPath)
         editfile := EditorPath . EditorArguments . file
     Else
-        editfile := "notepad.exe" . a_space . file
+        editfile := "notepad.exe" . A_Space . file
     Run,%editfile%,,UseErrorLevel
     Return
 }
@@ -4444,12 +4444,12 @@ BackupUserFile()
     FormatTime, CurrentDateTime,, yyyy-MM-dd_hh;mm.ss
     NewFile=%UserFilePath%_%CurrentDateTime%_backup.ahk
     FileCopy,%UserFilePath%,%NewFile%
-    If Fileexist(NewFile)
+    If FileExist(NewFile)
         Tooltip Backup of user.ahk succesfull
     Else
         MsgBox Backup of user.ahk failed
-    
-    Sleep,1400
+
+    Sleep, 1400
     Tooltip
     Return
 }
@@ -4459,10 +4459,10 @@ BackupUserFile()
     Global UserFilePath
     match = `"$0
     file := Regexreplace(UserFilePath,".*",match)
-    If Fileexist(EditorPath)
+    If FileExist(EditorPath)
         editfile := EditorPath . EditorArguments . file
     Else
-        editfile := "notepad.exe" . a_space . file
+        editfile := "notepad.exe" . A_Space . file
     Run,%editfile%,,UseErrorLevel
 Return
 
@@ -4475,14 +4475,14 @@ Return
 AddSearchEng()
 {
     Global ViATcSetting,ViATcIni
-    ControlgetText,SE,Edit3,AHK_ID %VIATCSetting%
-    Controlget,SEList,list,,combobox1,AHK_ID %VIATCSetting%
+    ControlGetText,SE,Edit3,ahk_id %VIATCSetting%
+    ControlGet,SEList,list,,combobox1,ahk_id %VIATCSetting%
     Stringsplit,List,SEList,`n
     List0++
     GuiControl,,combobox1,%SE%
     IniWrite,%SE%,%VIATCINI%,SearchEngine,%List0%
     Tooltip The search engine added.
-    Sleep,1400
+    Sleep, 1400
     Tooltip
 }
 <DelSearchEng>:
@@ -4491,7 +4491,7 @@ Return
 DelSearchEng()
 {
     Global ViATcSetting,ViATcIni,DefaultSE
-    Controlget,SEList,list,,combobox1,AHK_ID %VIATCSetting%
+    ControlGet,SEList,list,,combobox1,ahk_id %VIATCSetting%
     IniDelete,%ViATcIni%,SearchEngine,%DefaultSE%
     Stringsplit,List,SEList,`n
     Loop,%List0%
@@ -4504,7 +4504,7 @@ DelSearchEng()
     GuiControl,,combobox1,%NewSEList%
     IniWrite,%DefaultSE%,%VIATCINI%,SearchEngine,Default
     Tooltip The search engine removed.
-    Sleep,1400
+    Sleep, 1400
     Tooltip
 }
 <SetDefaultSE>:
@@ -4513,7 +4513,7 @@ Return
 SetDefaultSE()
 {
     Global ViATcSetting,DefaultSE,ViATcIni,SearchEng
-    GuiControlget,SE,,combobox1,AHK_ID %VIATCSetting%
+    GuiControlGet,SE,,combobox1,ahk_id %VIATCSetting%
     If RegExMatch(SE,"^\d+$")
     {
         DefaultSE := SE
@@ -4527,7 +4527,7 @@ CheckKey()  ;this is what Save button does on the Settings middle tab
 Gui,Submit
 Global EditorPath, EditorArguments
 EditorPath := GuiEditorPath
-;Trimming leading and trailing white space is automatic when assigning a variable with only = 
+;Trimming leading and trailing white space is automatic when assigning a variable with only =
 EditorArguments = GuiEditorArguments
 IniWrite,%TrayIcon%,%ViATcIni%,Configuration,TrayIcon
 IniWrite,%Vim%,%ViATcIni%,Configuration,Vim
@@ -4535,16 +4535,16 @@ IniWrite,%Toggle%,%ViATcIni%,Configuration,Toggle
 IniWrite,%Susp%,%ViATcIni%,Configuration,Suspend
 IniWrite,%GlobalTogg%,%ViATcIni%,Configuration,GlobalTogg
 IniWrite,%GlobalSusp%,%ViATcIni%,Configuration,GlobalSusp
-IniWrite,%StartUp%,%ViATcIni%,Configuration,StartUp
+IniWrite,%Startup%,%ViATcIni%,Configuration,Startup
 IniWrite,%Service%,%ViATcIni%,Configuration,Service
 IniWrite,%ComboTooltips%,%ViATcIni%,Configuration,ComboTooltips
 IniWrite,%TranspHelp%,%ViATcIni%,Configuration,TranspHelp
 IniWrite,%HistoryOfRename%,%ViATcIni%,Configuration,HistoryOfRename
 IniWrite,%FancyVimRename%,%ViATcIni%,FancyVimRename,Enabled
-IniWrite,%IsCapslockAsEscape%,%ViATcIni%,Configuration,IsCapslockAsEscape
+IniWrite,%IsCapsLockAsEscape%,%ViATcIni%,Configuration,IsCapsLockAsEscape
 IniWrite,%GuiEditorPath%,%ViATcIni%,Paths,EditorPath
 IniWrite,%GuiEditorArguments%,%ViATcIni%,Paths,EditorArguments
-EditorArguments :=A_space . EditorArguments . A_space
+EditorArguments := A_Space . EditorArguments . A_Space
 
 If NeedReload
     GoSub,<ReloadVIATC>
@@ -4582,9 +4582,9 @@ EditItem()
             GuiControl,,GlobalCheckbox,0
         If Key
             GuiControl,,Edit4,%Key%
-        If Action =  run
+        If Action = run
             Action := "(" . Info . ")"
-        If Action =  Send text
+        If Action = Send text
             Action := "{" . Info . "}"
         If Action
             GuiControl,,Edit5,%Action%
@@ -4596,7 +4596,7 @@ Return
 DeleItem()
 {
     Global EventInfo,ViATcIni,MapKey_Arr,VIATCSetting
-    ControlGet,Line,List,Count Focused,SysListView321,AHK_ID %VIATCSetting%
+    ControlGet,Line,List,Count Focused,SysListView321,ahk_id %VIATCSetting%
     EventInfo := Line
     If EventInfo
     {
@@ -4645,17 +4645,17 @@ VimCMD()
 <ViatcCmdB1>:
 ControlGet,EventInfo,List, Count Focused,SysListView321,ahk_id %ViatcCmdHwnd%
 lv_gettext(actiontxt,EventInfo,2)
-ControlSetText,edit5,%actiontxt%,AHK_ID %VIATCSetting%
+ControlSetText,edit5,%actiontxt%,ahk_id %VIATCSetting%
 Gui,Destroy
 EmptyMem()
-Winactivate,AHK_ID %VIATCSetting%
+WinActivate,ahk_id %VIATCSetting%
 Return
 <GetViatcCmd>:
 lv_gettext(actiontxt,A_EventInfo,2)
-ControlSetText,edit5,%actiontxt%,AHK_ID %VIATCSetting%
+ControlSetText,edit5,%actiontxt%,ahk_id %VIATCSetting%
 Gui,Destroy
 EmptyMem()
-Winactivate,AHK_ID %VIATCSetting%
+WinActivate,ahk_id %VIATCSetting%
 Return
 ;selecting internal TC command for Settings button 2
 <TCCMD>:
@@ -4664,24 +4664,24 @@ Return
 tccmd()
 {
     Global VIATCSetting,TCEXE
-    Ifwinexist,AHK_CLASS TTOTAL_CMD
-    Winactivate,AHK_CLASS TTOTAL_CMD
+    IfWinExist,ahk_class TTOTAL_CMD
+    WinActivate,ahk_class TTOTAL_CMD
     Else
     {
         Run,%TCEXE%
-        WinWait,AHK_CLASS TTOTAL_CMD,1
-        Winactivate,AHK_CLASS TTOTAL_CMD
+        WinWait,ahk_class TTOTAL_CMD,1
+        WinActivate,ahk_class TTOTAL_CMD
     }
     Cli := ClipboardAll
     Clipboard :=
-    Postmessage 1075, 2924, 0,, ahk_class TTOTAL_CMD
+    PostMessage 1075, 2924, 0,, ahk_class TTOTAL_CMD
     Clipwait,0.5
     Loop
     {
         If Clipboard
             Break
         Else
-            Ifwinexist,ahk_class TCmdSelForm
+            IfWinExist,ahk_class TCmdSelForm
         Clipwait,0.5
         Else
             Break
@@ -4696,7 +4696,7 @@ tccmd()
     Clipboard := cli
     If actiontxt
         GuiControl,text,edit5,%actiontxt%
-    Winactivate,AHK_ID %VIATCSetting%
+    WinActivate,ahk_id %VIATCSetting%
 }
 <RunFile>:
 SelectFile()
@@ -4707,7 +4707,7 @@ SelectFile()
     Fileselectfile,outvar,,,VIATC run
     If outvar
         outvar := "(" . outvar . ")"
-    Winactivate,AHK_ID %VIATCSetting%
+    WinActivate,ahk_id %VIATCSetting%
     GuiControl,text,edit5,%outvar%
 }
 <SendString>:
@@ -4726,20 +4726,20 @@ GetSendString()
 }
 <GetSendStringEnter>:
 GuiControlGet,txt4,,Edit1
-if txt4
+If txt4
     txt4 := "{" . txt4 . "}"
-ControlSetText,edit5,%txt4%,AHK_ID %VIATCSetting%
-GUi,Destroy
+ControlSetText,edit5,%txt4%,ahk_id %VIATCSetting%
+Gui,Destroy
 EmptyMem()
 Return
 <GetSendStringCancel>:
-GUi,Destroy
+Gui,Destroy
 EmptyMem()
-Winactivate,AHK_ID %VIATCSetting%
+WinActivate,ahk_id %VIATCSetting%
 Return
 <GuiTCEXE>:
 GuiTCEXE()
-return
+Return
 GuiTCExe()
 {
     Global TCEXE,VIATCSetting
@@ -4747,43 +4747,43 @@ GuiTCExe()
     If ErrorLevel
         Return
     SetConfig("Paths","TCPath",TCEXE)
-    ;Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,InstallDir,%TCEXE%
+    ;RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,InstallDir,%TCEXE%
     GuiControl,text,Edit6,%TCEXE%
 }
 <GuiTCIni>:
 GuiTCIni()
-return
+Return
 GuiTCIni()
 {
     Global TCINI,VIATCSetting
     Fileselectfile,TCINI,3,C:\Users\%A_UserName%\AppData\Roaming\GHISLER\, Select the "wincmd.ini" file,*.ini
     If ErrorLevel
         Return
-    Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,TCIni,%TCINI%
+    RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,TCIni,%TCINI%
     GuiControl,text,Edit7,%TCINI%
 }
 <GuiViATcIni>:
 GuiViATcIni()
-return
+Return
 GuiViATcIni()
 {
     Global ViATcIni,VIATCSetting
-    Splitpath,ViATcINI,,ViATcINIDir
+    SplitPath,ViATcINI,,ViATcINIDir
     Fileselectfolder,NewDir,,3,ViATc.ini  Save as
     If ErrorLevel
         Return
-    If Not Fileexist(NewDir)
+    If Not FileExist(NewDir)
         FileCreateDir,%NewDir%
     FileMove,%ViATcINI%,%NewDir%\viatc.ini
     ViATcINI := NewDir . "\ViATc.ini"
-    Regwrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,ViATcINI,%ViATcINI%
+    RegWrite,REG_SZ,HKEY_CURRENT_USER,Software\VIATC,ViATcINI,%ViATcINI%
     GuiControl,text,Edit8,%ViATcINI%
     GoSub,<ReloadVIATC>
 }
 
 <GuiEditorPath>:
 GuiEditorPath()
-return
+Return
 GuiEditorPath()
 {
     Global EditorPath,VIATCSetting
@@ -4801,7 +4801,7 @@ Return
 CheckGorH()
 {
     Global ViATcSetting
-    GuiControlGet,Key,,Edit4,AHK_CLASS %ViATcSetting%
+    GuiControlGet,Key,,Edit4,ahk_class %ViATcSetting%
     If Key
         If RegExMatch(CheckScope(key),"C")
             GuiControl,Disable,GlobalCheckbox
@@ -4850,9 +4850,9 @@ Return
 CheckKey()
 {
     Global VIATCSetting,ViATcIni,MapKey_Arr,ExecFile_Arr,SendText_Arr,CommandInfo_Arr,NeedReload
-    GuiControlGet,Scope,,GlobalCheckbox,AHK_CLASS %ViATcSetting%
-    GuiControlGet,Key,,Edit4,AHK_CLASS %ViATcSetting%
-    GuiControlGet,Action,,Edit5,AHK_CLASS %ViATcSetting%
+    GuiControlGet,Scope,,GlobalCheckbox,ahk_class %ViATcSetting%
+    GuiControlGet,Key,,Edit4,ahk_class %ViATcSetting%
+    GuiControlGet,Action,,Edit5,ahk_class %ViATcSetting%
     If Scope
         Scope := "G"
     Else
@@ -4862,7 +4862,7 @@ CheckKey()
         Scope := "C"
         GuiControl,,GlobalCheckbox,0
     }
-    If Action And Key
+    If Action AND Key
     {
         NeedReload := 1
         If RegExMatch(Scope,"i)G")
@@ -4873,7 +4873,7 @@ CheckKey()
             {
                 GuiControlGet,VarPos,Pos,Edit4
                 Tooltip, The mapping failed ,%VarPosX%,%VarPosY%
-                Sleep,2000
+                Sleep, 2000
                 Tooltip
                 Return
             }
@@ -4886,7 +4886,7 @@ CheckKey()
             {
                 GuiControlGet,VarPos,Pos,Edit4
                 Tooltip, The mapping failed ,%VarPosX%,%VarPosY%
-                Sleep,2000
+                Sleep, 2000
                 Tooltip
                 Return
             }
@@ -4899,7 +4899,7 @@ CheckKey()
             {
                 GuiControlGet,VarPos,Pos,Edit4
                 Tooltip, The mapping failed ,%VarPosX%,%VarPosY%
-                Sleep,2000
+                Sleep, 2000
                 Tooltip
                 Return
             }
@@ -4952,14 +4952,14 @@ CheckKey()
     {
         GuiControlGet,VarPos,Pos,Edit4
         ;Tooltip, Shortcuts or commands are empty ,%VarPosX%,%VarPosY%
-        ;Sleep,2000
+        ;Sleep, 2000
         ;Tooltip
-        ToolTip, Shortcuts or commands are empty ,%VarPosX%,%VarPosY%
-        SetTimer, RemoveToolTip, -1500
-        return
-        RemoveToolTip:
-        ToolTip
-        return
+        Tooltip, Shortcuts or commands are empty ,%VarPosX%,%VarPosY%
+        SetTimer, RemoveTooltip, -1500
+        Return
+        RemoveTooltip:
+        Tooltip
+        Return
     }
 }
 <ChangeTab>:
@@ -4982,13 +4982,13 @@ TH()
 Return
 TH()
 {
-    ;GuiControlGet,Scope,,Button25,AHK_CLASS %ViATcSetting%
-    GuiControlGet,Scope,,GlobalCheckbox,AHK_CLASS %ViATcSetting%
+    ;GuiControlGet,Scope,,Button25,ahk_class %ViATcSetting%
+    GuiControlGet,Scope,,GlobalCheckbox,ahk_class %ViATcSetting%
     ;Gui, Submit, NoHide ;this command submits the guis' datas' state
-    ;Scope = GlobalCheckbox 
+    ;Scope = GlobalCheckbox
 
-    GuiControlGet,Key,,Edit4,AHK_CLASS %ViATcSetting%
-    if key
+    GuiControlGet,Key,,Edit4,ahk_class %ViATcSetting%
+    If key
     {
         If Scope
             KeyType := "Global Key"
@@ -4996,7 +4996,7 @@ TH()
             KeyType := "Hotkey"
         If RegExMatch(CheckScope(key),"C")
             KeyType := "Combo Key"
-        Msg :=  KeyType . "`n"
+        Msg := KeyType . "`n"
         Key1 := TransHotkey(Key,"First")
         Msg .= "1 Key :" . Key1 . "`n"
         Key2 := TransHotkey(Key,"ALL")
@@ -5011,31 +5011,31 @@ TH()
         GuiControlGet,VarPos,Pos,Edit4
         VarPosY := VarPosY - VarPosH - ( T0 * 17)
         Tooltip,%Msg%,%VarPosX%,%VarPosY%
-        Settimer,<RemoveTTEx>,5000
+        SetTimer,<RemoveTTEx>,5000
     }
-    else
+    Else
     {
         Msg := " Please enter the hotkey to be analyzed in the hotkey field "
         GuiControlGet,VarPos,Pos,Edit4
         VarPosY := VarPosY - VarPosH + 17
         Tooltip,%Msg%,%VarPosX%,%VarPosY%
-        Settimer,<RemoveTTEx>,2500
+        SetTimer,<RemoveTTEx>,2500
     }
 }
-return
+Return
 <RemoveTTEx>:
 SetTimer,<RemoveTTEx>, Off
-ToolTip
-return
+Tooltip
+Return
 <RemoveTT>:
-Ifwinnotactive,AHK_ID %ViATcSetting%
+IfWinNotActive,ahk_id %ViATcSetting%
 {
     SetTimer,<RemoveTT>, Off
-    ToolTip
+    Tooltip
 }
-return
+Return
 
-Help() ; --- Help {{{1  
+Help() ; --- Help {{{1
 {
     Global TranspHelp,HelpInfo_Arr
     Gui,New
@@ -5117,7 +5117,7 @@ Help() ; --- Help {{{1
     Gui,Add,Text,x346 y115 w40 h18 center Border g<ShowHelp>,RCtrl
     Gui,Font,s10,Arial
     Gui,Add,Text,x399 y10 w200 h135 , Click on the keyboard to see what the key does. Please note that some info might not be accurate because any of the hotkeys can be overriden in the Settings.`n`n`nYou can use hjkl below.
-    Gui,Font,s9,Arial Bold    
+    Gui,Font,s9,Arial Bold
     Gui,Add,Groupbox,x12 y135 w574 h40
     Gui,Add,Button,x15 y146 w60 gIntro, &1  Intro
     Gui,Add,Button,x80 y146 w75 gFunct, &2  Hotkey
@@ -5130,7 +5130,7 @@ Help() ; --- Help {{{1
     ;Gui,Font,s12,Georgia   ;font for the bottom textarea box in help window
     ;the +0x40000 adds resizing
     Gui,Add,Edit,x12 y180 w574 h310 +ReadOnly +0x40000,%Intro%
-    Gui,Show,AutoSize w600 h500,Help   VIATC %Version% 
+    Gui,Show,AutoSize w600 h500,Help   VIATC %Version%
     If TranspHelp
         WinSet,Transparent,220,ahk_id %VIATCHELP%
     Return
@@ -5172,98 +5172,98 @@ ShowHelp(control)
 
 SetHelpInfo()  ; --- graphical keyboard in help {{{2
 {
-    Global HelpInfo_arr
-    HelpInfo_arr["Esc"] :="Esc >> Esc. Like in Vim it cancels all unfinished commands"
-    HelpInfo_arr["F1"] :="F1 >> No mapping `nOpen TC help"
-    HelpInfo_arr["F2"] :="F2 >> No mapping `nRefresh the source window"
-    HelpInfo_arr["F3"] :="F3 >> No mapping `nView file"
-    HelpInfo_arr["F4"] :="F4 >> No mapping `nEdit file"
-    HelpInfo_arr["F5"] :="F5 >> No mapping `nCopy file"
-    HelpInfo_arr["F6"] :="F6 >> No mapping `nRename or move file"
-    HelpInfo_arr["F7"] :="F7 >> No mapping `nNew folder"
-    HelpInfo_arr["F8"] :="F8 >> No mapping `nDelete Files (Move to Recycle Bin or delete it directly - Determined by configuration)"
-    HelpInfo_arr["F9"] :="F9 >> No mapping `nActivate the menu for the source window  (Left or right)"
-    HelpInfo_arr["F10"] :="F10 >> No mapping `nActivate the left menu or exit the menu "
-    HelpInfo_arr["F11"] :="F11 >> No mapping "
-    HelpInfo_arr["F12"] :="F12 >> No mapping "
-    HelpInfo_arr["``~"] :="`` >> No mapping `n~ >> No mapping "
-    HelpInfo_arr["1!"] :="1 >> numerical 1, Used for counting `n! >> No mapping "
-    HelpInfo_arr["2@"] :="2 >> numerical 2, Used for counting `n@ >> No mapping "
-    HelpInfo_arr["3#"] :="3 >> numerical 3, Used for counting `n# >> No mapping "
-    HelpInfo_arr["4$"] :="4 >> numerical 4, Used for counting `n$ >> No mapping "
-    HelpInfo_arr["5%"] :="5 >> numerical 5, Used for counting `n% >> No mapping "
-    HelpInfo_arr["6^"] :="6 >> numerical 6, Used for counting `n^ >> No mapping "
-    HelpInfo_arr["7&"] :="7 >> numerical 7, Used for counting `n& >> No mapping "
-    HelpInfo_arr["8*"] :="8 >> numerical 8, Used for counting `n* >> No mapping "
-    HelpInfo_arr["9("] :="9 >> numerical 9, Used for counting `n( >> No mapping "
-    HelpInfo_arr["0)"] :="0 >> numerical 0, Used for counting `n) >> No mapping "
-    HelpInfo_arr["-_"] :="- >> Toggle the independent folder tree panel status `n_ >> No mapping "
-    HelpInfo_arr["=+"] :="= >> target = source `n+ >> No mapping "
-    HelpInfo_arr["Backspace"] :="Backspace >> No mapping `n Go up a folder or delete the text in edit mode "
-    HelpInfo_arr["Tab"] :="Tab >> No mapping `nSwitch the window "
-    HelpInfo_arr["Q"] :="q >> Quick view `nQ >> Use the default browser to search for the current file or folder name "
-    HelpInfo_arr["W"] :="w >> Small menu `nW >> No mapping "
-    HelpInfo_arr["E"] :="e >> e...  (Combo Key, requires another key) `nec >> Compare files by content`nef >> Edit file`neh >> Toggle hidden files`nep >> Edit path in tabbar`n`n`nE >> Edit file prompt"
-    HelpInfo_arr["R"] :="r >> Rename`nR >> Fancy Rename (a crude Vim emulator in a new window)"
-    HelpInfo_arr["T"] :="t >> New tab `nT >> Create a new tab in the background  `n`nctrl+t >>  Go up in QuickSearch (opened by / or ctrl+s)  ctrl+t works the same in real Vim search,   and ctrl+g is down (mnemonic hint: T is above G) "
-    HelpInfo_arr["Y"] :="y >> Copy window like F5  `nY >> Copy the file name and the full path "
-    HelpInfo_arr["U"] :="u >> Up a directory `nU >> Up to the root directory "
-    HelpInfo_arr["I"] :="i >> Enter `nI >>  Make target = source " ;No mapping "
-    HelpInfo_arr["O"] :="o >> Open the drive list `nO >> Open the list of drives and special folders.  Equivalent to 'This PC' in Windows Explorer"
-    HelpInfo_arr["P"] :="p >> pack files/folders `nP >> unPack "
-    HelpInfo_arr["[{"] :="[ >> Select files with the same name `n{ >> Unselect files with the same name "
-    HelpInfo_arr["]}"] :="] >> Select files with the same extension `n} >> Unselect files with the same extension "
-    HelpInfo_arr["\|"] :="\ >> Invert all selections for files (but not folders, use * for both)  `n| >> Clears all selections"
+    Global HelpInfo_Arr
+    HelpInfo_Arr["Esc"] := "Esc >> Esc. Like in Vim it cancels all unfinished commands"
+    HelpInfo_Arr["F1"] := "F1 >> No mapping `nOpen TC help"
+    HelpInfo_Arr["F2"] := "F2 >> No mapping `nRefresh the source window"
+    HelpInfo_Arr["F3"] := "F3 >> No mapping `nView file"
+    HelpInfo_Arr["F4"] := "F4 >> No mapping `nEdit file"
+    HelpInfo_Arr["F5"] := "F5 >> No mapping `nCopy file"
+    HelpInfo_Arr["F6"] := "F6 >> No mapping `nRename or move file"
+    HelpInfo_Arr["F7"] := "F7 >> No mapping `nNew folder"
+    HelpInfo_Arr["F8"] := "F8 >> No mapping `nDelete Files (Move to Recycle Bin or delete it directly - Determined by configuration)"
+    HelpInfo_Arr["F9"] := "F9 >> No mapping `nActivate the menu for the source window  (Left or right)"
+    HelpInfo_Arr["F10"] := "F10 >> No mapping `nActivate the left menu or exit the menu "
+    HelpInfo_Arr["F11"] := "F11 >> No mapping "
+    HelpInfo_Arr["F12"] := "F12 >> No mapping "
+    HelpInfo_Arr["``~"] := "`` >> No mapping `n~ >> No mapping "
+    HelpInfo_Arr["1!"] := "1 >> numerical 1, Used for counting `n! >> No mapping "
+    HelpInfo_Arr["2@"] := "2 >> numerical 2, Used for counting `n@ >> No mapping "
+    HelpInfo_Arr["3#"] := "3 >> numerical 3, Used for counting `n# >> No mapping "
+    HelpInfo_Arr["4$"] := "4 >> numerical 4, Used for counting `n$ >> No mapping "
+    HelpInfo_Arr["5%"] := "5 >> numerical 5, Used for counting `n% >> No mapping "
+    HelpInfo_Arr["6^"] := "6 >> numerical 6, Used for counting `n^ >> No mapping "
+    HelpInfo_Arr["7&"] := "7 >> numerical 7, Used for counting `n& >> No mapping "
+    HelpInfo_Arr["8*"] := "8 >> numerical 8, Used for counting `n* >> No mapping "
+    HelpInfo_Arr["9("] := "9 >> numerical 9, Used for counting `n( >> No mapping "
+    HelpInfo_Arr["0)"] := "0 >> numerical 0, Used for counting `n) >> No mapping "
+    HelpInfo_Arr["-_"] := "- >> Toggle the independent folder tree panel status `n_ >> No mapping "
+    HelpInfo_Arr["=+"] := "= >> target = source `n+ >> No mapping "
+    HelpInfo_Arr["Backspace"] := "Backspace >> No mapping `n Go up a folder or delete the text in edit mode "
+    HelpInfo_Arr["Tab"] := "Tab >> No mapping `nSwitch the window "
+    HelpInfo_Arr["Q"] := "q >> Quick view `nQ >> Use the default browser to search for the current file or folder name "
+    HelpInfo_Arr["W"] := "w >> Small menu `nW >> No mapping "
+    HelpInfo_Arr["E"] := "e >> e...  (Combo Key, requires another key) `nec >> Compare files by content`nef >> Edit file`neh >> Toggle hidden files`nep >> Edit path in tabbar`n`n`nE >> Edit file prompt"
+    HelpInfo_Arr["R"] := "r >> Rename`nR >> Fancy Rename (a crude Vim emulator in a new window)"
+    HelpInfo_Arr["T"] := "t >> New tab `nT >> Create a new tab in the background  `n`nctrl+t >>  Go up in QuickSearch (opened by / or ctrl+s)  ctrl+t works the same in real Vim search,   and ctrl+g is down (mnemonic hint: T is above G) "
+    HelpInfo_Arr["Y"] := "y >> Copy window like F5  `nY >> Copy the file name and the full path "
+    HelpInfo_Arr["U"] := "u >> Up a directory `nU >> Up to the root directory "
+    HelpInfo_Arr["I"] := "i >> Enter `nI >>  Make target = source " ;No mapping "
+    HelpInfo_Arr["O"] := "o >> Open the drive list `nO >> Open the list of drives and special folders.  Equivalent to 'This PC' in Windows Explorer"
+    HelpInfo_Arr["P"] := "p >> pack files/folders `nP >> unPack "
+    HelpInfo_Arr["[{"] := "[ >> Select files with the same name `n{ >> Unselect files with the same name "
+    HelpInfo_Arr["]}"] := "] >> Select files with the same extension `n} >> Unselect files with the same extension "
+    HelpInfo_Arr["\|"] := "\ >> Invert all selections for files (but not folders, use * for both)  `n| >> Clears all selections"
     ; CapsLock used to sometimes quit in 'fancy rename' instead of going to Vim mode, it is mapped there again
-    HelpInfo_arr["CapsLock"] :="CapsLock >> Esc (in some cases it doesn't behave identical"
-    HelpInfo_arr["A"] :="a >> (Combo Key, requires another key) Mostly regarding ViATc or files`nah >> ViATc Help`nao >> ViATc Off`nas >> ViATc Setting`naq >> Quit ViATc`nar >> Reload VIATC`nam >> Show file tooltip`nan >> Create a new file`naa >> Select all files but exclude folders`n...`n`n A >>  All selected:  Files and folders "
-    HelpInfo_arr["S"] :="s >> Sort by... (Combo Key, requires another key) `nS >> (Combo Key, requires another key) show all, executables, etc. `nsn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nst >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9 >>"
-    HelpInfo_arr["D"] :="d >> Favourite folders hotlist`nD >> Open the desktop folder "
-    HelpInfo_arr["F"] :="f >> Page down, Equivalent to PageDown`nF >> FtpDisconnect " ;Switch to TC Default fast search mode "
-    HelpInfo_arr["G"] :="g >> Tab operation (Combo Key, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngt >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab) also gr, I don't know how to bind gT`nga >> Close All tabs `ngc >> Close the Current tab `ngn >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab `n`nctrl+g >>  Go down in QuickSearch (opened by / or ctrl+s)  ctrl+g works the same in real Vim search,  ctrl+t is up (mnemonic hint: T is above G) "
-    HelpInfo_arr["H"] :="h >> Left arrow key. Works in thumbnail and brief mode. In full mode the effect is the cursor enters command line. `nH >> Go Backward in dir history"
-    HelpInfo_arr["J"] :="j >> Go Down num times `nJ >> Select down Num files (folders),  Go down in QuickSearch(opened by / or ctrl+s)`n alt+j >>  Go down in QuickSearch (go down with ctrl+g as well, same like in real Vim search)"
-    HelpInfo_arr["K"] :="k >> Go Up num times `nK >> Select up Num files (folders),   Go up in QuickSearch(opened by / or ctrl+s)`n alt+k >>  Go up in QuickSearch  (go up with ctrl+t as well, same like in real Vim search)"
-    HelpInfo_arr["L"] :="l >> Right arrow key. Works in thumbnail and brief mode. In full mode the effect is the cursor enters command line. `nL >> Go Forward in dir history"
-    HelpInfo_arr["`;:"] :="; >> Put focus on the command line `n: >> Get into VIATC command line mode : (like ex mode in vim)"
-    HelpInfo_arr["'"""] :="' >> Marks. `n Go to mark by single quote (Create mark by m) `n"" >> No mapping "
-    HelpInfo_arr["Enter"] :="Enter >> Enter "
-    HelpInfo_arr["LShift"] :="Lshift >> Left shift key, can also be accessed in hotkeys by Shift "
-    HelpInfo_arr["Z"] :="z >> Various TC window settings (Combo Key, requires another key) `nzz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzl >> Maximize the left panel `nzh >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzd >> Return to normal size, Restore down`nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent, see-through `nzw or zx >> One 100% Wide Horizontal panel. Good for long filenames. Toggle.`nzq >> Quit TC`nzr >> Reload TC`n`n`nZ >> Tooltip by mouse-over`n"
-    ;HelpInfo_arr["X"] :="x >> Delete Files\folders`nX >> Force Delete, like shift+delete ignores recycle bin"
-    HelpInfo_arr["X"] :="x >> Close tab`nX >> Enter or Run file under cursor"
-    HelpInfo_arr["C"] :="c >> (Combo Key, requires another key) `ncc >> Delete `ncf >> Force Delete, like shift+delete ignores recycle bin`nC  >> Console. Run cmd.exe in the current directory"
-    HelpInfo_arr["V"] :="v >> Context menu `nV >> View... (Combo Key, requires another key)`n<Shift>vb >> Toggle visibility :  toolbar `n<Shift>vd >> Toggle visibility :  Drive button `n<Shift>vo >> Toggle visibility :  Two drive button bars `n<Shift>vr >> Toggle visibility :  Drive list `n<Shift>vc >> Toggle visibility :  Current folder `n<Shift>vt >> Toggle visibility :  Sort tab `n<Shift>vs >> Toggle visibility :  Status Bar `n<Shift>vn >> Toggle visibility :  Command Line `n<Shift>vf >> Toggle visibility :  Function button `n<Shift>vw >> Toggle visibility :  Folder tab `n "
-    HelpInfo_arr["B"] :="b >> Move up a page, Equivalent to PageUp`nB >> Open the tabbed browsing window, works in 32bit TConly"
-    HelpInfo_arr["N"] :="n >> Show the folder history ( a-z navigation )`nN >> Show the folder history "
-    HelpInfo_arr["M"] :="m >> Marking function like in Vim. Create mark by m then go to mark by single quote. For example ma will make mark a then press 'a to go to mark a `n When m is pressed the command line displays m and prompts to enter the mark letter, when this letter is entered command line closes and the current folder-path is stored as the mark. You can browse away to a different folder, and when you press ' it will show all the marks, press a and you will go to the folder where you were before.`n`n`nM >> Move to the middle of the list (the position is often inaccurate, and if there are few lines the cursor might stay the same) Alternatively you can just use 11j"
-    HelpInfo_arr[",<"] :=", >> Drives and locations `n< >> No mapping "
-    HelpInfo_arr[".>"] :=". >> Repeat the last command. For example: `n   when you enter 10j (go down 10 lines) then to repeat just press the dot .`n   when you enter gt (switch to the next tab) then to repeat you only need to press .`n`n`n> >> No mapping "
-    HelpInfo_arr["/?"] :="/ >> Use quick search `n? >> Use the file search function ( advanced )"
-    HelpInfo_arr["RShift"] :="Rshift >> right shift key, can also be Shift instead "
-    HelpInfo_arr["LCtrl"] :="Lctrl >> left ctrl key, can also be control or ctrl instead "
-    HelpInfo_arr["LWin"] :="LWin >>Win key. Due to ahk limits the LWin must be used witl 'L', 'Win' alone cannot be used"
-    HelpInfo_arr["LAlt"] :="LAlt >> left Alt key, Can also be Alt instead "
-    HelpInfo_arr["Space"] :="Space >> Space, No mapping "
-    HelpInfo_arr["RAlt"] :="RAlt >> right Alt key, can also be Alt instead "
-    HelpInfo_arr["Apps"] :="Apps >> Open the context menu ( Right-click menu )"
-    HelpInfo_arr["RCtrl"] :="Rctrl >> right ctrl key, can also be control or ctrl instead "
-HelpInfo_arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts to TC trying to resemble the work-flow of Vim and web browser plugins like Vimium or better yet SurfingKeys.`nTo disable the ViATc press alt+`` (alt+backtick which is next to the 1 key) (this shortcut can be modifed), or simply quit ViATc, TC won't be affected.`nTo show/hide TC window: double-click the tray icon, or press Win+F (modifiable)`n")
-    HelpInfo_arr["Funct"] :="Single key press to operate. `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: Ctrl, Alt, Shift or LWin (must be LWin not Win).`nAll how the hotkey is written is case insensitive co <ctrl>a is same as <Ctrl>A - it will treated as lowercase. `n`nExamples of mappings:`n<LWin>g          - this works as intended`n<Ctrl><Shift>a  - invalid, more than one modifier`n<Ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >  Besides F keys are not allowed only <Ctrl><Shift><Alt><LWin> `n`nPlease click on the keyboard above to get details of each key.`nAlso in the TC window press sm = show mappings from the ini file."
-    HelpInfo_arr["ComboK"] :="Combo Keys take multiple keys to operate. `nKeys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with the following Combo Keys: e,a,s,S,g,z,c,V and a comma. Click the keyboard above for details of what they do. On the keyboard are mostly keys built-in the script and some from ini file. For mappings that are in viatc.ini open the Settings window where you can remap everything, you can override built-in keys, you can even remap single Hotkeys into Combo Keys and vice versa."
-    HelpInfo_arr["cmdl"] :="The command line in VIATC supports abbreviations :h :s :r :m :sm :e :q, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys. If you type :map in the command line then all custom hotkeys (all ini file mappings, but not built-in) will be displayed in a tooltip`n If the input is :map key command, where key represents the hotkey to map (it can be a Combo Key or a Hotkey). This feature is suitable for the scenario where there is a temporary need for a mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file.`n:smap and :map are the same except map is a global hotkey and does not support mapping Combo Keys `n:edit  Directly edit ViATc.ini file `n:q quit TC`n`nAll mappings added using the command line are temporary (one session, not saved into the ini file). Examples `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Combo Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Combo Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be interpreted by VIATC as pressing the Enter key."
-    HelpInfo_arr["command"] :="All commands can be found in the Settings window on the 'Hotkeys' tab. Commands are divided into 4 categories, there are 4 buttons there that will help you to fill-in the 'Command' textbox:`n`n1.ViATc command `n`n2.TC internal command, they begin with the 'cm_' such as cm_PackFiles but will be input as <PackFiles>.`nDon't panick when the Settings window disappears, it will reappear after double-click, OK or Cancel`n`n3. Run a program or open a file. TC has similar functions built-in but ViATc way might be more convenient`n`n4. Send a string of text. If you want to input a text into the command line then you can use the Combo Key to map the command of sending a text string.`n`nThe above commands, 1 and 2 must be surrounded with <  > , 3 needs to be surrounded with (  ) , and 4 with {  }`n`n`nRight-click any item on the list to edit or delete. Double-click to edit, or select any item and press Delete `nPress the Analysis button anytime to get a tooltip info about the Hotkey`nUse the Global option only when you want Hotkey to work everywhere outside TC. The Global option is not available for ComboKey`nSave to take effect, OK will save and reload. Cancel if you mess-up. Please make backups of the ini file before any changes, there is a button for it in the bottom-left corner of Settings window"
-    HelpInfo_arr["About"] :="Author of the original Chinese version is Linxinhong `nhttps://github.com/linxinhong`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname m.......p@gmail.com    I don't speak Chinese, I've used Google translate initially and then rephrased and modified this software. `n`nYou can download a compiled executable on https://magicstep.github.io/viatc `nThe compiled version is most likely older than the current script. If you want the most recent script version then download `n https://github.com/magicstep/ViATc-English/archive/master.zip"
+    HelpInfo_Arr["CapsLock"] := "CapsLock >> Esc (in some cases it doesn't behave identical"
+    HelpInfo_Arr["A"] := "a >> (Combo Key, requires another key) Mostly regarding ViATc or files`nah >> ViATc Help`nao >> ViATc Off`nas >> ViATc Setting`naq >> Quit ViATc`nar >> Reload VIATC`nam >> Show file tooltip`nan >> Create a new file`naa >> Select all files but exclude folders`n...`n`n A >>  All selected:  Files and folders "
+    HelpInfo_Arr["S"] := "s >> Sort by... (Combo Key, requires another key) `nS >> (Combo Key, requires another key) show all, executables, etc. `nsn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nst >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9 >>"
+    HelpInfo_Arr["D"] := "d >> Favourite folders hotlist`nD >> Open the desktop folder "
+    HelpInfo_Arr["F"] := "f >> Page down, Equivalent to PageDown`nF >> FtpDisconnect " ;Switch to TC Default fast search mode "
+    HelpInfo_Arr["G"] := "g >> Tab operation (Combo Key, requires another key) `nG >> Go to the end of the file list `ngg >> Go to the first line of the file list `ngt >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab) also gr, I don't know how to bind gT`nga >> Close All tabs `ngc >> Close the Current tab `ngn >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line of the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab `n`nctrl+g >>  Go down in QuickSearch (opened by / or ctrl+s)  ctrl+g works the same in real Vim search,  ctrl+t is up (mnemonic hint: T is above G) "
+    HelpInfo_Arr["H"] := "h >> Left arrow key. Works in thumbnail and brief mode. In full mode the effect is the cursor enters command line. `nH >> Go Backward in dir history"
+    HelpInfo_Arr["J"] := "j >> Go Down num times `nJ >> Select down Num files (folders),  Go down in QuickSearch(opened by / or ctrl+s)`n alt+j >>  Go down in QuickSearch (go down with ctrl+g as well, same like in real Vim search)"
+    HelpInfo_Arr["K"] := "k >> Go Up num times `nK >> Select up Num files (folders),   Go up in QuickSearch(opened by / or ctrl+s)`n alt+k >>  Go up in QuickSearch  (go up with ctrl+t as well, same like in real Vim search)"
+    HelpInfo_Arr["L"] := "l >> Right arrow key. Works in thumbnail and brief mode. In full mode the effect is the cursor enters command line. `nL >> Go Forward in dir history"
+    HelpInfo_Arr["`;:"] := "; >> Put focus on the command line `n: >> Get into VIATC command line mode : (like ex mode in vim)"
+    HelpInfo_Arr["'"""] := "' >> Marks. `n Go to mark by single quote (Create mark by m) `n"" >> No mapping "
+    HelpInfo_Arr["Enter"] := "Enter >> Enter "
+    HelpInfo_Arr["LShift"] := "Lshift >> Left shift key, can also be accessed in hotkeys by Shift "
+    HelpInfo_Arr["Z"] := "z >> Various TC window settings (Combo Key, requires another key) `nzz >> Set the window divider at 50%`nzx >> Set the window divider at 100%`nzl >> Maximize the left panel `nzh >> Maximize the right panel `nzt >> The TC window remains always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzd >> Return to normal size, Restore down`nzv >> Vertical / Horizontal arrangement `nzs >>TC Transparent, see-through `nzw or zx >> One 100% Wide Horizontal panel. Good for long filenames. Toggle.`nzq >> Quit TC`nzr >> Reload TC`n`n`nZ >> Tooltip by mouse-over`n"
+    ;HelpInfo_Arr["X"] := "x >> Delete Files\folders`nX >> Force Delete, like shift+delete ignores recycle bin"
+    HelpInfo_Arr["X"] := "x >> Close tab`nX >> Enter or Run file under cursor"
+    HelpInfo_Arr["C"] := "c >> (Combo Key, requires another key) `ncc >> Delete `ncf >> Force Delete, like shift+delete ignores recycle bin`nC  >> Console. Run cmd.exe in the current directory"
+    HelpInfo_Arr["V"] := "v >> Context menu `nV >> View... (Combo Key, requires another key)`n<Shift>vb >> Toggle visibility :  toolbar `n<Shift>vd >> Toggle visibility :  Drive button `n<Shift>vo >> Toggle visibility :  Two drive button bars `n<Shift>vr >> Toggle visibility :  Drive list `n<Shift>vc >> Toggle visibility :  Current folder `n<Shift>vt >> Toggle visibility :  Sort tab `n<Shift>vs >> Toggle visibility :  Status Bar `n<Shift>vn >> Toggle visibility :  Command Line `n<Shift>vf >> Toggle visibility :  Function button `n<Shift>vw >> Toggle visibility :  Folder tab `n "
+    HelpInfo_Arr["B"] := "b >> Move up a page, Equivalent to PageUp`nB >> Open the tabbed browsing window, works in 32bit TConly"
+    HelpInfo_Arr["N"] := "n >> Show the folder history ( a-z navigation )`nN >> Show the folder history "
+    HelpInfo_Arr["M"] := "m >> Marking function like in Vim. Create mark by m then go to mark by single quote. For example ma will make mark a then press 'a to go to mark a `n When m is pressed the command line displays m and prompts to enter the mark letter, when this letter is entered command line closes and the current folder-path is stored as the mark. You can browse away to a different folder, and when you press ' it will show all the marks, press a and you will go to the folder where you were before.`n`n`nM >> Move to the middle of the list (the position is often inaccurate, and if there are few lines the cursor might stay the same) Alternatively you can just use 11j"
+    HelpInfo_Arr[",<"] := ", >> Drives and locations `n< >> No mapping "
+    HelpInfo_Arr[".>"] := ". >> Repeat the last command. For example: `n   when you enter 10j (go down 10 lines) then to repeat just press the dot .`n   when you enter gt (switch to the next tab) then to repeat you only need to press .`n`n`n> >> No mapping "
+    HelpInfo_Arr["/?"] := "/ >> Use quick search `n? >> Use the file search function ( advanced )"
+    HelpInfo_Arr["RShift"] := "Rshift >> right shift key, can also be Shift instead "
+    HelpInfo_Arr["LCtrl"] := "Lctrl >> left ctrl key, can also be control or ctrl instead "
+    HelpInfo_Arr["LWin"] := "LWin >>Win key. Due to ahk limits the LWin must be used witl 'L', 'Win' alone cannot be used"
+    HelpInfo_Arr["LAlt"] := "LAlt >> left Alt key, Can also be Alt instead "
+    HelpInfo_Arr["Space"] := "Space >> Space, No mapping "
+    HelpInfo_Arr["RAlt"] := "RAlt >> right Alt key, can also be Alt instead "
+    HelpInfo_Arr["Apps"] := "Apps >> Open the context menu ( Right-click menu )"
+    HelpInfo_Arr["RCtrl"] := "Rctrl >> right ctrl key, can also be control or ctrl instead "
+HelpInfo_Arr["Intro"] := ("ViATc " . Version . " - Vim mode at Total Commander `nTotal Commander (called later TC) is the greatest file manager, get it from www.ghisler.com`n`nViATc provides enhancements and shortcuts to TC trying to resemble the work-flow of Vim and web browser plugins like Vimium or better yet SurfingKeys.`nTo disable the ViATc press alt+`` (alt+backtick which is next to the 1 key) (this shortcut can be modifed), or simply quit ViATc, TC won't be affected.`nTo show/hide TC window: double-click the tray icon, or press Win+F (modifiable)`n")
+    HelpInfo_Arr["Funct"] := "Single key press to operate. `nA hotkey can be any character and it can be prepended by a number. For example 10j will move down 10 rows. Pressing 10K will select 10 rows upward.`nA hotkey can have one modifier: Ctrl, Alt, Shift or LWin (must be LWin not Win).`nAll how the hotkey is written is case insensitive co <ctrl>a is same as <Ctrl>A - it will treated as lowercase. `n`nExamples of mappings:`n<LWin>g          - this works as intended`n<Ctrl><Shift>a  - invalid, more than one modifier`n<Ctrl><F12>    - not as intended, this time characters of the second key will be interpreted as separate ordinary characters < F 1 2 >  Besides F keys are not allowed only <Ctrl><Shift><Alt><LWin> `n`nPlease click on the keyboard above to get details of each key.`nAlso in the TC window press sm = show mappings from the ini file."
+    HelpInfo_Arr["ComboK"] := "Combo Keys take multiple keys to operate. `nKeys can be composed of any characters`nThe first key can have one modifier (ctrl/lwin/shift/alt). All the following keys cannot have modifiers `n`nExamples :`nab                      - means press a and release, then press b to work`n<ctrl>ab             - means press ctrl+a and release, then press b to work`n<ctrl>a<ctrl>b   - invalid, the second key cannot have a modifier`n<ctrl><alt>ab    - invalid, the first key cannot have two modifiers`n`n`nVIATC comes by default with the following Combo Keys: e,a,s,S,g,z,c,V and a comma. Click the keyboard above for details of what they do. On the keyboard are mostly keys built-in the script and some from ini file. For mappings that are in viatc.ini open the Settings window where you can remap everything, you can override built-in keys, you can even remap single Hotkeys into Combo Keys and vice versa."
+    HelpInfo_Arr["cmdl"] := "The command line in VIATC supports abbreviations :h :s :r :m :sm :e :q, They are respectively `n:help    Display help information `n:setting     Set the VIATC interface `n:reload   Re-run VIATC`n:map     Show or map hotkeys. If you type :map in the command line then all custom hotkeys (all ini file mappings, but not built-in) will be displayed in a tooltip`n If the input is :map key command, where key represents the hotkey to map (it can be a Combo Key or a Hotkey). This feature is suitable for the scenario where there is a temporary need for a mapping, after closing VIATC this mapping won't be saved. If you want to make a permanent mapping you can use the VIATC Settings interface, or directly edit viatc.ini file.`n:smap and :map are the same except map is a global hotkey and does not support mapping Combo Keys `n:edit  Directly edit ViATc.ini file `n:q quit TC`n`nAll mappings added using the command line are temporary (one session, not saved into the ini file). Examples `n:map <shift>a <Transparent>   (Mapping A to make TC transparent)`n:map ggg (E:\google\chrome.exe)   (Mapping the ggg Combo Key to run chrome.exe program `n:map abcd {cd E:\ {enter}}    (Mapping the abcd Combo Key to send   cd E:\ {enter}   to TC's command line, where {enter} will be interpreted by VIATC as pressing the Enter key."
+    HelpInfo_Arr["command"] := "All commands can be found in the Settings window on the 'Hotkeys' tab. Commands are divided into 4 categories, there are 4 buttons there that will help you to fill-in the 'Command' textbox:`n`n1.ViATc command `n`n2.TC internal command, they begin with the 'cm_' such as cm_PackFiles but will be input as <PackFiles>.`nDon't panick when the Settings window disappears, it will reappear after double-click, OK or Cancel`n`n3. Run a program or open a file. TC has similar functions built-in but ViATc way might be more convenient`n`n4. Send a string of text. If you want to input a text into the command line then you can use the Combo Key to map the command of sending a text string.`n`nThe above commands, 1 and 2 must be surrounded with <  > , 3 needs to be surrounded with (  ) , and 4 with {  }`n`n`nRight-click any item on the list to edit or delete. Double-click to edit, or select any item and press Delete `nPress the Analysis button anytime to get a tooltip info about the Hotkey`nUse the Global option only when you want Hotkey to work everywhere outside TC. The Global option is not available for ComboKey`nSave to take effect, OK will save and reload. Cancel if you mess-up. Please make backups of the ini file before any changes, there is a button for it in the bottom-left corner of Settings window"
+    HelpInfo_Arr["About"] := "Author of the original Chinese version is Linxinhong `nhttps://github.com/linxinhong`n`nTranslator and maintainer of the English version is magicstep https://github.com/magicstep  contact me there or with the same nickname m.......p@gmail.com    I don't speak Chinese, I've used Google translate initially and then rephrased and modified this software. `n`nYou can download a compiled executable on https://magicstep.github.io/viatc `nThe compiled version is most likely older than the current script. If you want the most recent script version then download `n https://github.com/magicstep/ViATc-English/archive/master.zip"
 } ;}}}2
 
 SetComboInfo() ; combo keys help {{{2
 {
-    Global ComboInfo_arr
-    ComboInfo_arr["s"] :="sn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nsd >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9"
-    ComboInfo_arr["z"] :="zz >> Set the window divider at 50%`nzx >> Set the window divider at 100% (TC 8.0+)`nzi >> Maximize the left panel `nzo >> Maximize the right panel `nzt >>TC window always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzr >> Return to normal size `nzv >> Vertical / Horizontal arrangement `nzs >>TC transparent `nzf >> Full screen TC`nzl >> The simplest TC`nzq >> Exit TC`nza >> Reload TC"
-    ComboInfo_arr["g"] :="g`n ------------------------------ `ngn >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab)`nga >> Close All tabs `ngc >> Close the Current tab `ngt >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line in the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab "
-    ComboInfo_arr["Shift & v"] :="<Shift>vb >> Toggle visibility :  Toolbar `n<Shift>vd >> Toggle visibility :  Drive button `n<Shift>vo >> Toggle visibility :  Two drive button bars `n<Shift>vr >> Toggle visibility :  Drive list `n<Shift>vc >> Toggle visibility :  Current folder `n<Shift>vt >> Toggle visibility :  Sort tab `n<Shift>vs >> Toggle visibility :  Status Bar `n<Shift>vn >> Toggle visibility :  Command Line `n<Shift>vf >> Toggle visibility :  Function buttons `n<Shift>vw >> Toggle visibility :  Folder tab `n<Shift>ve >> Browse internal commands "
-    ComboInfo_arr["c"] :="cl >> Delete the history of the left folder `ncr >> Delete the history of the right folder `ncc >> Delete command line history "
+    Global ComboInfo_Arr
+    ComboInfo_Arr["s"] := "sn >> Source window :  Sort by file name `nse >> Source window :  Sort by extension `nss >> Source window :  Sort by size `nsd >> Source window :  Sort by date and time `nsr >> Source window :  Reverse sort `ns1 >> Source window :  Sort by column 1`ns2 >> Source window :  Sort by 2`ns3 >> Source window :  Sort by column 3`ns4 >> Source window :  Sort by column 4`ns5 >> Source window :  Sort by column 5`ns6 >> Source window :  Sort by column 6`ns7 >> Source window :  Sort by column 7`ns8 >> Source window :  Sort by column 8`ns9 >> Source window :  Sort by column 9"
+    ComboInfo_Arr["z"] := "zz >> Set the window divider at 50%`nzx >> Set the window divider at 100% (TC 8.0+)`nzi >> Maximize the left panel `nzo >> Maximize the right panel `nzt >>TC window always on top `nzn >> minimize  Total Commander`nzm >> maximize  Total Commander`nzr >> Return to normal size `nzv >> Vertical / Horizontal arrangement `nzs >>TC transparent `nzf >> Full screen TC`nzl >> The simplest TC`nzq >> Exit TC`nza >> Reload TC"
+    ComboInfo_Arr["g"] := "g`n ------------------------------ `ngn >> Next tab (Ctrl+Tab)`ngp >> Previous tab (Ctrl+Shift+Tab)`nga >> Close All tabs `ngc >> Close the Current tab `ngt >> New tab ( And open the folder at the cursor )`ngb >> New tab ( Open the folder in another window )`nge >> Exchange left and right windows `ngw >> Exchange left and right windows With their tabs `ngi >> Enter `ngg >> Go to the first line in the file list `ng1 >> Source window :  Activate the tab  1`ng2 >> Source window :  Activate the tab  2`ng3 >> Source window :  Activate the tab  3`ng4 >> Source window :  Activate the tab  4`ng5 >> Source window :  Activate the tab  5`ng6 >> Source window :  Activate the tab  6`ng7 >> Source window :  Activate the tab  7`ng8 >> Source window :  Activate the tab  8`ng9 >> Source window :  Activate the tab  9`ng0 >> Go to the last tab "
+    ComboInfo_Arr["Shift & v"] := "<Shift>vb >> Toggle visibility :  Toolbar `n<Shift>vd >> Toggle visibility :  Drive button `n<Shift>vo >> Toggle visibility :  Two drive button bars `n<Shift>vr >> Toggle visibility :  Drive list `n<Shift>vc >> Toggle visibility :  Current folder `n<Shift>vt >> Toggle visibility :  Sort tab `n<Shift>vs >> Toggle visibility :  Status Bar `n<Shift>vn >> Toggle visibility :  Command Line `n<Shift>vf >> Toggle visibility :  Function buttons `n<Shift>vw >> Toggle visibility :  Folder tab `n<Shift>ve >> Browse internal commands "
+    ComboInfo_Arr["c"] := "cl >> Delete the history of the left folder `ncr >> Delete the history of the right folder `ncc >> Delete command line history "
 }
 
 
@@ -5271,12 +5271,12 @@ SetComboInfo() ; combo keys help {{{2
 SetViatcCommand()  ; --- internal ViATc commands
 {
     Global ViatcCommand
-    ViatcCommand := " <None> <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <FancyR> <SingleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <RestoreLastMark> <SetTitleAsDateTime> <CheckForUpdates> <Internetsearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <azTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCFullScreenAlmost> <TCFullScreen> <TCFullScreenWithExePlugin> <BackupViATcIniFile> <EditViATcIniFile> <BackupTCIniFile> <EditTCIniFile> <BackupMarksFile> <EditMarksFile> <BackupUserFile> <EditUserFile>"
+    ViatcCommand := " <None> <Help> <Setting> <ViATcVimOff> <ToggleViATc> <ToggleViatcVim> <ToggleTC> <QuitTC> <ReloadTC> <QuitVIATC> <ReloadVIATC> <Enter> <Return> <FancyR> <SingleRepeat> <Esc> <CapsLock> <CapsLockOn> <CapsLockOff> <Num0> <Num1> <Num2> <Num3> <Num4> <Num5> <Num6> <Num7> <Num8> <Num9> <Down> <Up> <Left> <Right> <PageUp> <PageDown> <Home> <Half> <End> <DownSelect> <UpSelect> <ForceDel> <Mark> <ListMark> <RestoreLastMark> <SetTitleAsDateTime> <CheckForUpdates> <InternetSearch> <azHistory> <azCmdHistory> <ListMapKey> <ListMapKeyMultiColumn> <WinMaxLeft> <WinMaxRight> <AlwayOnTop> <GoLastTab> <azTab> <Transparent> <DeleteLHistory> <DeleteRHistory> <DelCmdHistory> <CreateNewFile> <TCFullScreenAlmost> <TCFullScreen> <TCFullScreenWithExePlugin> <BackupViATcIniFile> <EditViATcIniFile> <BackupTCIniFile> <EditTCIniFile> <BackupMarksFile> <EditMarksFile> <BackupUserFile> <EditUserFile>"
 
 ; add user commands
 for index, element in UserCommandsArr
     ViatcCommand := ViatcCommand . " " . index
-    ;Msgbox  Debugging index = [%index%]  on line %A_LineNumber% ;!!!
+    ;MsgBox  Debugging index = [%index%]  on line %A_LineNumber% ;!!!
 }
 
 SetCommandInfo()  ; --- command's descriptions
@@ -5287,545 +5287,545 @@ SetCommandInfo()  ; --- command's descriptions
     for index, element in UserCommandsArr
         CommandInfo_Arr[index] := UserCommandsArr[index]
 
-    CommandInfo_Arr["<ReLoadVIATC>"] :=" Reload VIATC"
-    CommandInfo_Arr["<ReLoadTC>"] :=" Reload TC"
-    CommandInfo_Arr["<QuitTC>"] :=" Exit TC"
-    CommandInfo_Arr["<QuitViATc>"] :=" Exit ViATc"
-    CommandInfo_Arr["<None>"] :=" do nothing "
-    CommandInfo_Arr["<Setting>"] :=" Settings window "
+    CommandInfo_Arr["<ReloadVIATC>"] := " Reload VIATC"
+    CommandInfo_Arr["<ReLoadTC>"] := " Reload TC"
+    CommandInfo_Arr["<QuitTC>"] := " Exit TC"
+    CommandInfo_Arr["<QuitViATc>"] := " Exit ViATc"
+    CommandInfo_Arr["<None>"] := " do nothing "
+    CommandInfo_Arr["<Setting>"] := " Settings window "
     CommandInfo_Arr["<FocusCmdLine:>"] := " Command line mode. Focus on the command line with : at the beginning"
     CommandInfo_Arr["<CreateNewFile>"] := " Menu to create a new file (can be from a template) or a new directory "
-    CommandInfo_Arr["<Help>"] :=  " ViATc Help"
+    CommandInfo_Arr["<Help>"] := " ViATc Help"
     CommandInfo_Arr["<Setting>"] := " VIATC Settings"
-    CommandInfo_Arr["<ToggleTC>"] :=" Show / Hide TC"
-    CommandInfo_Arr["<ToggleViATc>"] :=" Enable / Disable most of ViATc, global shortcuts will still work. For disabling all use <ViATcVimOff> "
-    CommandInfo_Arr["<ViATcVimOff>"] :=" Switch-off all ViATc functionality till Esc will switch on. This is more than <ToggleViATc>"
-    CommandInfo_Arr["<Enter>"] :=" Enter does a lot of advanced checks,  use <Return> for simplicity"
-    CommandInfo_Arr["<Return>"] :=" Just sends an Enter key"
-    CommandInfo_Arr["<FancyR>"] :=" Fancy Rename in a new window with a crude Vim emulator"
-    CommandInfo_Arr["<SingleRepeat>"] :=" Repeat the last command "
-    CommandInfo_Arr["<Esc>"] :=" Reset and send ESC"
-    CommandInfo_Arr["<CapsLock>"] :=" Toggle CapsLock"
-    CommandInfo_Arr["<CapsLockOn>"] :=" CapsLock On"
-    CommandInfo_Arr["<CapsLockOff>"] :=" CapsLock Off"
-    CommandInfo_Arr["<BackupViATcIniFile>"] :=" Backup viatc.ini file "
-    CommandInfo_Arr["<EditViATcIniFile>"] :=" Edit viatc.ini file "
-    CommandInfo_Arr["<BackupMarksFile>"] :=" Backup marks.ini file "
-    CommandInfo_Arr["<EditMarksFile>"] :=" Edit marks.ini file "
-    CommandInfo_Arr["<BackupTCIniFile>"] :=" Backup wincmd.ini file that belongs to TC"
-    CommandInfo_Arr["<EditTCIniFile>"] :=" Edit wincmd.ini file that belongs to TC"
-    CommandInfo_Arr["<BackupUserFile>"] :=" Backup user.ahk file "
-    CommandInfo_Arr["<EditUserFile>"] :=" Edit user.ahk file"
-    CommandInfo_Arr["<Num0>"] :=" numerical 0, can be used for repeats in 10 j "
-    CommandInfo_Arr["<Num1>"] :=" numerical 1, can be used for repeats in 10 j "
-    CommandInfo_Arr["<Num2>"] :=" numerical 2"
-    CommandInfo_Arr["<Num3>"] :=" numerical 3"
-    CommandInfo_Arr["<Num4>"] :=" numerical 4"
-    CommandInfo_Arr["<Num5>"] :=" numerical 5"
-    CommandInfo_Arr["<Num6>"] :=" numerical 6"
-    CommandInfo_Arr["<Num7>"] :=" numerical 7"
-    CommandInfo_Arr["<Num8>"] :=" numerical 8"
-    CommandInfo_Arr["<Num9>"] :=" numerical 9"
-    CommandInfo_Arr["<Down>"] :=" Down "
-    CommandInfo_Arr["<Up>"] :=" Up "
-    CommandInfo_Arr["<Left>"] :=" Left"
-    CommandInfo_Arr["<Right>"] :=" Right"
-    CommandInfo_Arr["<DownSelect>"] :=" Select Down "
-    CommandInfo_Arr["<UpSelect>"] :=" Select Up"
-    CommandInfo_Arr["<Home>"] :=" Go to the first line, Equivalent to Home key"
-    CommandInfo_Arr["<Half>"] :=" Go to the middle of the list (this doesn't work properly)"
-    CommandInfo_Arr["<End>"] :=" Go to last line, Equivalent to End key "
-    CommandInfo_Arr["<PageUp>"] :=" Page Up "
-    CommandInfo_Arr["<PageDown>"] :=" Page Down "
-    CommandInfo_Arr["<ForceDel>"] :=" Forced Delete, like shift+delete ignores recycle bin"
-    CommandInfo_Arr["<Mark>"] :=" Marks like in Vim, Mark the current folder with ma, use 'a to go to the corresponding mark "
-    CommandInfo_Arr["<RestoreLastMark>"] :=" Restore the last overwritten mark "
-    CommandInfo_Arr["<SetTitleAsDateTime>"] :=" Set the TC title as DateTime"
-    CommandInfo_Arr["<CheckForUpdates>"] :=" Check for the ViATc updates "
-    CommandInfo_Arr["<ListMark>"] :=" Offer to use marks created earlier by m like in Vim "
-    CommandInfo_Arr["<ListMarksTooltip>"] :=" Show all marks in a tooltip (show only, not able to use)"
-    CommandInfo_Arr["<Internetsearch>"] :=" Use the default internet browser to search for the current file or folder"
-    CommandInfo_Arr["<azHistory>"] :=" Folder history menu, A-Z selection "
-    CommandInfo_Arr["<azCmdHistory>"] :=" View the command history "
-    CommandInfo_Arr["<ListMapKey>"] :=" Show custom mapping keys. It's better to just open Settings window instead. "
-    CommandInfo_Arr["<ListMapKeyMultiColumn>"] :=" Show custom mapping keys in columns. It's better to just open Settings window instead. "
-    CommandInfo_Arr["<WinMaxLeft>"] :=" Maximize left panel "
-    CommandInfo_Arr["<WinMaxRight>"] :=" Maximize right panel "
-    CommandInfo_Arr["<AlwayOnTop>"] :=" TC always on top. Toggle "
-    CommandInfo_Arr["<Transparent>"] :=" TC Transparent. See-through. Toggle "
-    CommandInfo_Arr["<DeleteLHistory>"] :=" Delete history of the left folder "
-    CommandInfo_Arr["<DeleteRHistory>"] :=" Delete history of the right folder "
-    CommandInfo_Arr["<DelCmdHistory>"] :=" Delete command-line history "
-    CommandInfo_Arr["<GoLastTab>"] :=" Go to the last tab "
-    CommandInfo_Arr["<TCFullScreenAlmost>"] :=" TC almost full screen. Windows taskbar still visible"
-    CommandInfo_Arr["<TCFullScreen>"] :=" TC full screen. "
-    CommandInfo_Arr["<TCFullScreenWithExePlugin>"] :=" TC full screen. An external exe program is required, You'll be asked to download. "
+    CommandInfo_Arr["<ToggleTC>"] := " Show / Hide TC"
+    CommandInfo_Arr["<ToggleViATc>"] := " Enable / Disable most of ViATc, global shortcuts will still work. For disabling all use <ViATcVimOff> "
+    CommandInfo_Arr["<ViATcVimOff>"] := " Switch-off all ViATc functionality till Esc will switch on. This is more than <ToggleViATc>"
+    CommandInfo_Arr["<Enter>"] := " Enter does a lot of advanced checks,  use <Return> for simplicity"
+    CommandInfo_Arr["<Return>"] := " Just sends an Enter key"
+    CommandInfo_Arr["<FancyR>"] := " Fancy Rename in a new window with a crude Vim emulator"
+    CommandInfo_Arr["<SingleRepeat>"] := " Repeat the last command "
+    CommandInfo_Arr["<Esc>"] := " Reset and send ESC"
+    CommandInfo_Arr["<CapsLock>"] := " Toggle CapsLock"
+    CommandInfo_Arr["<CapsLockOn>"] := " CapsLock On"
+    CommandInfo_Arr["<CapsLockOff>"] := " CapsLock Off"
+    CommandInfo_Arr["<BackupViATcIniFile>"] := " Backup viatc.ini file "
+    CommandInfo_Arr["<EditViATcIniFile>"] := " Edit viatc.ini file "
+    CommandInfo_Arr["<BackupMarksFile>"] := " Backup marks.ini file "
+    CommandInfo_Arr["<EditMarksFile>"] := " Edit marks.ini file "
+    CommandInfo_Arr["<BackupTCIniFile>"] := " Backup wincmd.ini file that belongs to TC"
+    CommandInfo_Arr["<EditTCIniFile>"] := " Edit wincmd.ini file that belongs to TC"
+    CommandInfo_Arr["<BackupUserFile>"] := " Backup user.ahk file "
+    CommandInfo_Arr["<EditUserFile>"] := " Edit user.ahk file"
+    CommandInfo_Arr["<Num0>"] := " numerical 0, can be used for repeats in 10 j "
+    CommandInfo_Arr["<Num1>"] := " numerical 1, can be used for repeats in 10 j "
+    CommandInfo_Arr["<Num2>"] := " numerical 2"
+    CommandInfo_Arr["<Num3>"] := " numerical 3"
+    CommandInfo_Arr["<Num4>"] := " numerical 4"
+    CommandInfo_Arr["<Num5>"] := " numerical 5"
+    CommandInfo_Arr["<Num6>"] := " numerical 6"
+    CommandInfo_Arr["<Num7>"] := " numerical 7"
+    CommandInfo_Arr["<Num8>"] := " numerical 8"
+    CommandInfo_Arr["<Num9>"] := " numerical 9"
+    CommandInfo_Arr["<Down>"] := " Down "
+    CommandInfo_Arr["<Up>"] := " Up "
+    CommandInfo_Arr["<Left>"] := " Left"
+    CommandInfo_Arr["<Right>"] := " Right"
+    CommandInfo_Arr["<DownSelect>"] := " Select Down "
+    CommandInfo_Arr["<UpSelect>"] := " Select Up"
+    CommandInfo_Arr["<Home>"] := " Go to the first line, Equivalent to Home key"
+    CommandInfo_Arr["<Half>"] := " Go to the middle of the list (this doesn't work properly)"
+    CommandInfo_Arr["<End>"] := " Go to last line, Equivalent to End key "
+    CommandInfo_Arr["<PageUp>"] := " Page Up "
+    CommandInfo_Arr["<PageDown>"] := " Page Down "
+    CommandInfo_Arr["<ForceDel>"] := " Forced Delete, like shift+delete ignores recycle bin"
+    CommandInfo_Arr["<Mark>"] := " Marks like in Vim, Mark the current folder with ma, use 'a to go to the corresponding mark "
+    CommandInfo_Arr["<RestoreLastMark>"] := " Restore the last overwritten mark "
+    CommandInfo_Arr["<SetTitleAsDateTime>"] := " Set the TC title as DateTime"
+    CommandInfo_Arr["<CheckForUpdates>"] := " Check for the ViATc updates "
+    CommandInfo_Arr["<ListMark>"] := " Offer to use marks created earlier by m like in Vim "
+    CommandInfo_Arr["<ListMarksTooltip>"] := " Show all marks in a tooltip (show only, not able to use)"
+    CommandInfo_Arr["<InternetSearch>"] := " Use the default internet browser to search for the current file or folder"
+    CommandInfo_Arr["<azHistory>"] := " Folder history menu, A-Z selection "
+    CommandInfo_Arr["<azCmdHistory>"] := " View the command history "
+    CommandInfo_Arr["<ListMapKey>"] := " Show custom mapping keys. It's better to just open Settings window instead. "
+    CommandInfo_Arr["<ListMapKeyMultiColumn>"] := " Show custom mapping keys in columns. It's better to just open Settings window instead. "
+    CommandInfo_Arr["<WinMaxLeft>"] := " Maximize left panel "
+    CommandInfo_Arr["<WinMaxRight>"] := " Maximize right panel "
+    CommandInfo_Arr["<AlwayOnTop>"] := " TC always on top. Toggle "
+    CommandInfo_Arr["<Transparent>"] := " TC Transparent. See-through. Toggle "
+    CommandInfo_Arr["<DeleteLHistory>"] := " Delete history of the left folder "
+    CommandInfo_Arr["<DeleteRHistory>"] := " Delete history of the right folder "
+    CommandInfo_Arr["<DelCmdHistory>"] := " Delete command-line history "
+    CommandInfo_Arr["<GoLastTab>"] := " Go to the last tab "
+    CommandInfo_Arr["<TCFullScreenAlmost>"] := " TC almost full screen. Windows taskbar still visible"
+    CommandInfo_Arr["<TCFullScreen>"] := " TC full screen. "
+    CommandInfo_Arr["<TCFullScreenWithExePlugin>"] := " TC full screen. An external exe program is required, You'll be asked to download. "
     CommandInfo_Arr["<azTab>"] := " a-z tab selection (works only in 32 bit TC with a nasty error on first use and in 64 bit TC it is unavailable)"
-    CommandInfo_Arr["<SrcComments>"] :=" Source window :  Show file comments "
-    CommandInfo_Arr["<SrcShort>"] :=" Source window :  List "
-    CommandInfo_Arr["<SrcLong>"] :=" Source window :  Details "
-    CommandInfo_Arr["<SrcTree>"] :=" Source window :  Folder Tree "
-    CommandInfo_Arr["<SrcQuickview>"] :=" Source window :  Quick View "
-    CommandInfo_Arr["<VerticalPanels>"] :=" Vertical / Horizontal arrangement "
-    CommandInfo_Arr["<WidePanelToggle>"] :=" One 100% Wide Horizontal panel. Toggle"
-    CommandInfo_Arr["<SrcQuickInternalOnly>"] :=" Source window :  Quick View ( No plugins )"
-    CommandInfo_Arr["<SrcHideQuickview>"] :=" Source window :  Close the Quick View window "
-    CommandInfo_Arr["<SrcExecs>"] :=" Source window :  Executable file "
-    CommandInfo_Arr["<SrcAllFiles>"] :=" Source window :  All files "
-    CommandInfo_Arr["<SrcUserSpec>"] :=" Source window :  The last selected file "
-    CommandInfo_Arr["<SrcUserDef>"] :=" Source window :  User defined type "
-    CommandInfo_Arr["<SrcByName>"] :=" Source window :  Sort by file name "
-    CommandInfo_Arr["<SrcByExt>"] :=" Source window :  Sort by extension "
-    CommandInfo_Arr["<SrcBySize>"] :=" Source window :  Sort by size "
-    CommandInfo_Arr["<SrcByDateTime>"] :=" Source window :  Sort by date and time "
-    CommandInfo_Arr["<SrcUnsorted>"] :=" Source window :  Not sorted "
-    CommandInfo_Arr["<SrcNegOrder>"] :=" Source window :  Reverse sort "
-    CommandInfo_Arr["<SrcOpenDrives>"] :=" Source window :  Open the drive list "
-    CommandInfo_Arr["<SrcThumbs>"] :=" Source window :  Thumbnails "
-    CommandInfo_Arr["<SrcCustomViewMenu>"] :=" Source window :  Customize the view menu "
-    CommandInfo_Arr["<SrcPathFocus>"] :=" Source window :  Focus on the path "
-    CommandInfo_Arr["<LeftComments>"] :=" Left window :  Show file comments "
-    CommandInfo_Arr["<LeftShort>"] :=" Left window :  List "
-    CommandInfo_Arr["<LeftLong>"] :=" Left window :  Details "
-    CommandInfo_Arr["<LeftTree>"] :=" Left window :  Folder Tree "
-    CommandInfo_Arr["<LeftQuickview>"] :=" Left window :  Quick View "
-    CommandInfo_Arr["<LeftQuickInternalOnly>"] :=" Left window :  Quick View ( No plugins )"
-    CommandInfo_Arr["<LeftHideQuickview>"] :=" Left window :  Close the Quick View window "
-    CommandInfo_Arr["<LeftExecs>"] :=" Left window :  executable file "
-    CommandInfo_Arr["<LeftAllFiles>"] :=" Left window :  All files "
-    CommandInfo_Arr["<LeftUserSpec>"] :=" Left window :  The last selected file "
-    CommandInfo_Arr["<LeftUserDef>"] :=" Left window :  Custom type "
-    CommandInfo_Arr["<LeftByName>"] :=" Left window :  Sort by file name "
-    CommandInfo_Arr["<LeftByExt>"] :=" Left window :  Sort by extension "
-    CommandInfo_Arr["<LeftBySize>"] :=" Left window :  Sort by size "
-    CommandInfo_Arr["<LeftByDateTime>"] :=" Left window :  Sort by date and time "
-    CommandInfo_Arr["<LeftUnsorted>"] :=" Left window :  Not sorted "
-    CommandInfo_Arr["<LeftNegOrder>"] :=" Left window :  Reverse sort "
-    CommandInfo_Arr["<LeftOpenDrives>"] :=" Left window :  Open the drive list "
-    CommandInfo_Arr["<LeftPathFocus>"] :=" Left window :  Focus on the path "
-    CommandInfo_Arr["<LeftDirBranch>"] :=" Left window :  Expand all folders "
-    CommandInfo_Arr["<LeftDirBranchSel>"] :=" Left window :  Only the selected folder is expanded "
-    CommandInfo_Arr["<LeftThumbs>"] :=" window :  Thumbnails "
-    CommandInfo_Arr["<LeftCustomViewMenu>"] :=" window :  Customize the view menu "
-    CommandInfo_Arr["<RightComments>"] :=" Right window :  Show file comments "
-    CommandInfo_Arr["<RightShort>"] :=" Right window :  List "
-    CommandInfo_Arr["<RightLong>"] :=" details "
-    CommandInfo_Arr["<RightTre>"] :=" Right window :  Folder Tree "
-    CommandInfo_Arr["<RightQuickvie>"] :=" Right window :  Quick View "
-    CommandInfo_Arr["<RightQuickInternalOnl>"] :=" Right window :  Quick View ( No plugins )"
-    CommandInfo_Arr["<RightHideQuickvie>"] :=" Right window :  Close the Quick View window "
-    CommandInfo_Arr["<RightExec>"] :=" Right window :  executable file "
-    CommandInfo_Arr["<RightAllFile>"] :=" Right window :  All files "
-    CommandInfo_Arr["<RightUserSpe>"] :=" Right window :  The last selected file "
-    CommandInfo_Arr["<RightUserDe>"] :=" Right window :  Custom type "
-    CommandInfo_Arr["<RightByNam>"] :=" Right window :  Sort by file name "
-    CommandInfo_Arr["<RightByEx>"] :=" Right window :  Sort by extension "
-    CommandInfo_Arr["<RightBySiz>"] :=" Right window :  Sort by size "
-    CommandInfo_Arr["<RightByDateTim>"] :=" Right window :  Sort by date and time "
-    CommandInfo_Arr["<RightUnsorte>"] :=" Right window :  Not sorted "
-    CommandInfo_Arr["<RightNegOrde>"] :=" Right window :  Reverse sort "
-    CommandInfo_Arr["<RightOpenDrives>"] :=" Right window :  Open the drive list "
-    CommandInfo_Arr["<RightPathFocu>"] :=" Right window :  Focus on the path "
-    CommandInfo_Arr["<RightDirBranch>"] :=" Right window :  Expand all folders "
-    CommandInfo_Arr["<RightDirBranchSel>"] :=" Right window :  Only the selected folder is expanded "
-    CommandInfo_Arr["<RightThumb>"] :=" Right window :  Thumbnails "
-    CommandInfo_Arr["<RightCustomViewMen>"] :=" Right window :  Customize the view menu "
-    CommandInfo_Arr["<List>"] :=" Lister ( use the lister program to view )"
-    CommandInfo_Arr["<ListInternalOnly>"] :=" Lister ( use the lister program, but not plugin / multimedia )"
-    CommandInfo_Arr["<Edit>"] :=" edit "
-    CommandInfo_Arr["<Copy>"] :=" copy "
-    CommandInfo_Arr["<CopySamepanel>"] :=" Copy to the current window "
-    CommandInfo_Arr["<CopyOtherpanel>"] :=" Copy to another window "
-    CommandInfo_Arr["<RenMov>"] :=" Rename / Move "
-    CommandInfo_Arr["<MkDir>"] :=" New Folder "
-    CommandInfo_Arr["<Delete>"] :=" Delete "
-    CommandInfo_Arr["<TestArchive>"] :=" Test compression package "
-    CommandInfo_Arr["<PackFiles>"] :=" Compressed file "
-    CommandInfo_Arr["<UnpackFiles>"] :=" Unzip files "
-    CommandInfo_Arr["<RenameOnly>"] :=" Rename (Shift+F6)"
-    CommandInfo_Arr["<RenameSingleFile>"] :=" Rename current file "
-    CommandInfo_Arr["<MoveOnly>"] :=" Move (F6)"
-    CommandInfo_Arr["<Properties>"] :=" Display file properties, or if folder then calculate space "
-    CommandInfo_Arr["<CreateShortcut>"] :=" Create Shortcut "
-    CommandInfo_Arr["<OpenAsUser>"] :=" Run the file under cursor as onother user "
-    CommandInfo_Arr["<Split>"] :=" Split files "
-    CommandInfo_Arr["<Combine>"] :=" Merge documents "
-    CommandInfo_Arr["<Encode>"] :=" Encoding file (MIME/UUE/XXE  format )"
-    CommandInfo_Arr["<Decode>"] :=" Decode the file (MIME/UUE/XXE/BinHex  format )"
-    CommandInfo_Arr["<CRCcreate>"] :=" Create a check file "
-    CommandInfo_Arr["<CRCcheck>"] :=" Verify checksum "
-    CommandInfo_Arr["<SetAttrib>"] :=" Change attributes "
-    CommandInfo_Arr["<Config>"] :=" Configuration :  layout "
-    CommandInfo_Arr["<DisplayConfig>"] :=" Configuration :  display "
-    CommandInfo_Arr["<IconConfig>"] :=" Configuration :  icon "
-    CommandInfo_Arr["<FontConfig>"] :=" Configuration :  Font "
-    CommandInfo_Arr["<ColorConfig>"] :=" Configuration :  Colour "
-    CommandInfo_Arr["<ConfTabChange>"] :=" Configuration :  Tabs "
-    CommandInfo_Arr["<DirTabsConfig>"] :=" Configuration :  Folder tab "
-    CommandInfo_Arr["<CustomColumnConfig>"] :=" Configuration :  Custom columns "
-    CommandInfo_Arr["<CustomColumnDlg>"] :=" Change the current custom column "
-    CommandInfo_Arr["<LanguageConfig>"] :=" Configuration :  Language "
-    CommandInfo_Arr["<Config2>"] :=" Configuration :  Operation method "
-    CommandInfo_Arr["<EditConfig>"] :=" Configuration :  edit / view "
-    CommandInfo_Arr["<CopyConfig>"] :=" Configuration :  copy / delete "
-    CommandInfo_Arr["<RefreshConfig>"] :=" Configuration :  Refresh "
-    CommandInfo_Arr["<QuickSearchConfig>"] :=" Configuration :  quick search "
-    CommandInfo_Arr["<FtpConfig>"] :=" Configuration : FTP"
-    CommandInfo_Arr["<PluginsConfig>"] :=" Configuration :  Plugin "
-    CommandInfo_Arr["<ThumbnailsConfig>"] :=" Configuration :  Thumbnails "
-    CommandInfo_Arr["<LogConfig>"] :=" Configuration :  Log file "
-    CommandInfo_Arr["<IgnoreConfig>"] :=" Configuration :  Hide the file "
-    CommandInfo_Arr["<PackerConfig>"] :=" Configuration :  Compression program "
-    CommandInfo_Arr["<ZipPackerConfig>"] :=" Configuration : ZIP  Compression program "
-    CommandInfo_Arr["<Confirmation>"] :=" Configuration :  other / confirm "
-    CommandInfo_Arr["<ConfigSavePos>"] :=" Save location "
-    CommandInfo_Arr["<ButtonConfig>"] :=" Change the toolbar "
-    CommandInfo_Arr["<ConfigSaveSettings>"] :=" Save Settings "
-    CommandInfo_Arr["<ConfigChangeIniFiles>"] :=" Modify the configuration file directly "
-    CommandInfo_Arr["<ConfigSaveDirHistory>"] :=" Save the folder history "
-    CommandInfo_Arr["<ChangeStartMenu>"] :=" Change the Start menu "
-    CommandInfo_Arr["<NetConnect>"] :=" Mapping network drives "
-    CommandInfo_Arr["<NetDisconnect>"] :=" Disconnect the network drive "
-    CommandInfo_Arr["<NetShareDir>"] :=" Share the current folder "
-    CommandInfo_Arr["<NetUnshareDir>"] :=" Cancel folder sharing "
-    CommandInfo_Arr["<AdministerServer>"] :=" Show system shared folder "
-    CommandInfo_Arr["<ShowFileUser>"] :=" Displays the remote user of the local file "
-    CommandInfo_Arr["<GetFileSpace>"] :=" Calculate the footprint "
-    CommandInfo_Arr["<VolumeId>"] :=" Set the tab "
-    CommandInfo_Arr["<VersionInfo>"] :=" Version Information "
-    CommandInfo_Arr["<ExecuteDOS>"] :=" cmd.exe Console with Command Prompt "
-    CommandInfo_Arr["<CompareDirs>"] :=" Compare folders "
-    CommandInfo_Arr["<CompareDirsWithSubdirs>"] :=" Compare folders ( Also mark a subfolder that does not have another window )"
-    CommandInfo_Arr["<ContextMenu>"] :=" Show the context menu "
-    CommandInfo_Arr["<ContextMenuInternal>"] :=" Show the context menu ( Internal association )"
-    CommandInfo_Arr["<ContextMenuInternalCursor>"] :=" Displays the internal context menu for the file at the cursor "
-    ;CommandInfo_Arr["<ShowRemoteMenu>"] :=" Media Center Remote Control Play / Pause key context menu "
-    CommandInfo_Arr["<ShowRemoteMenu>"] :=" Menu with various actions to choose from ..."
-    CommandInfo_Arr["<SyncChangeDir>"] :=" Synchronous directory changing in both windows "
-    CommandInfo_Arr["<EditComment>"] :=" Edit file comments "
-    CommandInfo_Arr["<FocusLeft>"] :=" Focus on the left window "
-    CommandInfo_Arr["<FocusRight>"] :=" Focus on the right window "
-    CommandInfo_Arr["<FocusCmdLine>"] :=" Focus on the command line "
-    CommandInfo_Arr["<FocusButtonBar>"] :=" Focus on the toolbar "
-    CommandInfo_Arr["<CountDirContent>"] :=" Calculate the space occupied by all folders "
-    CommandInfo_Arr["<UnloadPlugins>"] :=" Unload all plugins "
-    CommandInfo_Arr["<DirMatch>"] :=" Mark a new file, Hide the same "
-    CommandInfo_Arr["<Exchange>"] :=" Exchange left and right windows "
-    CommandInfo_Arr["<MatchSrc>"] :=" target  =  source "
-    CommandInfo_Arr["<ReloadSelThumbs>"] :=" Refresh the thumbnail of the selected file "
-    CommandInfo_Arr["<DirectCableConnect>"] :=" Direct cable connection "
-    CommandInfo_Arr["<NTinstallDriver>"] :=" Load  NT  Parallel port driver "
-    CommandInfo_Arr["<NTremoveDriver>"] :=" Unloading  NT  Parallel port driver "
-    CommandInfo_Arr["<PrintDir>"] :=" Print a list of files "
-    CommandInfo_Arr["<PrintDirSub>"] :=" Print a list of files ( Contains subfolders )"
-    CommandInfo_Arr["<PrintFile>"] :=" Print the contents of the file "
-    CommandInfo_Arr["<SpreadSelection>"] :=" Select a set of files "
-    CommandInfo_Arr["<SelectBoth>"] :=" Select :  Files and folders "
-    CommandInfo_Arr["<SelectFiles>"] :=" Select :  Only file "
-    CommandInfo_Arr["<SelectFolders>"] :=" Select :  Only folders "
-    CommandInfo_Arr["<ShrinkSelection>"] :=" Shrink Selection "
-    CommandInfo_Arr["<ClearFiles>"] :=" Clear selected :  Only files "
-    CommandInfo_Arr["<ClearFolders>"] :=" Clear selected:  Only folders "
-    CommandInfo_Arr["<ClearSelCfg>"] :=" Clear selected:  File and / or folders ( Depending on configuration )"
-    CommandInfo_Arr["<SelectAll>"] :=" All selected :  File and / or folders ( Depending on configuration )"
-    CommandInfo_Arr["<SelectAllBoth>"] :=" All selected :  Files and folders "
-    CommandInfo_Arr["<SelectAllFiles>"] :=" All selected :  Only file "
-    CommandInfo_Arr["<SelectAllFolders>"] :=" All selected :  Only folders "
-    CommandInfo_Arr["<ClearAll>"] :=" Clear All  :  Files and folders "
-    CommandInfo_Arr["<ClearAllFiles>"] :=" Clear All  :  Only file "
-    CommandInfo_Arr["<ClearAllFolders>"] :=" Clear All  :  Only folders "
-    CommandInfo_Arr["<ClearAllCfg>"] :=" Clear All  :  File and / or folders ( Depending on configuration )"
-    CommandInfo_Arr["<ExchangeSelection>"] :=" Reverse selection "
-    CommandInfo_Arr["<ExchangeSelBoth>"] :=" Reverse selection :  Files and folders "
-    CommandInfo_Arr["<ExchangeSelFiles>"] :=" Reverse selection :  Only file "
-    CommandInfo_Arr["<ExchangeSelFolders>"] :=" Reverse selection :  Only folders "
-    CommandInfo_Arr["<SelectCurrentExtension>"] :=" Select the same file with the same extension "
-    CommandInfo_Arr["<UnselectCurrentExtension>"] :=" Do not select the same file with the same extension "
-    CommandInfo_Arr["<SelectCurrentName>"] :=" Select the file with the same file name "
-    CommandInfo_Arr["<UnselectCurrentName>"] :=" Do not select files with the same file name "
-    CommandInfo_Arr["<SelectCurrentNameExt>"] :=" Select the file with the same file name and extension "
-    CommandInfo_Arr["<UnselectCurrentNameExt>"] :=" Do not select files with the same file name and extension "
-    CommandInfo_Arr["<SelectCurrentPath>"] :=" Select the same path under the file ( Expand the folder + Search for files )"
-    CommandInfo_Arr["<UnselectCurrentPath>"] :=" Do not choose the same path under the file ( Expand the folder + Search the file )"
-    CommandInfo_Arr["<RestoreSelection>"] :=" Restore the selection list "
-    CommandInfo_Arr["<SaveSelection>"] :=" Save the selection list "
-    CommandInfo_Arr["<SaveSelectionToFile>"] :=" Export the selection list "
-    CommandInfo_Arr["<SaveSelectionToFileA>"] :=" Export the selection list (ANSI)"
-    CommandInfo_Arr["<SaveSelectionToFileW>"] :=" Export the selection list (Unicode)"
-    CommandInfo_Arr["<SaveDetailsToFile>"] :=" Export details "
-    CommandInfo_Arr["<SaveDetailsToFileA>"] :=" Export details (ANSI)"
-    CommandInfo_Arr["<SaveDetailsToFileW>"] :=" Export details (Unicode)"
-    CommandInfo_Arr["<LoadSelectionFromFile>"] :=" Import selection list ( From the file )"
-    CommandInfo_Arr["<LoadSelectionFromClip>"] :=" Import the selection list ( From the clipboard )"
-    CommandInfo_Arr["<EditPermissionInfo>"] :=" Setting permissions (NTFS)"
-    CommandInfo_Arr["<EditAuditInfo>"] :=" Review the document (NTFS)"
-    CommandInfo_Arr["<EditOwnerInfo>"] :=" Get ownership (NTFS)"
-    CommandInfo_Arr["<CutToClipboard>"] :=" Cut the selected file to the clipboard "
-    CommandInfo_Arr["<CopyToClipboard>"] :=" Copy the selected file to the clipboard "
-    CommandInfo_Arr["<PasteFromClipboard>"] :=" Paste from the clipboard to the current folder "
-    CommandInfo_Arr["<CopyNamesToClip>"] :=" Copy the file name "
-    CommandInfo_Arr["<CopyFullNamesToClip>"] :=" Copy the file name and the full path "
-    CommandInfo_Arr["<CopyNetNamesToClip>"] :=" Copy the file name and network path "
-    CommandInfo_Arr["<CopySrcPathToClip>"] :=" Copy the source path "
-    CommandInfo_Arr["<CopyTrgPathToClip>"] :=" Copy the destination path "
-    CommandInfo_Arr["<CopyFileDetailsToClip>"] :=" Copy the file details "
-    CommandInfo_Arr["<CopyFpFileDetailsToClip>"] :=" Copy the file details and the full path "
-    CommandInfo_Arr["<CopyNetFileDetailsToClip>"] :=" Copy file details and network path "
-    CommandInfo_Arr["<FtpConnect>"] :="FTP  connection "
-    CommandInfo_Arr["<FtpNew>"] :=" New  FTP  connection "
-    CommandInfo_Arr["<FtpDisconnect>"] :=" disconnect  FTP  connection "
-    CommandInfo_Arr["<FtpHiddenFiles>"] :=" Show hidden FTP files "
-    CommandInfo_Arr["<FtpAbort>"] :=" Stop the current  FTP  command "
-    CommandInfo_Arr["<FtpResumeDownload>"] :=" FtpResumeDownload "
-    CommandInfo_Arr["<FtpSelectTransferMode>"] :=" Select the transfer mode "
-    CommandInfo_Arr["<FtpAddToList>"] :=" Add to download list "
-    CommandInfo_Arr["<FtpDownloadList>"] :=" FtpDownloadList "
-    CommandInfo_Arr["<GotoPreviousDir>"] :=" GotoPreviousDir in tab history"
-    CommandInfo_Arr["<GotoNextDir>"] :=" GotoNextDir in tab history"
-    CommandInfo_Arr["<DirectoryHistory>"] :=" Folder history "
-    CommandInfo_Arr["<GotoPreviousLocalDir>"] :=" GotoPreviousLocalDir (non-FTP)"
-    CommandInfo_Arr["<GotoNextLocalDir>"] :=" GotoNextLocalDir (non-FTP)"
-    CommandInfo_Arr["<DirectoryHotlist>"] :=" DirectoryHotlist "
-    CommandInfo_Arr["<GoToRoot>"] :=" Go to the root folder "
-    CommandInfo_Arr["<GoToParent>"] :=" Go to the upper folder "
-    CommandInfo_Arr["<GoToDir>"] :=" Open the folder or archive at the cursor "
-    CommandInfo_Arr["<OpenDesktop>"] :=" desktop "
-    CommandInfo_Arr["<OpenDrives>"] :=" my computer "
-    CommandInfo_Arr["<OpenControls>"] :=" control panel "
-    CommandInfo_Arr["<OpenFonts>"] :=" Font "
-    CommandInfo_Arr["<OpenNetwork>"] :=" OpenNetwork "
-    CommandInfo_Arr["<OpenPrinters>"] :=" printer "
-    CommandInfo_Arr["<OpenRecycled>"] :=" Recycle bin "
-    CommandInfo_Arr["<CDtree>"] :=" Change the folder "
-    CommandInfo_Arr["<TransferLeft>"] :=" Open the folder or the compressed package at the cursor in the left window "
-    CommandInfo_Arr["<TransferRight>"] :=" Open the folder or archive at the cursor in the right window "
-    CommandInfo_Arr["<EditPath>"] :=" Edit the path of the source window "
-    CommandInfo_Arr["<GoToFirstFile>"] :=" The cursor moves to the first file in the list "
-    CommandInfo_Arr["<GotoNextDrive>"] :=" Go to the next drive "
-    CommandInfo_Arr["<GotoPreviousDrive>"] :=" Go to the previous drive "
-    CommandInfo_Arr["<GotoNextSelected>"] :=" Go to the next selected file "
-    CommandInfo_Arr["<GotoPrevSelected>"] :=" Go to the previous selected file "
-    CommandInfo_Arr["<GotoDriveA>"] :=" Go to the drive  A"
-    CommandInfo_Arr["<GotoDriveC>"] :=" Go to the drive  C"
-    CommandInfo_Arr["<GotoDriveD>"] :=" Go to the drive  D"
-    CommandInfo_Arr["<GotoDriveE>"] :=" Go to the drive  E"
-    CommandInfo_Arr["<GotoDriveF>"] :=" Go to the drive  F"
-    CommandInfo_Arr["<GotoDriveG>"] :=" Go to the drive  G"
-    CommandInfo_Arr["<GotoDriveH>"] :=" Go to the drive  H"
-    CommandInfo_Arr["<GotoDriveI>"] :=" Go to the drive  I"
-    CommandInfo_Arr["<GotoDriveJ>"] :=" Go to the drive  J"
-    CommandInfo_Arr["<GotoDriveK>"] :=" You can customize other drives "
-    CommandInfo_Arr["<GotoDriveU>"] :=" Go to the drive  U"
-    CommandInfo_Arr["<GotoDriveZ>"] :=" GotoDriveZ, max 26"
-    CommandInfo_Arr["<HelpIndex>"] :=" Help index "
-    CommandInfo_Arr["<Keyboard>"] :=" TC Keyboard layout, list of TC shortcuts "
-    CommandInfo_Arr["<Register>"] :=" registration message "
-    CommandInfo_Arr["<VisitHomepage>"] :=" access  Totalcmd  website "
-    CommandInfo_Arr["<About>"] :=" About  Total Commander"
-    CommandInfo_Arr["<Exit>"] :=" Exit  Total Commander"
-    CommandInfo_Arr["<Minimize>"] :=" minimize  Total Commander"
-    CommandInfo_Arr["<Maximize>"] :=" maximize  Total Commander"
-    CommandInfo_Arr["<Restore>"] :=" Restore down. Return to normal size "
-    CommandInfo_Arr["<ClearCmdLine>"] :=" Clear the command line "
-    CommandInfo_Arr["<NextCommand>"] :=" Next command "
-    CommandInfo_Arr["<PrevCommand>"] :=" Previous command "
-    CommandInfo_Arr["<AddPathToCmdline>"] :=" Copy the path to the command line "
-    CommandInfo_Arr["<MultiRenameFiles>"] :=" Batch rename "
-    CommandInfo_Arr["<SysInfo>"] :=" system message "
-    CommandInfo_Arr["<OpenTransferManager>"] :=" Background Transfer Manager "
-    CommandInfo_Arr["<SearchFor>"] :=" Search for files "
-    CommandInfo_Arr["<FileSync>"] :=" Synchronize folders "
-    CommandInfo_Arr["<Associate>"] :=" File association "
-    CommandInfo_Arr["<InternalAssociate>"] :=" Define internal associations "
-    CommandInfo_Arr["<CompareFilesByContent>"] :=" Compare the contents of the file "
-    CommandInfo_Arr["<IntCompareFilesByContent>"] :=" Use the internal comparison program "
-    CommandInfo_Arr["<CommandBrowser>"] :=" Browse TC commands. On OK it is copied into clipboard "
-    CommandInfo_Arr["<VisButtonbar>"] :=" Toggle visibility :  toolbar "
-    CommandInfo_Arr["<VisDriveButtons>"] :=" Toggle visibility :  Drive button "
-    CommandInfo_Arr["<VisTwoDriveButtons>"] :=" Toggle visibility :  Two drive button bars "
-    CommandInfo_Arr["<VisFlatDriveButtons>"] :=" Switch :  flat / convex drive button "
-    CommandInfo_Arr["<VisFlatInterface>"] :=" Switch :  flat / Three-dimensional user interface "
-    CommandInfo_Arr["<VisDriveCombo>"] :=" Toggle visibility :  Drive list "
-    CommandInfo_Arr["<VisCurDir>"] :=" Toggle visibility :  Current folder "
-    CommandInfo_Arr["<VisBreadCrumbs>"] :=" Toggle visibility :  Path navigation bar "
-    CommandInfo_Arr["<VisTabHeader>"] :=" Toggle visibility :  Sort tab "
-    CommandInfo_Arr["<VisStatusbar>"] :=" Toggle visibility :  Status Bar "
-    CommandInfo_Arr["<VisCmdLine>"] :=" Toggle visibility :  Command Line "
-    CommandInfo_Arr["<VisKeyButtons>"] :=" Toggle visibility :  Function button "
-    CommandInfo_Arr["<ToggleViatcVim>"] :=" Toggle Viatc Vim Mode "
-    CommandInfo_Arr["<ShowHoverTooltip>"] :=" Show file tooltip by moving cursor over it "
-    CommandInfo_Arr["<ShowQuickSearch>"] :=" Show the quick search window "
-    CommandInfo_Arr["<SwitchLongNames>"] :=" Toggle visibility :  Long file name display "
-    CommandInfo_Arr["<RereadSource>"] :=" Refresh the source window "
-    CommandInfo_Arr["<ShowOnlySelected>"] :=" Only the selected files are displayed "
-    CommandInfo_Arr["<SwitchHidSys>"] :=" Toggle hidden or system file display "
-    CommandInfo_Arr["<Switch83Names>"] :=" Toggle : 8.3  Type file name lowercase display "
-    CommandInfo_Arr["<SwitchDirSort>"] :=" Toggle :  The folders are sorted by name "
-    CommandInfo_Arr["<DirBranch>"] :=" Expand all folders "
-    CommandInfo_Arr["<DirBranchSel>"] :=" Only the selected folder is expanded "
-    CommandInfo_Arr["<50Percent>"] :=" Set the window divider at 50%"
-    CommandInfo_Arr["<100Percent>"] :=" Set the window divider at 100% (TC 8.0+)"
-    CommandInfo_Arr["<VisDirTabs>"] :=" Toggle visibility :  Folder tab "
-    CommandInfo_Arr["<VisXPThemeBackground>"] :=" Toggle : XP  Theme background "
-    CommandInfo_Arr["<SwitchOverlayIcons>"] :=" Toggle :  Overlay icon display "
-    CommandInfo_Arr["<VisHistHotButtons>"] :=" Toggle visibility :  Folder history and frequently used folder buttons "
-    CommandInfo_Arr["<SwitchWatchDirs>"] :=" Enable / Disable :  The folder is automatically refreshed "
-    CommandInfo_Arr["<SwitchIgnoreList>"] :=" Enable / Disable :  Customize hidden files "
-    CommandInfo_Arr["<SwitchX64Redirection>"] :=" Toggle : 32  Bit system32  Directory redirect (64 Bit  Windows)"
-    CommandInfo_Arr["<SeparateTreeOff>"] :=" Close the separate folder tree panel "
-    CommandInfo_Arr["<SeparateTree1>"] :=" A separate folder tree panel "
-    CommandInfo_Arr["<SeparateTree2>"] :=" Two separate folder tree panels "
-    CommandInfo_Arr["<SwitchSeparateTree>"] :=" Toggle the independent folder tree panel status "
-    CommandInfo_Arr["<ToggleSeparateTree1>"] :=" Toggle visibility :  A separate folder tree panel "
-    CommandInfo_Arr["<ToggleSeparateTree2>"] :=" Toggle visibility :  Two separate folder tree panels "
-    CommandInfo_Arr["<UserMenu1>"] :=" User menu  1"
-    CommandInfo_Arr["<UserMenu2>"] :=" User menu  2"
-    CommandInfo_Arr["<UserMenu3>"] :=" User menu  3"
-    CommandInfo_Arr["<UserMenu4>"] :="..."
-    CommandInfo_Arr["<UserMenu5>"] :="5"
-    CommandInfo_Arr["<UserMenu6>"] :="6"
-    CommandInfo_Arr["<UserMenu7>"] :="7"
-    CommandInfo_Arr["<UserMenu8>"] :="8"
-    CommandInfo_Arr["<UserMenu9>"] :="9"
-    CommandInfo_Arr["<UserMenu10>"] :=" You can define other user menus "
-    CommandInfo_Arr["<OpenNewTab>"] :=" New tab "
-    CommandInfo_Arr["<OpenNewTabBg>"] :=" New tab ( In the background )"
-    CommandInfo_Arr["<OpenDirInNewTab>"] :=" New tab ( And open the folder at the cursor )"
-    CommandInfo_Arr["<OpenDirInNewTabOther>"] :=" New tab ( Open the folder in another window )"
-    CommandInfo_Arr["<SwitchToNextTab>"] :=" Next tab (Ctrl+Tab)"
-    CommandInfo_Arr["<SwitchToPreviousTab>"] :=" Previous tab (Ctrl+Shift+Tab)"
-    CommandInfo_Arr["<CloseCurrentTab>"] :=" Close the Current tab "
-    CommandInfo_Arr["<CloseAllTabs>"] :=" Close All tabs "
-    CommandInfo_Arr["<DirTabsShowMenu>"] :=" Display the tab menu "
-    CommandInfo_Arr["<ToggleLockCurrentTab>"] :=" Lock/Unlock the current tab "
-    CommandInfo_Arr["<ToggleLockDcaCurrentTab>"] :=" Lock/Unlock the current tab ( You can change the folder )"
-    CommandInfo_Arr["<ExchangeWithTabs>"] :=" Exchange left and right windows and their tabs "
-    CommandInfo_Arr["<GoToLockedDir>"] :=" Go to the root folder of the locked tab "
-    CommandInfo_Arr["<SrcActivateTab1>"] :=" Source window :  Activate the tab  1"
-    CommandInfo_Arr["<SrcActivateTab2>"] :=" Source window :  Activate the tab  2"
-    CommandInfo_Arr["<SrcActivateTab3>"] :="..."
-    CommandInfo_Arr["<SrcActivateTab4>"] :=" max 99 "
-    CommandInfo_Arr["<SrcActivateTab5>"] :="5"
-    CommandInfo_Arr["<SrcActivateTab6>"] :="6"
-    CommandInfo_Arr["<SrcActivateTab7>"] :="7"
-    CommandInfo_Arr["<SrcActivateTab8>"] :="8"
-    CommandInfo_Arr["<SrcActivateTab9>"] :="9"
-    CommandInfo_Arr["<SrcActivateTab10>"] :="0"
-    CommandInfo_Arr["<TrgActivateTab1>"] :=" Target window :  Activate the tab  1"
-    CommandInfo_Arr["<TrgActivateTab2>"] :=" Target window :  Activate the tab  2"
-    CommandInfo_Arr["<TrgActivateTab3>"] :="..."
-    CommandInfo_Arr["<TrgActivateTab4>"] :=" max 99 "
-    CommandInfo_Arr["<TrgActivateTab5>"] :="5"
-    CommandInfo_Arr["<TrgActivateTab6>"] :="6"
-    CommandInfo_Arr["<TrgActivateTab7>"] :="7"
-    CommandInfo_Arr["<TrgActivateTab8>"] :="8"
-    CommandInfo_Arr["<TrgActivateTab9>"] :="9"
-    CommandInfo_Arr["<TrgActivateTab10>"] :="0"
-    CommandInfo_Arr["<LeftActivateTab1>"] :=" Left window :  Activate the tab  1"
-    CommandInfo_Arr["<LeftActivateTab2>"] :=" Left window :  Activate the tab  2"
-    CommandInfo_Arr["<LeftActivateTab3>"] :="..."
-    CommandInfo_Arr["<LeftActivateTab4>"] :=" max 99 "
-    CommandInfo_Arr["<LeftActivateTab5>"] :="5"
-    CommandInfo_Arr["<LeftActivateTab6>"] :="6"
-    CommandInfo_Arr["<LeftActivateTab7>"] :="7"
-    CommandInfo_Arr["<LeftActivateTab8>"] :="8"
-    CommandInfo_Arr["<LeftActivateTab9>"] :="9"
-    CommandInfo_Arr["<LeftActivateTab10>"] :="0"
-    CommandInfo_Arr["<RightActivateTab1>"] :=" Right window :  Activate the tab  1"
-    CommandInfo_Arr["<RightActivateTab2>"] :=" Right window :  Activate the tab  2"
-    CommandInfo_Arr["<RightActivateTab3>"] :="..."
-    CommandInfo_Arr["<RightActivateTab4>"] :=" max 99 "
-    CommandInfo_Arr["<RightActivateTab5>"] :="5"
-    CommandInfo_Arr["<RightActivateTab6>"] :="6"
-    CommandInfo_Arr["<RightActivateTab7>"] :="7"
-    CommandInfo_Arr["<RightActivateTab8>"] :="8"
-    CommandInfo_Arr["<RightActivateTab9>"] :="9"
-    CommandInfo_Arr["<RightActivateTab10>"] :="0"
-    CommandInfo_Arr["<SrcSortByCol1>"] :=" Source window :  Sort by column 1"
-    CommandInfo_Arr["<SrcSortByCol2>"] :=" Source window :  Sort by column 2"
-    CommandInfo_Arr["<SrcSortByCol3>"] :="..."
-    CommandInfo_Arr["<SrcSortByCol4>"] :=" max 99  Column "
-    CommandInfo_Arr["<SrcSortByCol5>"] :="5"
-    CommandInfo_Arr["<SrcSortByCol6>"] :="6"
-    CommandInfo_Arr["<SrcSortByCol7>"] :="7"
-    CommandInfo_Arr["<SrcSortByCol8>"] :="8"
-    CommandInfo_Arr["<SrcSortByCol9>"] :="9"
-    CommandInfo_Arr["<SrcSortByCol10>"] :="0"
-    CommandInfo_Arr["<SrcSortByCol99>"] :="9"
-    CommandInfo_Arr["<TrgSortByCol1>"] :=" Target window :  Sort by column 1"
-    CommandInfo_Arr["<TrgSortByCol2>"] :=" Target window :  Sort by column 2"
-    CommandInfo_Arr["<TrgSortByCol3>"] :="..."
-    CommandInfo_Arr["<TrgSortByCol4>"] :=" max 99  Column "
-    CommandInfo_Arr["<TrgSortByCol5>"] :="5"
-    CommandInfo_Arr["<TrgSortByCol6>"] :="6"
-    CommandInfo_Arr["<TrgSortByCol7>"] :="7"
-    CommandInfo_Arr["<TrgSortByCol8>"] :="8"
-    CommandInfo_Arr["<TrgSortByCol9>"] :="9"
-    CommandInfo_Arr["<TrgSortByCol10>"] :="0"
-    CommandInfo_Arr["<TrgSortByCol99>"] :="9"
-    CommandInfo_Arr["<LeftSortByCol1>"] :=" Left window :  Sort by column 1"
-    CommandInfo_Arr["<LeftSortByCol2>"] :=" Left window :  Sort by column 2"
-    CommandInfo_Arr["<LeftSortByCol3>"] :="..."
-    CommandInfo_Arr["<LeftSortByCol4>"] :=" max 99  Column "
-    CommandInfo_Arr["<LeftSortByCol5>"] :="5"
-    CommandInfo_Arr["<LeftSortByCol6>"] :="6"
-    CommandInfo_Arr["<LeftSortByCol7>"] :="7"
-    CommandInfo_Arr["<LeftSortByCol8>"] :="8"
-    CommandInfo_Arr["<LeftSortByCol9>"] :="9"
-    CommandInfo_Arr["<LeftSortByCol10>"] :="0"
-    CommandInfo_Arr["<LeftSortByCol99>"] :="9"
-    CommandInfo_Arr["<RightSortByCol1>"] :=" Right window :  Sort by column 1"
-    CommandInfo_Arr["<RightSortByCol2>"] :=" Right window :  Sort by column 2"
-    CommandInfo_Arr["<RightSortByCol3>"] :="..."
-    CommandInfo_Arr["<RightSortByCol4>"] :=" max 99  Column "
-    CommandInfo_Arr["<RightSortByCol5>"] :="5"
-    CommandInfo_Arr["<RightSortByCol6>"] :="6"
-    CommandInfo_Arr["<RightSortByCol7>"] :="7"
-    CommandInfo_Arr["<RightSortByCol8>"] :="8"
-    CommandInfo_Arr["<RightSortByCol9>"] :="9"
-    CommandInfo_Arr["<RightSortByCol10>"] :="0"
-    CommandInfo_Arr["<RightSortByCol99>"] :="9"
-    CommandInfo_Arr["<SrcCustomView1>"] :=" Source window :  Customize the column view  1"
-    CommandInfo_Arr["<SrcCustomView2>"] :=" Source window :  Customize the column view  2"
-    CommandInfo_Arr["<SrcCustomView3>"] :="..."
-    CommandInfo_Arr["<SrcCustomView4>"] :=" 29 max"
-    CommandInfo_Arr["<SrcCustomView5>"] :="5"
-    CommandInfo_Arr["<SrcCustomView6>"] :="6"
-    CommandInfo_Arr["<SrcCustomView7>"] :="7"
-    CommandInfo_Arr["<SrcCustomView8>"] :="8"
-    CommandInfo_Arr["<SrcCustomView9>"] :="9"
-    CommandInfo_Arr["<LeftCustomView1>"] :=" Left window :  Customize the column view  1"
-    CommandInfo_Arr["<LeftCustomView2>"] :=" Left window :  Customize the column view  2"
-    CommandInfo_Arr["<LeftCustomView3>"] :="..."
-    CommandInfo_Arr["<LeftCustomView4>"] :=" 29 max"
-    CommandInfo_Arr["<LeftCustomView5>"] :="5"
-    CommandInfo_Arr["<LeftCustomView6>"] :="6"
-    CommandInfo_Arr["<LeftCustomView7>"] :="7"
-    CommandInfo_Arr["<LeftCustomView8>"] :="8"
-    CommandInfo_Arr["<LeftCustomView9>"] :="9"
-    CommandInfo_Arr["<RightCustomView1>"] :=" Right window :  Customize the column view  1"
-    CommandInfo_Arr["<RightCustomView2>"] :=" Right window :  Customize the column view  2"
-    CommandInfo_Arr["<RightCustomView3>"] :="..."
-    CommandInfo_Arr["<RightCustomView4>"] :=" 29 max"
-    CommandInfo_Arr["<RightCustomView5>"] :="5"
-    CommandInfo_Arr["<RightCustomView6>"] :="6"
-    CommandInfo_Arr["<RightCustomView7>"] :="7"
-    CommandInfo_Arr["<RightCustomView8>"] :="8"
-    CommandInfo_Arr["<RightCustomView9>"] :="9"
-    CommandInfo_Arr["<SrcNextCustomView>"] :=" Source window :  Next custom view "
-    CommandInfo_Arr["<SrcPrevCustomView>"] :=" Source window :  Previous view "
-    CommandInfo_Arr["<TrgNextCustomView>"] :=" Target window :  Next custom view "
-    CommandInfo_Arr["<TrgPrevCustomView>"] :=" Target window :  Previous view "
-    CommandInfo_Arr["<LeftNextCustomView>"] :=" Left window :  Next custom view "
-    CommandInfo_Arr["<LeftPrevCustomView>"] :=" Left window :  Previous view "
-    CommandInfo_Arr["<RightNextCustomView>"] :=" Right window :  Next custom view "
-    CommandInfo_Arr["<RightPrevCustomView>"] :=" Right window :  Previous view "
-    CommandInfo_Arr["<LoadAllOnDemandFields>"] :=" All files are loaded with notes as needed "
-    CommandInfo_Arr["<LoadSelOnDemandFields>"] :=" Only selected files are loading notes as needed "
-    CommandInfo_Arr["<ContentStopLoadFields>"] :=" Stop background loading notes "
-    CommandInfo_Arr["<SwitchDarkmode>"] :="Toggle dark mode on and off"
-    CommandInfo_Arr["<EnableDarkmode>"] :="Turn dark mode on"
-    CommandInfo_Arr["<DisableDarkmode>"] :="Turn dark mode off. Light mode"
+    CommandInfo_Arr["<SrcComments>"] := " Source window :  Show file comments "
+    CommandInfo_Arr["<SrcShort>"] := " Source window :  List "
+    CommandInfo_Arr["<SrcLong>"] := " Source window :  Details "
+    CommandInfo_Arr["<SrcTree>"] := " Source window :  Folder Tree "
+    CommandInfo_Arr["<SrcQuickview>"] := " Source window :  Quick View "
+    CommandInfo_Arr["<VerticalPanels>"] := " Vertical / Horizontal arrangement "
+    CommandInfo_Arr["<WidePanelToggle>"] := " One 100% Wide Horizontal panel. Toggle"
+    CommandInfo_Arr["<SrcQuickInternalOnly>"] := " Source window :  Quick View ( No plugins )"
+    CommandInfo_Arr["<SrcHideQuickview>"] := " Source window :  Close the Quick View window "
+    CommandInfo_Arr["<SrcExecs>"] := " Source window :  Executable file "
+    CommandInfo_Arr["<SrcAllFiles>"] := " Source window :  All files "
+    CommandInfo_Arr["<SrcUserSpec>"] := " Source window :  The last selected file "
+    CommandInfo_Arr["<SrcUserDef>"] := " Source window :  User defined type "
+    CommandInfo_Arr["<SrcByName>"] := " Source window :  Sort by file name "
+    CommandInfo_Arr["<SrcByExt>"] := " Source window :  Sort by extension "
+    CommandInfo_Arr["<SrcBySize>"] := " Source window :  Sort by size "
+    CommandInfo_Arr["<SrcByDateTime>"] := " Source window :  Sort by date and time "
+    CommandInfo_Arr["<SrcUnsorted>"] := " Source window :  Not sorted "
+    CommandInfo_Arr["<SrcNegOrder>"] := " Source window :  Reverse sort "
+    CommandInfo_Arr["<SrcOpenDrives>"] := " Source window :  Open the drive list "
+    CommandInfo_Arr["<SrcThumbs>"] := " Source window :  Thumbnails "
+    CommandInfo_Arr["<SrcCustomViewMenu>"] := " Source window :  Customize the view menu "
+    CommandInfo_Arr["<SrcPathFocus>"] := " Source window :  Focus on the path "
+    CommandInfo_Arr["<LeftComments>"] := " Left window :  Show file comments "
+    CommandInfo_Arr["<LeftShort>"] := " Left window :  List "
+    CommandInfo_Arr["<LeftLong>"] := " Left window :  Details "
+    CommandInfo_Arr["<LeftTree>"] := " Left window :  Folder Tree "
+    CommandInfo_Arr["<LeftQuickview>"] := " Left window :  Quick View "
+    CommandInfo_Arr["<LeftQuickInternalOnly>"] := " Left window :  Quick View ( No plugins )"
+    CommandInfo_Arr["<LeftHideQuickview>"] := " Left window :  Close the Quick View window "
+    CommandInfo_Arr["<LeftExecs>"] := " Left window :  executable file "
+    CommandInfo_Arr["<LeftAllFiles>"] := " Left window :  All files "
+    CommandInfo_Arr["<LeftUserSpec>"] := " Left window :  The last selected file "
+    CommandInfo_Arr["<LeftUserDef>"] := " Left window :  Custom type "
+    CommandInfo_Arr["<LeftByName>"] := " Left window :  Sort by file name "
+    CommandInfo_Arr["<LeftByExt>"] := " Left window :  Sort by extension "
+    CommandInfo_Arr["<LeftBySize>"] := " Left window :  Sort by size "
+    CommandInfo_Arr["<LeftByDateTime>"] := " Left window :  Sort by date and time "
+    CommandInfo_Arr["<LeftUnsorted>"] := " Left window :  Not sorted "
+    CommandInfo_Arr["<LeftNegOrder>"] := " Left window :  Reverse sort "
+    CommandInfo_Arr["<LeftOpenDrives>"] := " Left window :  Open the drive list "
+    CommandInfo_Arr["<LeftPathFocus>"] := " Left window :  Focus on the path "
+    CommandInfo_Arr["<LeftDirBranch>"] := " Left window :  Expand all folders "
+    CommandInfo_Arr["<LeftDirBranchSel>"] := " Left window :  Only the selected folder is expanded "
+    CommandInfo_Arr["<LeftThumbs>"] := " window :  Thumbnails "
+    CommandInfo_Arr["<LeftCustomViewMenu>"] := " window :  Customize the view menu "
+    CommandInfo_Arr["<RightComments>"] := " Right window :  Show file comments "
+    CommandInfo_Arr["<RightShort>"] := " Right window :  List "
+    CommandInfo_Arr["<RightLong>"] := " details "
+    CommandInfo_Arr["<RightTre>"] := " Right window :  Folder Tree "
+    CommandInfo_Arr["<RightQuickvie>"] := " Right window :  Quick View "
+    CommandInfo_Arr["<RightQuickInternalOnl>"] := " Right window :  Quick View ( No plugins )"
+    CommandInfo_Arr["<RightHideQuickvie>"] := " Right window :  Close the Quick View window "
+    CommandInfo_Arr["<RightExec>"] := " Right window :  executable file "
+    CommandInfo_Arr["<RightAllFile>"] := " Right window :  All files "
+    CommandInfo_Arr["<RightUserSpe>"] := " Right window :  The last selected file "
+    CommandInfo_Arr["<RightUserDe>"] := " Right window :  Custom type "
+    CommandInfo_Arr["<RightByNam>"] := " Right window :  Sort by file name "
+    CommandInfo_Arr["<RightByEx>"] := " Right window :  Sort by extension "
+    CommandInfo_Arr["<RightBySiz>"] := " Right window :  Sort by size "
+    CommandInfo_Arr["<RightByDateTim>"] := " Right window :  Sort by date and time "
+    CommandInfo_Arr["<RightUnsorte>"] := " Right window :  Not sorted "
+    CommandInfo_Arr["<RightNegOrde>"] := " Right window :  Reverse sort "
+    CommandInfo_Arr["<RightOpenDrives>"] := " Right window :  Open the drive list "
+    CommandInfo_Arr["<RightPathFocu>"] := " Right window :  Focus on the path "
+    CommandInfo_Arr["<RightDirBranch>"] := " Right window :  Expand all folders "
+    CommandInfo_Arr["<RightDirBranchSel>"] := " Right window :  Only the selected folder is expanded "
+    CommandInfo_Arr["<RightThumb>"] := " Right window :  Thumbnails "
+    CommandInfo_Arr["<RightCustomViewMen>"] := " Right window :  Customize the view menu "
+    CommandInfo_Arr["<List>"] := " Lister ( use the lister program to view )"
+    CommandInfo_Arr["<ListInternalOnly>"] := " Lister ( use the lister program, but not plugin / multimedia )"
+    CommandInfo_Arr["<Edit>"] := " edit "
+    CommandInfo_Arr["<Copy>"] := " copy "
+    CommandInfo_Arr["<CopySamepanel>"] := " Copy to the current window "
+    CommandInfo_Arr["<CopyOtherpanel>"] := " Copy to another window "
+    CommandInfo_Arr["<RenMov>"] := " Rename / Move "
+    CommandInfo_Arr["<MkDir>"] := " New Folder "
+    CommandInfo_Arr["<Delete>"] := " Delete "
+    CommandInfo_Arr["<TestArchive>"] := " Test compression package "
+    CommandInfo_Arr["<PackFiles>"] := " Compressed file "
+    CommandInfo_Arr["<UnpackFiles>"] := " Unzip files "
+    CommandInfo_Arr["<RenameOnly>"] := " Rename (Shift+F6)"
+    CommandInfo_Arr["<RenameSingleFile>"] := " Rename current file "
+    CommandInfo_Arr["<MoveOnly>"] := " Move (F6)"
+    CommandInfo_Arr["<Properties>"] := " Display file properties, or if folder then calculate space "
+    CommandInfo_Arr["<CreateShortcut>"] := " Create Shortcut "
+    CommandInfo_Arr["<OpenAsUser>"] := " Run the file under cursor as onother user "
+    CommandInfo_Arr["<Split>"] := " Split files "
+    CommandInfo_Arr["<Combine>"] := " Merge documents "
+    CommandInfo_Arr["<Encode>"] := " Encoding file (MIME/UUE/XXE  format )"
+    CommandInfo_Arr["<Decode>"] := " Decode the file (MIME/UUE/XXE/BinHex  format )"
+    CommandInfo_Arr["<CRCcreate>"] := " Create a check file "
+    CommandInfo_Arr["<CRCcheck>"] := " Verify checksum "
+    CommandInfo_Arr["<SetAttrib>"] := " Change attributes "
+    CommandInfo_Arr["<Config>"] := " Configuration :  layout "
+    CommandInfo_Arr["<DisplayConfig>"] := " Configuration :  display "
+    CommandInfo_Arr["<IconConfig>"] := " Configuration :  icon "
+    CommandInfo_Arr["<FontConfig>"] := " Configuration :  Font "
+    CommandInfo_Arr["<ColorConfig>"] := " Configuration :  Colour "
+    CommandInfo_Arr["<ConfTabChange>"] := " Configuration :  Tabs "
+    CommandInfo_Arr["<DirTabsConfig>"] := " Configuration :  Folder tab "
+    CommandInfo_Arr["<CustomColumnConfig>"] := " Configuration :  Custom columns "
+    CommandInfo_Arr["<CustomColumnDlg>"] := " Change the current custom column "
+    CommandInfo_Arr["<LanguageConfig>"] := " Configuration :  Language "
+    CommandInfo_Arr["<Config2>"] := " Configuration :  Operation method "
+    CommandInfo_Arr["<EditConfig>"] := " Configuration :  edit / view "
+    CommandInfo_Arr["<CopyConfig>"] := " Configuration :  copy / delete "
+    CommandInfo_Arr["<RefreshConfig>"] := " Configuration :  Refresh "
+    CommandInfo_Arr["<QuickSearchConfig>"] := " Configuration :  quick search "
+    CommandInfo_Arr["<FtpConfig>"] := " Configuration : FTP"
+    CommandInfo_Arr["<PluginsConfig>"] := " Configuration :  Plugin "
+    CommandInfo_Arr["<ThumbnailsConfig>"] := " Configuration :  Thumbnails "
+    CommandInfo_Arr["<LogConfig>"] := " Configuration :  Log file "
+    CommandInfo_Arr["<IgnoreConfig>"] := " Configuration :  Hide the file "
+    CommandInfo_Arr["<PackerConfig>"] := " Configuration :  Compression program "
+    CommandInfo_Arr["<ZipPackerConfig>"] := " Configuration : ZIP  Compression program "
+    CommandInfo_Arr["<Confirmation>"] := " Configuration :  other / confirm "
+    CommandInfo_Arr["<ConfigSavePos>"] := " Save location "
+    CommandInfo_Arr["<ButtonConfig>"] := " Change the toolbar "
+    CommandInfo_Arr["<ConfigSaveSettings>"] := " Save Settings "
+    CommandInfo_Arr["<ConfigChangeIniFiles>"] := " Modify the configuration file directly "
+    CommandInfo_Arr["<ConfigSaveDirHistory>"] := " Save the folder history "
+    CommandInfo_Arr["<ChangeStartMenu>"] := " Change the Start menu "
+    CommandInfo_Arr["<NetConnect>"] := " Mapping network drives "
+    CommandInfo_Arr["<NetDisconnect>"] := " Disconnect the network drive "
+    CommandInfo_Arr["<NetShareDir>"] := " Share the current folder "
+    CommandInfo_Arr["<NetUnshareDir>"] := " Cancel folder sharing "
+    CommandInfo_Arr["<AdministerServer>"] := " Show system shared folder "
+    CommandInfo_Arr["<ShowFileUser>"] := " Displays the remote user of the local file "
+    CommandInfo_Arr["<GetFileSpace>"] := " Calculate the footprint "
+    CommandInfo_Arr["<VolumeId>"] := " Set the tab "
+    CommandInfo_Arr["<VersionInfo>"] := " Version Information "
+    CommandInfo_Arr["<ExecuteDOS>"] := " cmd.exe Console with Command Prompt "
+    CommandInfo_Arr["<CompareDirs>"] := " Compare folders "
+    CommandInfo_Arr["<CompareDirsWithSubdirs>"] := " Compare folders ( Also mark a subfolder that does not have another window )"
+    CommandInfo_Arr["<ContextMenu>"] := " Show the context menu "
+    CommandInfo_Arr["<ContextMenuInternal>"] := " Show the context menu ( Internal association )"
+    CommandInfo_Arr["<ContextMenuInternalCursor>"] := " Displays the internal context menu for the file at the cursor "
+    ;CommandInfo_Arr["<ShowRemoteMenu>"] := " Media Center Remote Control Play / Pause key context menu "
+    CommandInfo_Arr["<ShowRemoteMenu>"] := " Menu with various actions to choose from ..."
+    CommandInfo_Arr["<SyncChangeDir>"] := " Synchronous directory changing in both windows "
+    CommandInfo_Arr["<EditComment>"] := " Edit file comments "
+    CommandInfo_Arr["<FocusLeft>"] := " Focus on the left window "
+    CommandInfo_Arr["<FocusRight>"] := " Focus on the right window "
+    CommandInfo_Arr["<FocusCmdLine>"] := " Focus on the command line "
+    CommandInfo_Arr["<FocusButtonBar>"] := " Focus on the toolbar "
+    CommandInfo_Arr["<CountDirContent>"] := " Calculate the space occupied by all folders "
+    CommandInfo_Arr["<UnloadPlugins>"] := " Unload all plugins "
+    CommandInfo_Arr["<DirMatch>"] := " Mark a new file, Hide the same "
+    CommandInfo_Arr["<Exchange>"] := " Exchange left and right windows "
+    CommandInfo_Arr["<MatchSrc>"] := " target  =  source "
+    CommandInfo_Arr["<ReloadSelThumbs>"] := " Refresh the thumbnail of the selected file "
+    CommandInfo_Arr["<DirectCableConnect>"] := " Direct cable connection "
+    CommandInfo_Arr["<NTinstallDriver>"] := " Load  NT  Parallel port driver "
+    CommandInfo_Arr["<NTremoveDriver>"] := " Unloading  NT  Parallel port driver "
+    CommandInfo_Arr["<PrintDir>"] := " Print a list of files "
+    CommandInfo_Arr["<PrintDirSub>"] := " Print a list of files ( Contains subfolders )"
+    CommandInfo_Arr["<PrintFile>"] := " Print the contents of the file "
+    CommandInfo_Arr["<SpreadSelection>"] := " Select a set of files "
+    CommandInfo_Arr["<SelectBoth>"] := " Select :  Files and folders "
+    CommandInfo_Arr["<SelectFiles>"] := " Select :  Only file "
+    CommandInfo_Arr["<SelectFolders>"] := " Select :  Only folders "
+    CommandInfo_Arr["<ShrinkSelection>"] := " Shrink Selection "
+    CommandInfo_Arr["<ClearFiles>"] := " Clear selected :  Only files "
+    CommandInfo_Arr["<ClearFolders>"] := " Clear selected:  Only folders "
+    CommandInfo_Arr["<ClearSelCfg>"] := " Clear selected:  File and / or folders ( Depending on configuration )"
+    CommandInfo_Arr["<SelectAll>"] := " All selected :  File and / or folders ( Depending on configuration )"
+    CommandInfo_Arr["<SelectAllBoth>"] := " All selected :  Files and folders "
+    CommandInfo_Arr["<SelectAllFiles>"] := " All selected :  Only file "
+    CommandInfo_Arr["<SelectAllFolders>"] := " All selected :  Only folders "
+    CommandInfo_Arr["<ClearAll>"] := " Clear All  :  Files and folders "
+    CommandInfo_Arr["<ClearAllFiles>"] := " Clear All  :  Only file "
+    CommandInfo_Arr["<ClearAllFolders>"] := " Clear All  :  Only folders "
+    CommandInfo_Arr["<ClearAllCfg>"] := " Clear All  :  File and / or folders ( Depending on configuration )"
+    CommandInfo_Arr["<ExchangeSelection>"] := " Reverse selection "
+    CommandInfo_Arr["<ExchangeSelBoth>"] := " Reverse selection :  Files and folders "
+    CommandInfo_Arr["<ExchangeSelFiles>"] := " Reverse selection :  Only file "
+    CommandInfo_Arr["<ExchangeSelFolders>"] := " Reverse selection :  Only folders "
+    CommandInfo_Arr["<SelectCurrentExtension>"] := " Select the same file with the same extension "
+    CommandInfo_Arr["<UnselectCurrentExtension>"] := " Do not select the same file with the same extension "
+    CommandInfo_Arr["<SelectCurrentName>"] := " Select the file with the same file name "
+    CommandInfo_Arr["<UnselectCurrentName>"] := " Do not select files with the same file name "
+    CommandInfo_Arr["<SelectCurrentNameExt>"] := " Select the file with the same file name and extension "
+    CommandInfo_Arr["<UnselectCurrentNameExt>"] := " Do not select files with the same file name and extension "
+    CommandInfo_Arr["<SelectCurrentPath>"] := " Select the same path under the file ( Expand the folder + Search for files )"
+    CommandInfo_Arr["<UnselectCurrentPath>"] := " Do not choose the same path under the file ( Expand the folder + Search the file )"
+    CommandInfo_Arr["<RestoreSelection>"] := " Restore the selection list "
+    CommandInfo_Arr["<SaveSelection>"] := " Save the selection list "
+    CommandInfo_Arr["<SaveSelectionToFile>"] := " Export the selection list "
+    CommandInfo_Arr["<SaveSelectionToFileA>"] := " Export the selection list (ANSI)"
+    CommandInfo_Arr["<SaveSelectionToFileW>"] := " Export the selection list (Unicode)"
+    CommandInfo_Arr["<SaveDetailsToFile>"] := " Export details "
+    CommandInfo_Arr["<SaveDetailsToFileA>"] := " Export details (ANSI)"
+    CommandInfo_Arr["<SaveDetailsToFileW>"] := " Export details (Unicode)"
+    CommandInfo_Arr["<LoadSelectionFromFile>"] := " Import selection list ( From the file )"
+    CommandInfo_Arr["<LoadSelectionFromClip>"] := " Import the selection list ( From the clipboard )"
+    CommandInfo_Arr["<EditPermissionInfo>"] := " Setting permissions (NTFS)"
+    CommandInfo_Arr["<EditAuditInfo>"] := " Review the document (NTFS)"
+    CommandInfo_Arr["<EditOwnerInfo>"] := " Get ownership (NTFS)"
+    CommandInfo_Arr["<CutToClipboard>"] := " Cut the selected file to the clipboard "
+    CommandInfo_Arr["<CopyToClipboard>"] := " Copy the selected file to the clipboard "
+    CommandInfo_Arr["<PasteFromClipboard>"] := " Paste from the clipboard to the current folder "
+    CommandInfo_Arr["<CopyNamesToClip>"] := " Copy the file name "
+    CommandInfo_Arr["<CopyFullNamesToClip>"] := " Copy the file name and the full path "
+    CommandInfo_Arr["<CopyNetNamesToClip>"] := " Copy the file name and network path "
+    CommandInfo_Arr["<CopySrcPathToClip>"] := " Copy the source path "
+    CommandInfo_Arr["<CopyTrgPathToClip>"] := " Copy the destination path "
+    CommandInfo_Arr["<CopyFileDetailsToClip>"] := " Copy the file details "
+    CommandInfo_Arr["<CopyFpFileDetailsToClip>"] := " Copy the file details and the full path "
+    CommandInfo_Arr["<CopyNetFileDetailsToClip>"] := " Copy file details and network path "
+    CommandInfo_Arr["<FtpConnect>"] := "FTP  connection "
+    CommandInfo_Arr["<FtpNew>"] := " New  FTP  connection "
+    CommandInfo_Arr["<FtpDisconnect>"] := " disconnect  FTP  connection "
+    CommandInfo_Arr["<FtpHiddenFiles>"] := " Show hidden FTP files "
+    CommandInfo_Arr["<FtpAbort>"] := " Stop the current  FTP  command "
+    CommandInfo_Arr["<FtpResumeDownload>"] := " FtpResumeDownload "
+    CommandInfo_Arr["<FtpSelectTransferMode>"] := " Select the transfer mode "
+    CommandInfo_Arr["<FtpAddToList>"] := " Add to download list "
+    CommandInfo_Arr["<FtpDownloadList>"] := " FtpDownloadList "
+    CommandInfo_Arr["<GotoPreviousDir>"] := " GotoPreviousDir in tab history"
+    CommandInfo_Arr["<GotoNextDir>"] := " GotoNextDir in tab history"
+    CommandInfo_Arr["<DirectoryHistory>"] := " Folder history "
+    CommandInfo_Arr["<GotoPreviousLocalDir>"] := " GotoPreviousLocalDir (non-FTP)"
+    CommandInfo_Arr["<GotoNextLocalDir>"] := " GotoNextLocalDir (non-FTP)"
+    CommandInfo_Arr["<DirectoryHotlist>"] := " DirectoryHotlist "
+    CommandInfo_Arr["<GoToRoot>"] := " Go to the root folder "
+    CommandInfo_Arr["<GoToParent>"] := " Go to the upper folder "
+    CommandInfo_Arr["<GoToDir>"] := " Open the folder or archive at the cursor "
+    CommandInfo_Arr["<OpenDesktop>"] := " desktop "
+    CommandInfo_Arr["<OpenDrives>"] := " my computer "
+    CommandInfo_Arr["<OpenControls>"] := " control panel "
+    CommandInfo_Arr["<OpenFonts>"] := " Font "
+    CommandInfo_Arr["<OpenNetwork>"] := " OpenNetwork "
+    CommandInfo_Arr["<OpenPrinters>"] := " printer "
+    CommandInfo_Arr["<OpenRecycled>"] := " Recycle bin "
+    CommandInfo_Arr["<CDtree>"] := " Change the folder "
+    CommandInfo_Arr["<TransferLeft>"] := " Open the folder or the compressed package at the cursor in the left window "
+    CommandInfo_Arr["<TransferRight>"] := " Open the folder or archive at the cursor in the right window "
+    CommandInfo_Arr["<EditPath>"] := " Edit the path of the source window "
+    CommandInfo_Arr["<GoToFirstFile>"] := " The cursor moves to the first file in the list "
+    CommandInfo_Arr["<GotoNextDrive>"] := " Go to the next drive "
+    CommandInfo_Arr["<GotoPreviousDrive>"] := " Go to the previous drive "
+    CommandInfo_Arr["<GotoNextSelected>"] := " Go to the next selected file "
+    CommandInfo_Arr["<GotoPrevSelected>"] := " Go to the previous selected file "
+    CommandInfo_Arr["<GotoDriveA>"] := " Go to the drive  A"
+    CommandInfo_Arr["<GotoDriveC>"] := " Go to the drive  C"
+    CommandInfo_Arr["<GotoDriveD>"] := " Go to the drive  D"
+    CommandInfo_Arr["<GotoDriveE>"] := " Go to the drive  E"
+    CommandInfo_Arr["<GotoDriveF>"] := " Go to the drive  F"
+    CommandInfo_Arr["<GotoDriveG>"] := " Go to the drive  G"
+    CommandInfo_Arr["<GotoDriveH>"] := " Go to the drive  H"
+    CommandInfo_Arr["<GotoDriveI>"] := " Go to the drive  I"
+    CommandInfo_Arr["<GotoDriveJ>"] := " Go to the drive  J"
+    CommandInfo_Arr["<GotoDriveK>"] := " You can customize other drives "
+    CommandInfo_Arr["<GotoDriveU>"] := " Go to the drive  U"
+    CommandInfo_Arr["<GotoDriveZ>"] := " GotoDriveZ, max 26"
+    CommandInfo_Arr["<HelpIndex>"] := " Help index "
+    CommandInfo_Arr["<Keyboard>"] := " TC Keyboard layout, list of TC shortcuts "
+    CommandInfo_Arr["<Register>"] := " registration message "
+    CommandInfo_Arr["<VisitHomepage>"] := " access  Totalcmd  website "
+    CommandInfo_Arr["<About>"] := " About  Total Commander"
+    CommandInfo_Arr["<Exit>"] := " Exit  Total Commander"
+    CommandInfo_Arr["<Minimize>"] := " minimize  Total Commander"
+    CommandInfo_Arr["<Maximize>"] := " maximize  Total Commander"
+    CommandInfo_Arr["<Restore>"] := " Restore down. Return to normal size "
+    CommandInfo_Arr["<ClearCmdLine>"] := " Clear the command line "
+    CommandInfo_Arr["<NextCommand>"] := " Next command "
+    CommandInfo_Arr["<PrevCommand>"] := " Previous command "
+    CommandInfo_Arr["<AddPathToCmdline>"] := " Copy the path to the command line "
+    CommandInfo_Arr["<MultiRenameFiles>"] := " Batch rename "
+    CommandInfo_Arr["<SysInfo>"] := " system message "
+    CommandInfo_Arr["<OpenTransferManager>"] := " Background Transfer Manager "
+    CommandInfo_Arr["<SearchFor>"] := " Search for files "
+    CommandInfo_Arr["<FileSync>"] := " Synchronize folders "
+    CommandInfo_Arr["<Associate>"] := " File association "
+    CommandInfo_Arr["<InternalAssociate>"] := " Define internal associations "
+    CommandInfo_Arr["<CompareFilesByContent>"] := " Compare the contents of the file "
+    CommandInfo_Arr["<IntCompareFilesByContent>"] := " Use the internal comparison program "
+    CommandInfo_Arr["<CommandBrowser>"] := " Browse TC commands. On OK it is copied into clipboard "
+    CommandInfo_Arr["<VisButtonbar>"] := " Toggle visibility :  toolbar "
+    CommandInfo_Arr["<VisDriveButtons>"] := " Toggle visibility :  Drive button "
+    CommandInfo_Arr["<VisTwoDriveButtons>"] := " Toggle visibility :  Two drive button bars "
+    CommandInfo_Arr["<VisFlatDriveButtons>"] := " Switch :  flat / convex drive button "
+    CommandInfo_Arr["<VisFlatInterface>"] := " Switch :  flat / Three-dimensional user interface "
+    CommandInfo_Arr["<VisDriveCombo>"] := " Toggle visibility :  Drive list "
+    CommandInfo_Arr["<VisCurDir>"] := " Toggle visibility :  Current folder "
+    CommandInfo_Arr["<VisBreadCrumbs>"] := " Toggle visibility :  Path navigation bar "
+    CommandInfo_Arr["<VisTabHeader>"] := " Toggle visibility :  Sort tab "
+    CommandInfo_Arr["<VisStatusbar>"] := " Toggle visibility :  Status Bar "
+    CommandInfo_Arr["<VisCmdLine>"] := " Toggle visibility :  Command Line "
+    CommandInfo_Arr["<VisKeyButtons>"] := " Toggle visibility :  Function button "
+    CommandInfo_Arr["<ToggleViatcVim>"] := " Toggle Viatc Vim Mode "
+    CommandInfo_Arr["<ShowHoverTooltip>"] := " Show file tooltip by moving cursor over it "
+    CommandInfo_Arr["<ShowQuickSearch>"] := " Show the quick search window "
+    CommandInfo_Arr["<SwitchLongNames>"] := " Toggle visibility :  Long file name display "
+    CommandInfo_Arr["<RereadSource>"] := " Refresh the source window "
+    CommandInfo_Arr["<ShowOnlySelected>"] := " Only the selected files are displayed "
+    CommandInfo_Arr["<SwitchHidSys>"] := " Toggle hidden or system file display "
+    CommandInfo_Arr["<Switch83Names>"] := " Toggle : 8.3  Type file name lowercase display "
+    CommandInfo_Arr["<SwitchDirSort>"] := " Toggle :  The folders are sorted by name "
+    CommandInfo_Arr["<DirBranch>"] := " Expand all folders "
+    CommandInfo_Arr["<DirBranchSel>"] := " Only the selected folder is expanded "
+    CommandInfo_Arr["<50Percent>"] := " Set the window divider at 50%"
+    CommandInfo_Arr["<100Percent>"] := " Set the window divider at 100% (TC 8.0+)"
+    CommandInfo_Arr["<VisDirTabs>"] := " Toggle visibility :  Folder tab "
+    CommandInfo_Arr["<VisXPThemeBackground>"] := " Toggle : XP  Theme background "
+    CommandInfo_Arr["<SwitchOverlayIcons>"] := " Toggle :  Overlay icon display "
+    CommandInfo_Arr["<VisHistHotButtons>"] := " Toggle visibility :  Folder history and frequently used folder buttons "
+    CommandInfo_Arr["<SwitchWatchDirs>"] := " Enable / Disable :  The folder is automatically refreshed "
+    CommandInfo_Arr["<SwitchIgnoreList>"] := " Enable / Disable :  Customize hidden files "
+    CommandInfo_Arr["<SwitchX64Redirection>"] := " Toggle : 32  Bit system32  Directory redirect (64 Bit  Windows)"
+    CommandInfo_Arr["<SeparateTreeOff>"] := " Close the separate folder tree panel "
+    CommandInfo_Arr["<SeparateTree1>"] := " A separate folder tree panel "
+    CommandInfo_Arr["<SeparateTree2>"] := " Two separate folder tree panels "
+    CommandInfo_Arr["<SwitchSeparateTree>"] := " Toggle the independent folder tree panel status "
+    CommandInfo_Arr["<ToggleSeparateTree1>"] := " Toggle visibility :  A separate folder tree panel "
+    CommandInfo_Arr["<ToggleSeparateTree2>"] := " Toggle visibility :  Two separate folder tree panels "
+    CommandInfo_Arr["<UserMenu1>"] := " User menu  1"
+    CommandInfo_Arr["<UserMenu2>"] := " User menu  2"
+    CommandInfo_Arr["<UserMenu3>"] := " User menu  3"
+    CommandInfo_Arr["<UserMenu4>"] := "..."
+    CommandInfo_Arr["<UserMenu5>"] := "5"
+    CommandInfo_Arr["<UserMenu6>"] := "6"
+    CommandInfo_Arr["<UserMenu7>"] := "7"
+    CommandInfo_Arr["<UserMenu8>"] := "8"
+    CommandInfo_Arr["<UserMenu9>"] := "9"
+    CommandInfo_Arr["<UserMenu10>"] := " You can define other user menus "
+    CommandInfo_Arr["<OpenNewTab>"] := " New tab "
+    CommandInfo_Arr["<OpenNewTabBg>"] := " New tab ( In the background )"
+    CommandInfo_Arr["<OpenDirInNewTab>"] := " New tab ( And open the folder at the cursor )"
+    CommandInfo_Arr["<OpenDirInNewTabOther>"] := " New tab ( Open the folder in another window )"
+    CommandInfo_Arr["<SwitchToNextTab>"] := " Next tab (Ctrl+Tab)"
+    CommandInfo_Arr["<SwitchToPreviousTab>"] := " Previous tab (Ctrl+Shift+Tab)"
+    CommandInfo_Arr["<CloseCurrentTab>"] := " Close the Current tab "
+    CommandInfo_Arr["<CloseAllTabs>"] := " Close All tabs "
+    CommandInfo_Arr["<DirTabsShowMenu>"] := " Display the tab menu "
+    CommandInfo_Arr["<ToggleLockCurrentTab>"] := " Lock/Unlock the current tab "
+    CommandInfo_Arr["<ToggleLockDcaCurrentTab>"] := " Lock/Unlock the current tab ( You can change the folder )"
+    CommandInfo_Arr["<ExchangeWithTabs>"] := " Exchange left and right windows and their tabs "
+    CommandInfo_Arr["<GoToLockedDir>"] := " Go to the root folder of the locked tab "
+    CommandInfo_Arr["<SrcActivateTab1>"] := " Source window :  Activate the tab  1"
+    CommandInfo_Arr["<SrcActivateTab2>"] := " Source window :  Activate the tab  2"
+    CommandInfo_Arr["<SrcActivateTab3>"] := "..."
+    CommandInfo_Arr["<SrcActivateTab4>"] := " max 99 "
+    CommandInfo_Arr["<SrcActivateTab5>"] := "5"
+    CommandInfo_Arr["<SrcActivateTab6>"] := "6"
+    CommandInfo_Arr["<SrcActivateTab7>"] := "7"
+    CommandInfo_Arr["<SrcActivateTab8>"] := "8"
+    CommandInfo_Arr["<SrcActivateTab9>"] := "9"
+    CommandInfo_Arr["<SrcActivateTab10>"] := "0"
+    CommandInfo_Arr["<TrgActivateTab1>"] := " Target window :  Activate the tab  1"
+    CommandInfo_Arr["<TrgActivateTab2>"] := " Target window :  Activate the tab  2"
+    CommandInfo_Arr["<TrgActivateTab3>"] := "..."
+    CommandInfo_Arr["<TrgActivateTab4>"] := " max 99 "
+    CommandInfo_Arr["<TrgActivateTab5>"] := "5"
+    CommandInfo_Arr["<TrgActivateTab6>"] := "6"
+    CommandInfo_Arr["<TrgActivateTab7>"] := "7"
+    CommandInfo_Arr["<TrgActivateTab8>"] := "8"
+    CommandInfo_Arr["<TrgActivateTab9>"] := "9"
+    CommandInfo_Arr["<TrgActivateTab10>"] := "0"
+    CommandInfo_Arr["<LeftActivateTab1>"] := " Left window :  Activate the tab  1"
+    CommandInfo_Arr["<LeftActivateTab2>"] := " Left window :  Activate the tab  2"
+    CommandInfo_Arr["<LeftActivateTab3>"] := "..."
+    CommandInfo_Arr["<LeftActivateTab4>"] := " max 99 "
+    CommandInfo_Arr["<LeftActivateTab5>"] := "5"
+    CommandInfo_Arr["<LeftActivateTab6>"] := "6"
+    CommandInfo_Arr["<LeftActivateTab7>"] := "7"
+    CommandInfo_Arr["<LeftActivateTab8>"] := "8"
+    CommandInfo_Arr["<LeftActivateTab9>"] := "9"
+    CommandInfo_Arr["<LeftActivateTab10>"] := "0"
+    CommandInfo_Arr["<RightActivateTab1>"] := " Right window :  Activate the tab  1"
+    CommandInfo_Arr["<RightActivateTab2>"] := " Right window :  Activate the tab  2"
+    CommandInfo_Arr["<RightActivateTab3>"] := "..."
+    CommandInfo_Arr["<RightActivateTab4>"] := " max 99 "
+    CommandInfo_Arr["<RightActivateTab5>"] := "5"
+    CommandInfo_Arr["<RightActivateTab6>"] := "6"
+    CommandInfo_Arr["<RightActivateTab7>"] := "7"
+    CommandInfo_Arr["<RightActivateTab8>"] := "8"
+    CommandInfo_Arr["<RightActivateTab9>"] := "9"
+    CommandInfo_Arr["<RightActivateTab10>"] := "0"
+    CommandInfo_Arr["<SrcSortByCol1>"] := " Source window :  Sort by column 1"
+    CommandInfo_Arr["<SrcSortByCol2>"] := " Source window :  Sort by column 2"
+    CommandInfo_Arr["<SrcSortByCol3>"] := "..."
+    CommandInfo_Arr["<SrcSortByCol4>"] := " max 99  Column "
+    CommandInfo_Arr["<SrcSortByCol5>"] := "5"
+    CommandInfo_Arr["<SrcSortByCol6>"] := "6"
+    CommandInfo_Arr["<SrcSortByCol7>"] := "7"
+    CommandInfo_Arr["<SrcSortByCol8>"] := "8"
+    CommandInfo_Arr["<SrcSortByCol9>"] := "9"
+    CommandInfo_Arr["<SrcSortByCol10>"] := "0"
+    CommandInfo_Arr["<SrcSortByCol99>"] := "9"
+    CommandInfo_Arr["<TrgSortByCol1>"] := " Target window :  Sort by column 1"
+    CommandInfo_Arr["<TrgSortByCol2>"] := " Target window :  Sort by column 2"
+    CommandInfo_Arr["<TrgSortByCol3>"] := "..."
+    CommandInfo_Arr["<TrgSortByCol4>"] := " max 99  Column "
+    CommandInfo_Arr["<TrgSortByCol5>"] := "5"
+    CommandInfo_Arr["<TrgSortByCol6>"] := "6"
+    CommandInfo_Arr["<TrgSortByCol7>"] := "7"
+    CommandInfo_Arr["<TrgSortByCol8>"] := "8"
+    CommandInfo_Arr["<TrgSortByCol9>"] := "9"
+    CommandInfo_Arr["<TrgSortByCol10>"] := "0"
+    CommandInfo_Arr["<TrgSortByCol99>"] := "9"
+    CommandInfo_Arr["<LeftSortByCol1>"] := " Left window :  Sort by column 1"
+    CommandInfo_Arr["<LeftSortByCol2>"] := " Left window :  Sort by column 2"
+    CommandInfo_Arr["<LeftSortByCol3>"] := "..."
+    CommandInfo_Arr["<LeftSortByCol4>"] := " max 99  Column "
+    CommandInfo_Arr["<LeftSortByCol5>"] := "5"
+    CommandInfo_Arr["<LeftSortByCol6>"] := "6"
+    CommandInfo_Arr["<LeftSortByCol7>"] := "7"
+    CommandInfo_Arr["<LeftSortByCol8>"] := "8"
+    CommandInfo_Arr["<LeftSortByCol9>"] := "9"
+    CommandInfo_Arr["<LeftSortByCol10>"] := "0"
+    CommandInfo_Arr["<LeftSortByCol99>"] := "9"
+    CommandInfo_Arr["<RightSortByCol1>"] := " Right window :  Sort by column 1"
+    CommandInfo_Arr["<RightSortByCol2>"] := " Right window :  Sort by column 2"
+    CommandInfo_Arr["<RightSortByCol3>"] := "..."
+    CommandInfo_Arr["<RightSortByCol4>"] := " max 99  Column "
+    CommandInfo_Arr["<RightSortByCol5>"] := "5"
+    CommandInfo_Arr["<RightSortByCol6>"] := "6"
+    CommandInfo_Arr["<RightSortByCol7>"] := "7"
+    CommandInfo_Arr["<RightSortByCol8>"] := "8"
+    CommandInfo_Arr["<RightSortByCol9>"] := "9"
+    CommandInfo_Arr["<RightSortByCol10>"] := "0"
+    CommandInfo_Arr["<RightSortByCol99>"] := "9"
+    CommandInfo_Arr["<SrcCustomView1>"] := " Source window :  Customize the column view  1"
+    CommandInfo_Arr["<SrcCustomView2>"] := " Source window :  Customize the column view  2"
+    CommandInfo_Arr["<SrcCustomView3>"] := "..."
+    CommandInfo_Arr["<SrcCustomView4>"] := " 29 max"
+    CommandInfo_Arr["<SrcCustomView5>"] := "5"
+    CommandInfo_Arr["<SrcCustomView6>"] := "6"
+    CommandInfo_Arr["<SrcCustomView7>"] := "7"
+    CommandInfo_Arr["<SrcCustomView8>"] := "8"
+    CommandInfo_Arr["<SrcCustomView9>"] := "9"
+    CommandInfo_Arr["<LeftCustomView1>"] := " Left window :  Customize the column view  1"
+    CommandInfo_Arr["<LeftCustomView2>"] := " Left window :  Customize the column view  2"
+    CommandInfo_Arr["<LeftCustomView3>"] := "..."
+    CommandInfo_Arr["<LeftCustomView4>"] := " 29 max"
+    CommandInfo_Arr["<LeftCustomView5>"] := "5"
+    CommandInfo_Arr["<LeftCustomView6>"] := "6"
+    CommandInfo_Arr["<LeftCustomView7>"] := "7"
+    CommandInfo_Arr["<LeftCustomView8>"] := "8"
+    CommandInfo_Arr["<LeftCustomView9>"] := "9"
+    CommandInfo_Arr["<RightCustomView1>"] := " Right window :  Customize the column view  1"
+    CommandInfo_Arr["<RightCustomView2>"] := " Right window :  Customize the column view  2"
+    CommandInfo_Arr["<RightCustomView3>"] := "..."
+    CommandInfo_Arr["<RightCustomView4>"] := " 29 max"
+    CommandInfo_Arr["<RightCustomView5>"] := "5"
+    CommandInfo_Arr["<RightCustomView6>"] := "6"
+    CommandInfo_Arr["<RightCustomView7>"] := "7"
+    CommandInfo_Arr["<RightCustomView8>"] := "8"
+    CommandInfo_Arr["<RightCustomView9>"] := "9"
+    CommandInfo_Arr["<SrcNextCustomView>"] := " Source window :  Next custom view "
+    CommandInfo_Arr["<SrcPrevCustomView>"] := " Source window :  Previous view "
+    CommandInfo_Arr["<TrgNextCustomView>"] := " Target window :  Next custom view "
+    CommandInfo_Arr["<TrgPrevCustomView>"] := " Target window :  Previous view "
+    CommandInfo_Arr["<LeftNextCustomView>"] := " Left window :  Next custom view "
+    CommandInfo_Arr["<LeftPrevCustomView>"] := " Left window :  Previous view "
+    CommandInfo_Arr["<RightNextCustomView>"] := " Right window :  Next custom view "
+    CommandInfo_Arr["<RightPrevCustomView>"] := " Right window :  Previous view "
+    CommandInfo_Arr["<LoadAllOnDemandFields>"] := " All files are loaded with notes as needed "
+    CommandInfo_Arr["<LoadSelOnDemandFields>"] := " Only selected files are loading notes as needed "
+    CommandInfo_Arr["<ContentStopLoadFields>"] := " Stop background loading notes "
+    CommandInfo_Arr["<SwitchDarkmode>"] := "Toggle dark mode on and off"
+    CommandInfo_Arr["<EnableDarkmode>"] := "Turn dark mode on"
+    CommandInfo_Arr["<DisableDarkmode>"] := "Turn dark mode off. Light mode"
 }
 
 ; ---- Action Codes{{{3
@@ -5849,15 +5849,15 @@ SendPos(305)
 Return
 <WidePanelToggle>:
 SendPos(305)  ;<VerticalPanels>
-if %wide%
+If %wide%
 {
     SendPos(909)  ;<50Percent>:
-    wide:=false
+    wide := False
 }
-else
+Else
 {
     SendPos(910)  ;<100Percent>:
-    wide:=true
+    wide := True
 }
 Return
 <SrcQuickInternalOnly>:
@@ -7582,15 +7582,15 @@ SetTitleAsDateTime()
 }
 
 subTimer:
-if WinActive( "ahk_class TTOTAL_CMD" )
-if WinActive(ahk_exe_TC)
+If WinActive( "ahk_class TTOTAL_CMD" )
+If WinActive(ahk_exe_TC)
 {
    FormatTime, time,, dd.MM.yyyy - HH:mm:ss
    WinGet, ProcessPath, ProcessPath
    FileGetVersion, version, %ProcessPath%
    IfInString, ProcessPath, TOTALCMD64.EXE
       WinSetTitle Total Commander (x64)- %version% -     %time%
-   else
+   Else
       WinSetTitle Total Commander - %version% -     %time%
 }
 Return
@@ -7604,196 +7604,197 @@ $F11::
 If WinActive(ahk_exe_TC)
 {
     If F11TC = 1
-        gosub <TcFullScreen>
+        GoSub <TcFullScreen>
     If F11TC = 2
-        gosub <TcFullScreenAlmost>
+        GoSub <TcFullScreenAlmost>
     Else If F11TC = 3
-        gosub <TCFullScreenWithExePlugin>
+        GoSub <TCFullScreenWithExePlugin>
 }
-else send, {F11}
-return   
+Else
+    Send, {F11}
+Return
 #If
 
 
 ;----------------- IrfanView ----------
 #If %IrfanView%   ;this variable is set in the viatc.ini file
-#If (WinActive("ahk_exe i_view32.exe") or WinActive("ahk_exe i_view64.exe"))
-#If (WinActive("ahk_class IrfanView") or WinActive("ahk_class FullScreenClass"))
+#If (WinActive("ahk_exe i_view32.exe") OR WinActive("ahk_exe i_view64.exe"))
+#If (WinActive("ahk_class IrfanView") OR WinActive("ahk_class FullScreenClass"))
 ;IrfanView map  j = right = next
-    j::Send {Right}
+    j::Send, {Right}
     ;IrfanView map  k = left = prev
-    k::Send {Left}
+    k::Send, {Left}
 #If
 
 ; IrfanView autoadvance folder in TotalCommander
-; Limitations and TODO: 
+; Limitations and TODO:
 ;   - it will execute whatever extension of the first file is, you have to be sure it's an image
 ;   - it will get stuck at the last nested folder, you have to go up a folder manually
 ;   - not every keyboard have ScrollLock, perhaps the Insert key is better
 <Traverse>:
 ;ComObjCreate("SAPI.SpVoice").Speak("Traverse")
 If (WinActive("ahk_exe i_view32.exe")
-or WinActive("ahk_exe i_view64.exe")
-or WinActive(ahk_exe_TC))
+    OR WinActive("ahk_exe i_view64.exe")
+    OR WinActive(ahk_exe_TC))
 {
     ;the second Esc is if Irfan was full-screen, Irfan has an option to exit with one Esc too
-    Send {Esc}{Esc}
-    loop 11
+    Send, {Esc}{Esc}
+    Loop 11
     {
         If WinActive(ahk_exe_TC)
-            break
+            Break
         Sleep, 200  ; let it close, 400 is sometimes not enough
     }
     If WinActive(ahk_exe_TC)
     {
-        Send {BackSpace}    ; go up a dir
+        Send, {Backspace}    ; go up a dir
         Sleep, 30
         ; check if TC is still active, it would mean that no files were opened
-        loop 9   ; max depth of nested folders
-        if WinActive(ahk_exe_TC)
-        {   
+        Loop 9   ; max depth of nested folders
+        If WinActive(ahk_exe_TC)
+        {
             ; TC is active so no files were opened
-            ;tooltip subfolder: %A_Index% 
+            ;tooltip subfolder: %A_Index%
             msg = hold Escape or %IrfanViewKey% or ScrollLock to abort
             ;msg = hold Escape or ScrollLock to abort
             subfolder := A_Index - 2
-            if subfolder > 0
+            If subfolder > 0
                 msg .= "`nsubfolder: " . subfolder
             ControlGetFocus,CurrentListBox,ahk_class TTOTAL_CMD
-            ControlGetPos,xn,yn,,,%CurrentListBox%,AHK_CLASS TTOTAL_CMD
+            ControlGetPos,xn,yn,,,%CurrentListBox%,ahk_class TTOTAL_CMD
             xn += 90
             yn -= 25
             Tooltip,%Msg%,%xn%,%yn%
-            Send {Down}     ; ommit the ".." or the folder just visited
+            Send, {Down}     ; ommit the ".." or the folder just visited
             ;Sleep, 30
-            Send {Space}    ; highlight/mark
+            Send, {Space}    ; highlight/mark
             Sleep, 900      ; this delay is only for the user to have time to see what's about to be opened
             ; Abort on Esc
             If GetKeyState("Escape", "P")
             {
-                ; The Escape key has been pressed, so break out of the loop.
+                ; The Escape key has been pressed, so break out of the Loop.
                 ;MsgBox Aborted
                 Tooltip,aborted,%xn%,%yn%
-                sleep 2000
-                break
+                Sleep, 2000
+                Break
                 ;MsgBox paused until OK
             }
 
-            ;Ikey := '"' . %IrfanViewKey% . '"'            
+            ;Ikey := '"' . %IrfanViewKey% . '"'
             ;Ikey="%IrfanViewKey%"
-            ;Msgbox  Debugging IrfanViewKey = [%IrfanViewKey%]  on line %A_LineNumber% ;!!!
-            ;Msgbox  Debugging Ikey = [%Ikey%]  on line %A_LineNumber% ;!!!
+            ;MsgBox  Debugging IrfanViewKey = [%IrfanViewKey%]  on line %A_LineNumber% ;!!!
+            ;MsgBox  Debugging Ikey = [%Ikey%]  on line %A_LineNumber% ;!!!
             ;If GetKeyState(%Ikey%, "P")
             ;If GetKeyState(%IrfanViewKey%, "P")   ; doesn't work
             If GetKeyState(IrfanViewKey, "P")
             {
                 Tooltip,aborted,%xn%,%yn%
-                sleep 2000
-                break
+                Sleep, 2000
+                Break
             }
 
             ; Abort on ScrollLock being "P"hysically pressed and held
             If GetKeyState("ScrollLock", "P")
             {
-                ; The ScrollLock key has been pressed, so break out of the loop.
+                ; The ScrollLock key has been pressed, so break out of the Loop.
                 Tooltip,aborted,%xn%,%yn%
-                sleep 2000
-                break
+                Sleep, 2000
+                Break
                 ;MsgBox paused until OK
             }
-            Send {Space}    ; unselect
-            Send {Enter}    ; God please it's an image not an exe
+            Send, {Space}    ; unselect
+            Send, {Enter}    ; God please it's an image not an exe
             ;subfolder := A_Index - 1
-            ;if subfolder > 0
+            ;If subfolder > 0
                 ;msg .= "`nsubfolder: " . subfolder . " ----"
             ;Tooltip,%Msg%,%xn%,%yn%   ;!!!!!added
             Sleep, 600
         }
     }
-    tooltip
+    Tooltip
     ;Sleep, 1900
-    ;Send {F11}     ; hide cursor in IrfanView by F11 if configured that way
-    ;Send +a        ; uppercase A turns on an autoadvance in Irfanview
+    ;Send, {F11}     ; hide cursor in IrfanView by F11 if configured that way
+    ;Send, +a        ; uppercase A turns on an autoadvance in IrfanView
 }
-else ;Irfanview and TC are not active, so something else will take the key
-    send, {%IrfanViewKey%}
+Else ;IrfanView and TC are not active, so something else will take the key
+    Send, {%IrfanViewKey%}
 Return
 
 
 ; IrfanView autoadvance folder in TotalCommander
-; Limitations and TODO: 
+; Limitations and TODO:
 ;   - it will execute whatever extension of the first file is, you have to be sure it's an image
 ;   - it will get stuck at the last nested folder, you have to go up a folder manually
 ;   - not every keyboard have ScrollLock, perhaps the Insert key is better
 #If %IrfanView%     ;this variable is set in the viatc.ini file
 ScrollLock::
 If (WinActive("ahk_exe i_view32.exe")
-or WinActive("ahk_exe i_view64.exe")
-or WinActive(ahk_exe_TC))
+    OR WinActive("ahk_exe i_view64.exe")
+    OR WinActive(ahk_exe_TC))
 {
     ;the second Esc is if Irfan was full-screen, Irfan has an option to exit with one Esc too
-    Send {Esc}{Esc}
-    loop 11
+    Send, {Esc}{Esc}
+    Loop 11
     {
         If WinActive(ahk_exe_TC)
-            break
+            Break
         Sleep, 200  ; let it close, 400 is sometimes not enough
     }
     If WinActive(ahk_exe_TC)
     {
-        Send {BackSpace}    ; go up a dir
+        Send, {Backspace}    ; go up a dir
         Sleep, 30
         ; check if TC is still active, it would mean that no files were opened
-        loop 9   ; max depth of nested folders
-        if WinActive(ahk_exe_TC)
-        {   
+        Loop 9   ; max depth of nested folders
+        If WinActive(ahk_exe_TC)
+        {
             ; TC is active so no files were opened
-            ;tooltip subfolder: %A_Index% 
+            ;tooltip subfolder: %A_Index%
             ;msg = hold ScrollLock to abort
             msg = hold Escape or ScrollLock to abort
             subfolder := A_Index - 2
-            if subfolder > 0
+            If subfolder > 0
                 msg .= "`nsubfolder: " . subfolder
             ControlGetFocus,CurrentListBox,ahk_class TTOTAL_CMD
-            ControlGetPos,xn,yn,,,%CurrentListBox%,AHK_CLASS TTOTAL_CMD
+            ControlGetPos,xn,yn,,,%CurrentListBox%,ahk_class TTOTAL_CMD
             xn += 90
             yn -= 25
             Tooltip,%Msg%,%xn%,%yn%
-            Send {Down}     ; ommit the ".." or the folder just visited
+            Send, {Down}     ; ommit the ".." or the folder just visited
             ;Sleep, 30
-            Send {Space}    ; highlight/mark
+            Send, {Space}    ; highlight/mark
             Sleep, 900      ; this delay is only for the user to have time to see what's about to be opened
             ; Abort on Esc
             If GetKeyState("Escape", "P")
-                break
-            ; The Escape key has been pressed, so break out of the loop.
+                Break
+            ; The Escape key has been pressed, so break out of the Loop.
 
             ; Abort on ScrollLock being "P"hysically pressed and held
             If GetKeyState("ScrollLock", "P")
             {
-                ; The ScrollLock key has been pressed, so break out of the loop.
+                ; The ScrollLock key has been pressed, so break out of the Loop.
                 Tooltip,aborted,%xn%,%yn%
-                sleep 2000
-                break
-                ;Msgbox paused until OK
+                Sleep, 2000
+                Break
+                ;MsgBox paused until OK
             }
-            Send {Space}    ; unselect
-            Send {Enter}    ; God please it's an image not an exe
+            Send, {Space}    ; unselect
+            Send, {Enter}    ; God please it's an image not an exe
             ;subfolder := A_Index - 1
-            ;if subfolder > 0
+            ;If subfolder > 0
                 ;msg .= "`nsubfolder: " . subfolder . " ----"
             ;Tooltip,%Msg%,%xn%,%yn%   ;!!!!!added
             Sleep, 600
         }
     }
-    tooltip
+    Tooltip
     ;Sleep, 1900
-    ;Send {F11}     ; hide cursor in IrfanView by F11 if configured that way
-    ;Send +a        ; uppercase A turns on an autoadvance in Irfanview
+    ;Send, {F11}     ; hide cursor in IrfanView by F11 if configured that way
+    ;Send, +a        ; uppercase A turns on an autoadvance in IrfanView
 }
-else ;Irfanview and TC are not active, so something else will take the key
-    send, {ScrollLock}
-return
+Else ;IrfanView and TC are not active, so something else will take the key
+    Send, {ScrollLock}
+Return
 #If
 
 
@@ -7806,7 +7807,7 @@ CheckForUpdates()
     If Not IsInternetConnected()
     {
         MsgBox, 48, ViATc, Offline! Check the internet connection.
-        Return false
+        Return False
     }
     file_name := "latest_version.txt"
     ;file_path := A_ScriptDir . "\" . file_name
@@ -7817,12 +7818,12 @@ CheckForUpdates()
     xn := xn + 130
     yn := yn - 95
     Tooltip,%xn%   %yn%,%xn%,%yn%
-    sleep 1000
+    Sleep, 1000
     */
     xn := 130 + 50
     yn := 420 + 20
     Tooltip,Wait ...,%xn%,%yn%
-    ;sleep 1000
+    ;Sleep, 1000
     ;Tooltip Wait ...
     If FileExist(file_path)
     {
@@ -7832,17 +7833,17 @@ CheckForUpdates()
            ;MsgBox, Cannot delete old temporary file %file_path% thus if the next message is "Up to date" then it might be misleading
     }
     UrlDownloadToFile, https://magicstep.github.io/viatc/%file_name%, %file_path%
-    Tooltip 
+    Tooltip
     If FileExist(file_path)
     {
-        if A_IsCompiled 
+        If A_IsCompiled
             FileReadLine, ver, %file_path%, 4
-        else 
+        Else
             FileReadLine, ver, %file_path%, 2
         ;Msg = You are using version :`t %Version%`n
         If (ver = Version)
             Msg .= "Up to date"
-        else
+        Else
             Msg .= "There is a new version:`t" . ver "`nYou are using version :`t" . Version
             ;Msg .= "There is a new version:`t" . %ver% ;`nYou are using version :`t %Version%
 
@@ -7851,10 +7852,10 @@ CheckForUpdates()
         MsgBox, %Msg%
         FileDelete, %file_path%
     }
-    else
+    Else
     {
         MsgBox, Could not locate %file_path% `nPerhaps it could not be downloaded`, or there is no write access. `nTry again or visit https://magicstep.github.io/viatc
-        Return false
+        Return False
     }
 }
 
