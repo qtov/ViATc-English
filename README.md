@@ -1,7 +1,7 @@
 ViATc
 =====
 ViATc - Vim mode at Total Commander  
-2021/05/05  version 0.5.5en  
+2021/12/19  version 0.5.5.4  
 ![viatc_logo credit: https://github.com/linxinhong](https://magicstep.github.io/viatc/viatc_logo.jpg?raw=true "viatc_logo")  
 <sub>image credit: <A href="https://github.com/linxinhong" target="_blank">https://github.com/linxinhong</a></sub><br>  
 This software works on Windows as an addition to "Total Commander"  :floppy_disk: - the greatest file manager :100: (keyboard friendly, two panels, advanced search, comparator, multi-rename, FTP, plugins) get it from www.ghisler.com  
@@ -17,10 +17,11 @@ What ViATc does to Total Commander (called later TC):
 
 Download
 ========
-To get the most recent script (without exe), download https://github.com/magicstep/ViATc-English/archive/master.zip  
+To get the most recent script (without exe), download  
+https://github.com/magicstep/ViATc-English/archive/master.zip  
 
 The below zip file contains an exe file, very likely it is older than the above script. I promise that the exe file is clean, however compiled AHK scripts trigger antiviruses so you might have to add an exception.   
-<a href="https://magicstep.github.io/viatc/ViATc-0.5.5en_executable.zip">ViATc-0.5.5en_executable.zip</a> 2021/04/15  <br>
+<a href="https://magicstep.github.io/viatc/ViATc-0.5.5.4_executable.zip">ViATc-0.5.5.4_executable.zip</a> 2021/12/19  <br>
 
 Yet older versions at https://magicstep.github.io/viatc/old.html  
 
@@ -41,9 +42,9 @@ Usage
 =====
 A subset of best commands:
 
-j  = Down  
+j  = Down (5j=5lines)  
 k  = Up  
-f  = Page Down  
+f  = Page Down (5f=5pages)  
 b  = Page Up  
 t  = open tab, same as Ctrl+t  
 x  = close tab, same as Ctrl+w  
@@ -54,9 +55,9 @@ i  = Enter
 cc = Delete  
 ma = mark a  
 'a = go to mark a  
-:h = help  
-:s = settings  
-:r = reload  
+ah = help  
+as = settings  
+ar = reload  
 sm = show mappings from ini file  
 an = show menu to create a new file from template  
 zw = toggle one wide panel  
@@ -72,5 +73,6 @@ Author
 - Author of the original Chinese version is linxinhong https://github.com/linxinhong
 - Translator and maintainer of the English version is magicstep https://github.com/magicstep
   You can contact me with the same nickname @gmail.com
+- Contributors: uqqu
 - Project's easy website https://magicstep.github.io/viatc
 - Full project at https://github.com/magicstep/ViATc-English
